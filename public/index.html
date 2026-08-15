@@ -1052,6 +1052,7 @@
   .startup-avatar-select{
     display:flex;flex-direction:column;align-items:center;
     margin-bottom:22px;
+    position:relative;
   }
   .startup-avatar-select img{
     width:100px;height:100px;
@@ -1059,6 +1060,44 @@
     border:3px solid #fff;
     background:#e8f4f2;
   }
+  .startup-avatar-select button{
+    border:none;
+    background:none;
+    padding:0;
+    cursor:pointer;
+    border-radius:50%;
+  }
+  .startup-avatar-list{
+    display:none;
+    position:absolute;
+    top:108px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(360px,88vw);
+    padding:10px;
+    gap:10px;
+    overflow-x:auto;
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(255,255,255,.7);
+    border-radius:12px;
+    box-shadow:0 12px 28px rgba(0,0,0,.22);
+    z-index:3;
+  }
+  .startup-avatar-list.open{display:flex;}
+  .startup-avatar-option{
+    flex:0 0 auto;
+    width:64px;height:64px;
+    border:2px solid transparent;
+    border-radius:50%;
+    background:#fff;
+    padding:2px;
+  }
+  .startup-avatar-option img{
+    width:56px;height:56px;
+    border:0;
+    background:#e8f4f2;
+  }
+  .startup-avatar-option.active{border-color:var(--accent);}
   .startup-avatar-select span{
     margin-top:10px;
     color:#fff;font-size:18px;font-weight:600;
@@ -1468,7 +1507,16 @@
     <h2 class="startup-title startup-title-tight" id="startupOwnNameTitle">มาเป็นเจ้าของชื่อนี้กัน !</h2>
 
     <div class="startup-avatar-select">
-      <img src="https://www.figma.com/api/mcp/asset/2546d9bd-1774-468b-b0f2-77e2835da844.png" alt="โปรไฟล์ที่เลือก" id="startupAvatarImg">
+      <button type="button" id="startupAvatarBtn" aria-label="เลือกโปรไฟล์">
+        <img src="assets/avatar/dog.png" alt="โปรไฟล์ที่เลือก" id="startupAvatarImg">
+      </button>
+      <div class="startup-avatar-list" id="startupAvatarList">
+        <button type="button" class="startup-avatar-option active" data-avatar="assets/avatar/dog.png"><img src="assets/avatar/dog.png" alt="dog"></button>
+        <button type="button" class="startup-avatar-option" data-avatar="assets/avatar/cat.png"><img src="assets/avatar/cat.png" alt="cat"></button>
+        <button type="button" class="startup-avatar-option" data-avatar="assets/avatar/fox.png"><img src="assets/avatar/fox.png" alt="fox"></button>
+        <button type="button" class="startup-avatar-option" data-avatar="assets/avatar/panda.png"><img src="assets/avatar/panda.png" alt="panda"></button>
+        <button type="button" class="startup-avatar-option" data-avatar="assets/avatar/rabbit.png"><img src="assets/avatar/rabbit.png" alt="rabbit"></button>
+      </div>
       <span>เลือกโปรไฟล์</span>
     </div>
 
@@ -1528,7 +1576,7 @@
     <span class="profile-uni">จุฬาลงกรณ์มหาวิทยาลัย [จฬ]</span>
     <div class="profile-nick"><span>ชื่อเล่น</span><b>มะม่วงเบา</b></div>
     <div class="profile-menu-wrap">
-      <img id="profileAvatarBtn" src="https://www.figma.com/api/mcp/asset/1c746e12-92f4-4da0-adf0-aabd437b099d" alt="รูปโปรไฟล์">
+      <img id="profileAvatarBtn" src="assets/avatar/dog.png" alt="รูปโปรไฟล์">
       <div class="profile-dropdown" id="profileDropdown">
         <button type="button" class="dropdown-item" id="openSettingsBtn">
           <span class="dropdown-icon">⚙️</span> การตั้งค่า
@@ -1702,7 +1750,7 @@
 
     <div class="messages">
       <div class="msg">
-        <img class="avatar user-trigger" data-contact="tungtung" src="https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2" alt="ทุงทุง ซาฮัวรา">
+        <img class="avatar user-trigger" data-contact="tungtung" src="assets/avatar/fox.png" alt="ทุงทุง ซาฮัวรา">
         <div class="msg-body">
           <div class="msg-meta">
             <span class="tag user-trigger" data-contact="tungtung">[มศว]</span><span class="user-trigger" data-contact="tungtung">ทุงทุง ซาฮัวรา</span><span class="time">11:02</span>
@@ -1716,7 +1764,7 @@
       </div>
 
       <div class="msg">
-        <img class="avatar user-trigger" data-contact="mickey" src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="ชอบมิกกี้เมาส์">
+        <img class="avatar user-trigger" data-contact="mickey" src="assets/avatar/cat.png" alt="ชอบมิกกี้เมาส์">
         <div class="msg-body">
           <div class="msg-meta">
             <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:12</span>
@@ -1736,7 +1784,7 @@
       </div>
 
       <div class="msg own">
-        <img class="avatar" src="https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5" alt="มะม่วงเบา">
+        <img class="avatar" src="assets/avatar/dog.png" alt="มะม่วงเบา">
         <div class="msg-body">
           <div class="msg-meta"><span class="time">11:14</span><span class="tag">[จฬ]</span><span>มะม่วงเบา</span></div>
           <p class="msg-text">ไม่เยอะ ?</p>
@@ -1744,7 +1792,7 @@
       </div>
 
       <div class="msg">
-        <img class="avatar user-trigger" data-contact="mickey" src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="ชอบมิกกี้เมาส์">
+        <img class="avatar user-trigger" data-contact="mickey" src="assets/avatar/cat.png" alt="ชอบมิกกี้เมาส์">
         <div class="msg-body">
           <div class="msg-meta">
             <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:14</span>
@@ -1837,31 +1885,31 @@
   </div>
   <div class="online-list">
     <div class="online-member" data-contact="helloworld">
-      <img src="https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25" alt="">
+      <img src="assets/avatar/panda.png" alt="">
       <span class="name"><span class="tag">[สจล]</span> hello world !</span>
     </div>
     <div class="online-member" data-contact="mickey">
-      <img src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="">
+      <img src="assets/avatar/cat.png" alt="">
       <span class="name"><span class="tag">[จฬ]</span> ชอบมิกกี้เมาส์</span>
     </div>
     <div class="online-member" data-contact="tungtung">
-      <img src="https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2" alt="">
+      <img src="assets/avatar/fox.png" alt="">
       <span class="name"><span class="tag">[มศว]</span> ทุงทุง ซาฮัวรา</span>
     </div>
     <div class="online-member" data-contact="sawadee">
-      <img src="https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b" alt="">
+      <img src="assets/avatar/rabbit.png" alt="">
       <span class="name"><span class="tag">[จฬ]</span> สวัสดีคนไทย</span>
     </div>
     <div class="online-member" data-contact="hametc">
-      <img src="https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b" alt="">
+      <img src="assets/avatar/rabbit.png" alt="">
       <span class="name"><span class="tag">[จฬ]</span> หาเพื่อนคุย</span>
     </div>
     <div class="online-member self">
-      <img src="https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5" alt="">
+      <img src="assets/avatar/dog.png" alt="">
       <span class="name"><span class="tag">[dek70]</span> มะม่วงเบา (คุณ)</span>
     </div>
     <div class="online-member" data-contact="david">
-      <img src="https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25" alt="">
+      <img src="assets/avatar/panda.png" alt="">
       <span class="name"><span class="tag">[จฬ]</span> David คร้าบ</span>
     </div>
   </div>
@@ -2173,14 +2221,21 @@
   });
 
   /* ---------- PRIVATE CHAT (mockup) ---------- */
+  const AVATAR_ASSETS = {
+    dog:'assets/avatar/dog.png',
+    cat:'assets/avatar/cat.png',
+    fox:'assets/avatar/fox.png',
+    panda:'assets/avatar/panda.png',
+    rabbit:'assets/avatar/rabbit.png'
+  };
   const MY_TAG   = '[จฬ]';
   const MY_NAME  = 'มะม่วงเบา';
-  const MY_AVATAR= 'https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5';
+  let MY_AVATAR = AVATAR_ASSETS.dog;
 
   const contacts = {
     helloworld: {
       tag:'[สจล]', name:'hello world !',
-      avatar:'https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25',
+      avatar:AVATAR_ASSETS.panda,
       joinDate:'1 กรกฎาคม 2569', profileId:'1000',
       online:true, unread:0, blocked:false, notifOn:false,
       messages:[
@@ -2190,35 +2245,35 @@
     },
     mickey: {
       tag:'[จฬ]', name:'ชอบมิกกี้เมาส์',
-      avatar:'https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d',
+      avatar:AVATAR_ASSETS.cat,
       joinDate:'15 มิถุนายน 2569', profileId:'1001',
       online:true, unread:4, blocked:false, notifOn:false,
       messages:[]
     },
     tungtung: {
       tag:'[มศว]', name:'ทุงทุง ซาฮัวรา',
-      avatar:'https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2',
+      avatar:AVATAR_ASSETS.fox,
       joinDate:'2 กรกฎาคม 2569', profileId:'1002',
       online:true, unread:0, blocked:false, notifOn:false,
       messages:[]
     },
     sawadee: {
       tag:'[จฬ]', name:'สวัสดีคนไทย',
-      avatar:'https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b',
+      avatar:AVATAR_ASSETS.rabbit,
       joinDate:'20 มิถุนายน 2569', profileId:'1003',
       online:false, unread:0, blocked:false, notifOn:false,
       messages:[]
     },
     hametc: {
       tag:'[จฬ]', name:'หาเพื่อนคุย',
-      avatar:'https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b',
+      avatar:AVATAR_ASSETS.rabbit,
       joinDate:'22 มิถุนายน 2569', profileId:'1004',
       online:false, unread:0, blocked:false, notifOn:false,
       messages:[]
     },
     david: {
       tag:'[จฬ]', name:'David คร้าบ',
-      avatar:'https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25',
+      avatar:AVATAR_ASSETS.panda,
       joinDate:'28 มิถุนายน 2569', profileId:'1005',
       online:false, unread:0, blocked:false, notifOn:false,
       messages:[]
@@ -2618,6 +2673,9 @@
     const nameField     = document.getElementById('startupNameField');
     const nicknameInput = document.getElementById('startupNickname');
     const nextBtn        = document.getElementById('startupNextBtn');
+    const avatarBtn      = document.getElementById('startupAvatarBtn');
+    const avatarImg      = document.getElementById('startupAvatarImg');
+    const avatarList     = document.getElementById('startupAvatarList');
     const uniField      = document.getElementById('startupUniField');
     const uniSelect      = document.getElementById('startupUni');
     const termsField    = document.getElementById('startupTermsField');
@@ -2628,6 +2686,30 @@
     // always start on step 1, every time the page loads / refreshes
     document.body.style.overflow = 'hidden';
     nicknameInput.focus();
+    let selectedAvatar = AVATAR_ASSETS.dog;
+
+    avatarBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      avatarList.classList.toggle('open');
+    });
+
+    avatarList.querySelectorAll('.startup-avatar-option').forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedAvatar = option.dataset.avatar;
+        avatarImg.src = selectedAvatar;
+        avatarList.querySelectorAll('.startup-avatar-option').forEach(item => {
+          item.classList.toggle('active', item === option);
+        });
+        avatarList.classList.remove('open');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if(!avatarList.contains(e.target) && e.target !== avatarBtn && !avatarBtn.contains(e.target)){
+        avatarList.classList.remove('open');
+      }
+    });
 
     nextBtn.addEventListener('click', () => {
       const nickname = nicknameInput.value.trim();
@@ -2671,6 +2753,11 @@
       }
       const uniEl = document.querySelector('.profile-uni');
       if(uniEl) uniEl.textContent = uniSelect.value;
+      MY_AVATAR = selectedAvatar;
+      if(profileAvatarBtn) profileAvatarBtn.src = selectedAvatar;
+      document.querySelectorAll('.msg.own img.avatar, .online-member.self img').forEach(img => {
+        img.src = selectedAvatar;
+      });
 
       overlay.classList.add('fade-out');
       document.body.style.overflow = '';
