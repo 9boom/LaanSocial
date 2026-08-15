@@ -1,0 +1,2694 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ลาน มหาวิทยาลัย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f1ebdf;
+    --panel:#ffffff;
+    --panel-alt:#fcfcfc;
+    --border:#ced3db;
+    --border-soft:#d5d5d5;
+    --accent:#ff8000;
+    --accent-soft:#fff4da;
+    --text:#1a1a1a;
+    --muted:#616161;
+    --muted-2:#888888;
+    --green:#00ae00;
+    --red:#f50004;
+    --rail-w:84px;
+    --sidebar-w:300px;
+    --header-h:76px;
+  }
+
+  /* ---------- DARK THEME ---------- */
+  body.theme-dark{
+    --bg:#12151a;
+    --panel:#1b1f26;
+    --panel-alt:#20242c;
+    --border:#333a45;
+    --border-soft:#3a4048;
+    --accent:#ff8c1a;
+    --accent-soft:#3a2a12;
+    --text:#eef0f2;
+    --muted:#aab0b8;
+    --muted-2:#7d838b;
+    --green:#3ddc72;
+    --red:#ff5c5c;
+  }
+  body.theme-dark .topbar{background:#171a20;}
+  body.theme-dark .uni-icon{background:#262b33;}
+  body.theme-dark .profile-uni{background:#20242c;color:var(--text);}
+  body.theme-dark .uni-card{border-bottom-color:#2b303a;}
+  body.theme-dark .channel:hover{background:#242932;}
+  body.theme-dark .chat-header{border-bottom-color:#2b303a;}
+  body.theme-dark .members-pill{background:#262b33;}
+  body.theme-dark .members-pill span{color:var(--text);}
+  body.theme-dark .typing-bar{background:#171a20;border-top-color:#2b303a;color:#c7cbd1;}
+  body.theme-dark .typing-bar b{color:#f2f2f2;}
+  body.theme-dark .msg-meta{color:#c7cbd1;}
+  body.theme-dark .msg-meta .tag{color:#f2f2f2;}
+  body.theme-dark .msg-action{color:#c7cbd1;}
+  body.theme-dark .attachment-meta .msg-action{color:#eef0f2;}
+  body.theme-dark .composer{border-top-color:#2b303a;}
+  body.theme-dark .composer .file-btn{background:#262b33;color:#aab0b8;}
+  body.theme-dark .composer input[type="text"]{background:#20242c;border-color:#3a4048;color:#eef0f2;}
+  body.theme-dark .composer input::placeholder{color:#7d838b;}
+  body.theme-dark .msg-attachment{border-color:#333a45;}
+  body.theme-dark .channel-sidebar{border-right-color:#2b303a;}
+  body.theme-dark .uni-card h2{color:#c7cbd1;}
+  body.theme-dark .msg-action img,
+  body.theme-dark .tool-btn img,
+  body.theme-dark .members-pill img{filter:invert(.85) brightness(1.4);}
+  body.theme-dark .icon-btn{background:#262b33;border-color:#3a4048;}
+  body.theme-dark .icon-btn:hover{background:#2c323b;}
+  body.theme-dark .icon-btn .badge-dot{border-color:#171a20;}
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Sarabun',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  a,button,input{font-family:inherit;}
+  ul{margin:0;padding:0;list-style:none;}
+  img{display:block;max-width:100%;}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    height:var(--header-h);
+    padding:0 20px;
+    background:#fdfdfd;
+    border-bottom:2px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:40;
+  }
+  .menu-toggle{
+    display:none;
+    width:38px;height:38px;
+    border:none;background:transparent;
+    cursor:pointer;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:4px;
+  }
+  .menu-toggle span{width:22px;height:2px;background:var(--text);border-radius:2px;}
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .brand img{
+    width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+  }
+  .brand-text{min-width:0;}
+  .brand-text h1{
+    margin:0;font-size:22px;font-weight:700;white-space:nowrap;
+  }
+  .brand-text p{
+    margin:2px 0 0;font-size:13px;font-weight:300;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .profile{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex:0 0 auto;
+  }
+  .profile-uni{
+    font-size:15px;font-weight:600;white-space:nowrap;
+    border:1px solid var(--border-soft);
+    background:#f7f7f7;
+    border-radius:10px;
+    padding:10px 18px;
+  }
+  .profile-nick{
+    text-align:right;font-size:12px;font-weight:200;line-height:1.3;
+  }
+  .profile-nick b{display:block;font-size:16px;font-weight:800;}
+  .profile img{width:44px;height:44px;border-radius:50%;object-fit:cover;}
+  .profile-collapsible{display:flex;align-items:center;gap:14px;}
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    flex:1 1 auto;
+    display:flex;
+    min-height:0;
+  }
+
+  /* university rail */
+  .uni-rail{
+    flex:0 0 var(--rail-w);
+    background:var(--panel);
+    border-right:2px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px 0;
+    gap:14px;
+    overflow-y:auto;
+  }
+  .uni-rail .globe{font-size:40px;line-height:1;margin-bottom:4px;}
+  .uni-icon{
+    width:56px;height:56px;
+    border-radius:12px;
+    border:2px solid var(--border-soft);
+    overflow:hidden;
+    cursor:pointer;
+    flex:0 0 auto;
+    background:#eee;
+  }
+  .uni-icon img{width:100%;height:100%;object-fit:cover;}
+  .uni-icon.active{border:3px solid var(--accent);}
+  .uni-add{
+    margin-top:auto;
+    width:56px;height:56px;
+    border-radius:12px;
+    background:var(--accent);
+    border:none;
+    color:#fff;
+    font-size:32px;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* channel sidebar */
+  .channel-sidebar{
+    flex:0 0 var(--sidebar-w);
+    background:var(--panel-alt);
+    border-right:1px solid #b7b7b7;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .uni-card{
+    padding:18px 20px 14px;
+    border-bottom:1px solid #e5e0d3;
+  }
+  .uni-card h2{margin:0;font-size:19px;font-weight:500;color:#5e5e5e;}
+  .uni-card-row{
+    margin-top:8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .uni-card .online{margin:0;font-size:18px;font-weight:700;color:var(--green);white-space:nowrap;}
+  .sidebar-tools{display:flex;gap:8px;flex:0 0 auto;}
+  .sidebar-tools .tool-btn{height:40px;min-width:40px;font-size:18px;padding:0 10px;}
+
+  .channel-group{padding:14px 20px 6px;}
+  .channel-group-title{
+    font-size:18px;font-weight:300;color:var(--muted);margin:0 0 8px;
+  }
+  .channel{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:6px;
+    cursor:pointer;
+  }
+  .channel:hover{background:#f0ead9;}
+  .channel.active{
+    background:var(--accent-soft);
+    border:3px solid #fa0;
+  }
+  .channel-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .channel-name{font-size:19px;font-weight:800;color:var(--muted);}
+  .channel-stats{
+    display:flex;
+    align-items:center;
+    flex:0 0 auto;
+  }
+  .channel-count{font-size:14px;font-weight:500;color:var(--green);white-space:nowrap;}
+  .channel-count.zero{color:var(--muted);}
+  .channel-desc{
+    font-size:15px;font-weight:500;color:var(--muted);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .channel.has-badge .channel-desc{padding-right:40px;}
+  .channel-desc .more{font-weight:200;}
+  .unread-badge{
+    position:absolute;
+    top:26px;right:10px;
+    background:red;
+    color:#fff;
+    font-size:12px;font-weight:800;
+    border-radius:8px;
+    padding:2px 7px;
+    line-height:1.3;
+  }
+
+  /* ---------- PRIVATE CHAT HISTORY SIDEBAR ---------- */
+  .private-sidebar-header{
+    display:flex;align-items:center;gap:8px;
+    padding:14px 14px 14px 10px;
+    border-bottom:1px solid #e5e0d3;
+  }
+  .private-sidebar-header h2{margin:0;font-size:22px;font-weight:500;color:#5e5e5e;}
+  .back-btn-static{
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+    width:40px;height:40px;
+    border:none;background:none;
+    border-radius:50%;
+    font-size:24px;line-height:1;color:var(--text);
+    cursor:pointer;
+  }
+  .back-btn-static:hover{background:rgba(0,0,0,.06);}
+  .back-btn-static:active{background:rgba(0,0,0,.1);}
+  body.theme-dark .back-btn-static:hover{background:rgba(255,255,255,.08);}
+  body.theme-dark .back-btn-static:active{background:rgba(255,255,255,.14);}
+  .private-history-list{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .private-history-item{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:9px 12px;
+    border-radius:8px;
+    border:3px solid transparent;
+    cursor:pointer;
+  }
+  .private-history-item:hover{background:#f0ead9;}
+  .private-history-item.active{
+    background:var(--accent-soft);
+    border:3px solid #fa0;
+  }
+  .private-history-avatar-wrap{position:relative;flex:0 0 auto;width:52px;height:52px;}
+  .private-history-avatar-wrap img{width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;}
+  .private-history-online-dot{
+    position:absolute;bottom:-1px;right:-1px;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--green);
+    border:2px solid var(--panel-alt);
+  }
+  .private-history-name{font-size:18px;font-weight:300;color:#444;padding-right:34px;}
+  .private-history-name .tag{font-weight:700;color:#040404;}
+  .private-history-item.has-badge .unread-badge{
+    position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  }
+  body.theme-dark .private-sidebar-header{border-bottom-color:#2b303a;}
+  body.theme-dark .private-history-item:hover{background:#242932;}
+  body.theme-dark .private-history-online-dot{border-color:#20242c;}
+  body.theme-dark .private-history-name{color:#c7cbd1;}
+
+  /* main chat panel */
+  .chat-panel{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    background:var(--bg);
+  }
+  .chat-header{
+    background:var(--panel);
+    border-bottom:1px solid #d1d1d1;
+    padding:12px 24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .chat-header .title-block h2{
+    margin:0;
+    font-size:22px;font-weight:800;color:var(--muted);
+    display:flex;align-items:center;gap:8px;
+  }
+  .chat-header .title-block h2 .dot{color:var(--green);font-weight:400;}
+  .chat-header .title-block h2 .count{font-size:16px;font-weight:600;color:var(--green);}
+  .chat-header .title-block p{
+    margin:2px 0 0;font-size:15px;font-weight:500;color:var(--muted);
+  }
+  .members-pill{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#d7d7d7;
+    border-radius:16px;
+    padding:8px 18px;
+    cursor:pointer;
+  }
+  .members-pill img{width:22px;height:22px;object-fit:contain;}
+  .members-pill span{font-size:15px;font-weight:500;white-space:nowrap;color:#333;}
+
+  .typing-bar{
+    background:#fafafa;
+    border-top:1px solid #bdbdbd;
+    padding:8px 24px;
+    font-size:14px;
+    color:#444;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .typing-bar b{font-weight:600;color:#040404;}
+
+  .tool-btn{
+    height:48px;min-width:52px;
+    background:var(--accent);
+    border:1px solid var(--border-soft);
+    border-radius:8px;
+    color:#fff;
+    font-size:22px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    padding:0 14px;
+  }
+
+  .messages{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:16px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .msg{
+    display:flex;
+    gap:14px;
+    max-width:640px;
+  }
+  .msg.own{
+    align-self:flex-end;
+    flex-direction:row-reverse;
+    text-align:right;
+  }
+  .msg img.avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:0 0 auto;}
+  .msg-body{min-width:0;}
+  .msg-meta{
+    display:flex;gap:8px;align-items:center;font-size:15px;font-weight:300;color:#444;
+  }
+  .msg.own .msg-meta{justify-content:flex-end;}
+  .msg-meta .tag{font-weight:600;color:#040404;}
+  .msg-meta .time{font-size:13px;font-weight:300;color:var(--muted-2);}
+  .msg-actions{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-left:auto;
+  }
+  .msg-action{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:14px;
+    font-weight:300;
+    color:#333;
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:0;
+    font-family:inherit;
+  }
+  .msg-action img{width:18px;height:18px;flex:0 0 auto;}
+  .msg-text{margin:4px 0 0;font-size:17px;font-weight:400;line-height:1.4;}
+  .msg-attachment{
+    margin-top:8px;
+    max-width:340px;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid #e0e0e0;
+  }
+  .msg-attachment img{width:100%;height:auto;object-fit:cover;}
+  .attachment-meta{
+    display:flex;justify-content:flex-start;align-items:center;
+    gap:20px;
+    margin-top:8px;
+  }
+  .attachment-meta .msg-action{font-size:14px;color:#000;}
+
+  .composer{
+    background:var(--panel);
+    border-top:1px solid #a1a1a1;
+    padding:14px 24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .composer .file-btn{
+    height:48px;min-width:56px;
+    background:#d9d9d9;
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;color:#6c6c6c;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+  .composer input[type="text"]{
+    flex:1 1 220px;
+    height:52px;
+    border:2px solid #999;
+    background:#f0f0f0;
+    border-radius:8px;
+    padding:0 18px;
+    font-size:18px;
+    font-weight:700;
+    color:#333;
+  }
+  .composer input::placeholder{color:#979797;font-weight:700;}
+  .composer .send-btn{
+    height:52px;
+    padding:0 28px;
+    background:var(--accent);
+    border:1px solid var(--border-soft);
+    border-radius:8px;
+    color:#fff;
+    font-size:20px;
+    font-weight:500;
+    cursor:pointer;
+    flex:0 0 auto;
+  }
+
+  /* mobile-only navigation buttons (back / info / close) — hidden on desktop,
+     shown and styled inside the <=900px media query below */
+  .mobile-nav-btn{display:none;}
+
+  /* overlay for mobile drawers */
+  .overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.35);
+    z-index:30;
+  }
+
+  /* ---------- PROFILE DROPDOWN ---------- */
+  .profile-menu-wrap{position:relative;flex:0 0 auto;}
+  .profile-menu-wrap img{cursor:pointer;}
+  .profile-dropdown{
+    display:none;
+    position:absolute;
+    top:54px;right:0;
+    min-width:190px;
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    box-shadow:0 10px 28px rgba(0,0,0,.18);
+    padding:6px;
+    flex-direction:column;
+    gap:2px;
+    z-index:60;
+  }
+  .profile-dropdown.open{display:flex;}
+  .dropdown-item{
+    display:flex;align-items:center;gap:10px;
+    width:100%;
+    padding:10px 12px;
+    border:none;background:none;
+    border-radius:8px;
+    font-size:15px;font-weight:500;
+    color:var(--text);
+    cursor:pointer;
+    text-align:left;
+  }
+  .dropdown-item:hover{background:var(--accent-soft);}
+  .dropdown-icon{font-size:16px;}
+
+  /* ---------- TOPBAR ICON BUTTONS (private chat / notifications) ---------- */
+  .icon-btn{
+    position:relative;
+    flex:0 0 auto;
+    width:48px;height:48px;
+    border-radius:50%;
+    background:#e9e9e9;
+    border:1px solid var(--border-soft);
+    font-size:20px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    padding:0;
+  }
+  .icon-btn:hover{background:#dedede;}
+  .icon-btn.active{
+    border:3px solid var(--accent);
+    background:var(--accent-soft);
+  }
+  .icon-btn.active:hover{background:var(--accent-soft);}
+  .icon-btn .badge-dot{
+    position:absolute;
+    top:2px;right:2px;
+    width:11px;height:11px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid #fdfdfd;
+  }
+
+  /* ---------- SETTINGS MODAL ---------- */
+  .modal-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:80;
+    align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:var(--panel);
+    border-radius:14px;
+    width:min(420px,100%);
+    padding:20px 22px 22px;
+    box-shadow:0 24px 60px rgba(0,0,0,.28);
+  }
+  .modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .modal-header h3{margin:0;font-size:20px;font-weight:700;color:var(--text);}
+  .modal-close{
+    border:none;background:none;
+    font-size:18px;color:var(--muted);
+    cursor:pointer;line-height:1;
+  }
+  .setting-row{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    font-size:16px;font-weight:600;color:var(--text);
+  }
+  .setting-row select{
+    padding:9px 12px;
+    border-radius:8px;
+    border:1px solid var(--border-soft);
+    background:var(--panel-alt);
+    color:var(--text);
+    font-size:15px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .modal-footer{
+    display:flex;justify-content:flex-end;gap:10px;
+    margin-top:24px;
+  }
+  .btn-secondary,.btn-primary{
+    padding:10px 20px;
+    border-radius:8px;
+    font-size:15px;font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-secondary{
+    border:1px solid var(--border-soft);
+    background:transparent;
+    color:var(--text);
+  }
+  .btn-primary{
+    border:none;
+    background:var(--accent);
+    color:#fff;
+  }
+
+  /* ---------- ONLINE MEMBERS SLIDE PANEL ---------- */
+  .online-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.25);
+    z-index:70;
+  }
+  .online-overlay.open{display:block;}
+  .online-panel{
+    position:fixed;
+    top:0;right:0;
+    height:100vh;
+    width:min(360px,88vw);
+    background:var(--panel);
+    border-left:1px solid var(--border-soft);
+    box-shadow:-8px 0 28px rgba(0,0,0,.18);
+    z-index:71;
+    display:flex;
+    flex-direction:column;
+    transform:translateX(100%);
+    transition:transform .28s ease;
+  }
+  .online-panel.open{transform:translateX(0);}
+  .online-panel-header{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:18px 20px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .online-panel-header h3{
+    margin:0;font-size:19px;font-weight:500;color:var(--text);
+  }
+  .online-panel-header h3 b{color:var(--green);font-weight:600;}
+  .online-panel-close{
+    border:none;background:none;
+    font-size:20px;color:var(--muted);
+    cursor:pointer;line-height:1;
+    flex:0 0 auto;
+  }
+  .online-panel-search{
+    flex:0 0 auto;
+    display:flex;align-items:center;gap:10px;
+    margin:14px 20px 4px;
+    padding:10px 14px;
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    background:var(--panel-alt);
+  }
+  .online-panel-search img{width:20px;height:20px;opacity:.55;flex:0 0 auto;}
+  .online-panel-search input{
+    flex:1 1 auto;
+    border:none;background:none;outline:none;
+    font-size:15px;color:var(--text);font-family:inherit;
+  }
+  .online-panel-search input::placeholder{color:var(--muted-2);}
+  .online-list{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:10px 20px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .online-member{
+    display:flex;align-items:center;gap:14px;
+  }
+  .online-member img{
+    width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+  }
+  .online-member .name{font-size:16px;font-weight:300;color:#444;}
+  .online-member .name .tag{font-weight:600;color:#040404;}
+
+  .online-member{
+    cursor:pointer;
+    border-radius:8px;
+    padding:4px;
+    margin:-4px;
+    transition:background .15s ease;
+  }
+  .online-member:hover{background:var(--accent-soft);}
+  .online-member.self{cursor:default;}
+  .online-member.self:hover{background:none;}
+
+  /* ---------- CLICKABLE USER (open private chat) ---------- */
+  .user-trigger{cursor:pointer;}
+  .msg-meta .user-trigger:hover,
+  .msg-meta .tag.user-trigger:hover{text-decoration:underline;}
+  img.avatar.user-trigger:hover{opacity:.85;}
+
+  /* ---------- PROFILE PANEL (docked, shown during private chat) ---------- */
+  .profile-panel{
+    flex:0 0 355px;
+    background:var(--panel);
+    border-left:1px solid var(--border-soft);
+    display:none;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .profile-panel.open{display:flex;}
+  .profile-panel-header{
+    flex:0 0 auto;
+    padding:22px 24px;
+    font-size:20px;font-weight:500;color:var(--text);
+    border-bottom:1px solid #d1d1d1;
+  }
+  .profile-panel-body{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:36px 24px;
+  }
+  .profile-avatar-wrap{
+    position:relative;
+    width:130px;height:130px;
+    margin-bottom:18px;
+    flex:0 0 auto;
+  }
+  .profile-avatar-wrap img{
+    width:130px;height:130px;border-radius:50%;object-fit:cover;
+  }
+  .profile-online-dot{
+    position:absolute;
+    bottom:6px;right:8px;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:#22c55e;
+    border:3px solid var(--panel);
+  }
+  .profile-name{
+    font-size:20px;font-weight:300;color:#444;
+    margin-bottom:24px;text-align:center;
+  }
+  .profile-name .tag{font-weight:600;color:#040404;}
+  .profile-joined-card{
+    width:100%;
+    background:var(--bg);
+    border-radius:16px;
+    padding:16px 20px;
+    text-align:center;
+    margin-bottom:20px;
+  }
+  .profile-joined-card .label{margin:0;font-size:15px;font-weight:300;color:var(--text);}
+  .profile-joined-card .date{margin:6px 0 0;font-size:15px;font-weight:200;color:#424141;}
+  .profile-info-row + .profile-info-row{
+    margin-top:14px;padding-top:14px;
+    border-top:1px solid rgba(0,0,0,.08);
+  }
+  body.theme-dark .profile-info-row + .profile-info-row{border-top-color:rgba(255,255,255,.08);}
+  .profile-actions{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .profile-action-btn{
+    width:100%;
+    padding:12px;
+    border:1px solid #000;
+    border-radius:8px;
+    font-size:15px;font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    background:#fff;
+    color:#000;
+  }
+  .profile-block-btn{background:#ff6868;color:#fff;}
+  .profile-block-btn:hover{background:#ff5252;}
+  .profile-block-btn.is-blocked{background:#8a8a8a;color:#fff;}
+  .profile-block-btn.is-blocked:hover{background:#767676;}
+  .profile-notif-btn{background:var(--accent);color:#fff;}
+  .profile-notif-btn:hover{filter:brightness(.95);}
+  .profile-notif-btn.is-on{background:#8a8a8a;}
+  body.theme-dark .profile-panel{border-left-color:#2b303a;}
+  body.theme-dark .profile-panel-header{border-bottom-color:#2b303a;}
+  body.theme-dark .profile-action-btn{background:#20242c;border-color:#4a515c;color:var(--text);}
+  body.theme-dark .profile-action-btn:hover{background:#262b33;}
+  body.theme-dark .profile-block-btn{background:#ff6868;color:#fff;}
+  body.theme-dark .profile-notif-btn{background:var(--accent);color:#fff;}
+
+  /* private chat empty state */
+  .private-empty{
+    margin:auto;
+    text-align:center;
+    color:var(--muted);
+    font-size:16px;font-weight:300;
+  }
+
+  /* ---------- ADD UNIVERSITY MODAL ---------- */
+  .adduni-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:600;
+    align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .adduni-overlay.open{display:flex;}
+  .adduni-box{
+    background:var(--panel);
+    border:1px solid #a8a8a8;
+    border-radius:6px;
+    width:min(600px,100%);
+    overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.32);
+    max-height:92vh;
+    overflow-y:auto;
+  }
+  .adduni-header{
+    background:#d9d9d9;
+    border-bottom:1px solid #aaa;
+    padding:18px 24px;
+  }
+  .adduni-header h3{margin:0 0 8px;font-size:20px;font-weight:700;color:#323232;}
+  .adduni-header p{margin:0;font-size:15px;font-weight:400;color:#636363;line-height:1.4;}
+  .adduni-header p b{font-weight:800;color:#323232;}
+  .adduni-body{padding:24px;}
+  .adduni-field{margin-bottom:18px;}
+  .adduni-field label{display:block;font-size:15px;color:#464646;margin-bottom:6px;}
+  .adduni-field input{
+    width:100%;
+    height:40px;
+    border:1px solid #9f9f9f;
+    background:#eaeaea;
+    border-radius:4px;
+    padding:0 12px;
+    font-size:15px;
+    color:#323232;
+    font-family:inherit;
+  }
+  .adduni-field input::placeholder{color:#8f8f8f;}
+  .adduni-field input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .adduni-field.invalid input{border-color:#e53935;background:#fdecea;}
+  .adduni-row{display:flex;gap:16px;}
+  .adduni-row .adduni-field{flex:1 1 0;margin-bottom:18px;}
+  .adduni-row .adduni-field.narrow{flex:0 0 35%;}
+  .adduni-actions{
+    display:flex;justify-content:flex-end;gap:14px;
+    padding:4px 24px 24px;
+  }
+  .adduni-btn{
+    padding:12px 24px;
+    border-radius:4px;
+    border:none;
+    font-size:15px;font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+    color:#fff;
+  }
+  .adduni-btn.cancel{background:#949494;}
+  .adduni-btn.cancel:hover{background:#828282;}
+  .adduni-btn.submit{background:var(--accent);}
+  .adduni-btn.submit:hover{filter:brightness(1.06);}
+
+  .adduni-success-body{
+    padding:44px 32px 36px;
+    text-align:center;
+  }
+  .adduni-success-title{
+    margin:0 0 22px;
+    font-size:30px;font-weight:600;color:#00b120;
+  }
+  .adduni-success-desc{
+    margin:0 0 30px;
+    font-size:15px;color:#8c8c8c;line-height:1.7;
+  }
+  .adduni-success-desc .link{color:#616161;text-decoration:underline;}
+  .adduni-ok-btn{
+    background:var(--accent);color:#fff;border:none;border-radius:4px;
+    padding:12px 34px;font-size:15px;font-weight:700;cursor:pointer;
+    font-family:inherit;
+  }
+  .adduni-ok-btn:hover{filter:brightness(1.06);}
+
+  .adduni-field.narrow-select{width:150px;}
+  .select-wrap{position:relative;width:150px;}
+  .select-wrap select{
+    appearance:none;-webkit-appearance:none;-moz-appearance:none;
+    width:100%;height:40px;
+    border:1px solid #9f9f9f;
+    background:#eaeaea;
+    border-radius:4px;
+    padding:0 32px 0 12px;
+    font-size:15px;font-weight:600;color:#3b3b3b;
+    font-family:inherit;cursor:pointer;
+  }
+  .select-wrap::after{
+    content:'';
+    position:absolute;right:12px;top:50%;
+    width:0;height:0;
+    border-left:6px solid transparent;border-right:6px solid transparent;
+    border-top:7px solid #616161;
+    transform:translateY(-50%);
+    pointer-events:none;
+  }
+  .adduni-header p b{font-weight:800;}
+  body.theme-dark .select-wrap select{background:#20242c;border-color:#4a515c;color:#eef0f2;}
+  body.theme-dark .select-wrap::after{border-top-color:#c7cbd1;}
+
+  .notif-body{padding:24px;}
+  .notif-target{font-size:16px;color:#636363;margin:0 0 16px;}
+  .notif-target b{color:#000;font-weight:600;}
+  .notif-list-title{font-size:15px;color:#636363;margin:0 0 8px;}
+  .notif-list{margin:0 0 22px;padding-left:22px;color:#636363;font-size:15px;line-height:1.6;}
+  .notif-list li{margin-bottom:4px;}
+  .notif-actions{text-align:center;}
+  .notif-allow-btn{
+    background:var(--accent);color:#fff;border:none;border-radius:4px;
+    padding:12px 40px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+    width:100%;max-width:257px;
+  }
+  .notif-allow-btn:hover{filter:brightness(1.06);}
+  .notif-caption{
+    margin:10px 0 0;text-align:center;font-size:11px;color:#888;
+  }
+  body.theme-dark .notif-target,
+  body.theme-dark .notif-list-title,
+  body.theme-dark .notif-list{color:#aab0b8;}
+  body.theme-dark .notif-target b{color:#eef0f2;}
+  body.theme-dark .notif-caption{color:#7d838b;}
+
+  .report-target{font-size:16px;color:#636363;margin:0 0 6px;}
+  .report-target b{color:#272626;font-weight:600;}
+  .report-subtitle{font-size:16px;color:#636363;margin:0 0 16px;}
+  .report-options{display:flex;flex-direction:column;gap:14px;margin-bottom:4px;}
+  .report-option{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .report-option input[type="radio"]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex:0 0 auto;}
+  .report-option label{font-size:15px;color:#636363;cursor:pointer;}
+  .report-other-input{
+    flex:1 1 200px;
+    height:40px;border:1px solid #9f9f9f;background:#eaeaea;border-radius:4px;
+    padding:0 12px;font-size:15px;color:#323232;font-family:inherit;
+    margin-left:2px;
+  }
+  .report-other-input::placeholder{color:#919191;}
+  .adduni-btn.report-submit{background:#ff0000;}
+  .adduni-btn.report-submit:hover{filter:brightness(1.08);}
+  .report-options.invalid .report-option label{color:#e53935;}
+  body.theme-dark .report-target,
+  body.theme-dark .report-subtitle,
+  body.theme-dark .report-option label{color:#aab0b8;}
+  body.theme-dark .report-target b{color:#eef0f2;}
+  body.theme-dark .report-other-input{background:#20242c;border-color:#4a515c;color:#eef0f2;}
+
+  body.theme-dark .adduni-box{border-color:#4a515c;}
+  body.theme-dark .adduni-header{background:#262b33;border-bottom-color:#3a4048;}
+  body.theme-dark .adduni-header h3{color:#eef0f2;}
+  body.theme-dark .adduni-header p{color:#aab0b8;}
+  body.theme-dark .adduni-header p b{color:#eef0f2;}
+  body.theme-dark .adduni-field label{color:#c7cbd1;}
+  body.theme-dark .adduni-field input{background:#20242c;border-color:#4a515c;color:#eef0f2;}
+  body.theme-dark .adduni-field input::placeholder{color:#7d838b;}
+
+  /* ---------- STARTUP ONBOARDING OVERLAY ---------- */
+  .startup-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.8);
+    z-index:500;
+    display:flex;
+    align-items:center;justify-content:center;
+    padding:24px;
+    overflow-y:auto;
+    transition:opacity .35s ease;
+  }
+  .startup-overlay.fade-out{
+    opacity:0;
+    pointer-events:none;
+  }
+  .startup-viewport{
+    width:100%;
+    max-width:520px;
+    overflow:hidden;
+    position:relative;
+  }
+  .startup-track{
+    display:flex;
+    width:200%;
+    align-items:flex-start;
+    transition:transform .55s cubic-bezier(.65,0,.35,1);
+    will-change:transform;
+  }
+  .startup-track.show-step2{transform:translateX(-50%);}
+  .startup-step{
+    flex:0 0 50%;
+    max-width:50%;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:0 6px;
+  }
+  .startup-logo{
+    width:95px;height:95px;
+    border-radius:50%;
+    overflow:hidden;
+    margin-bottom:20px;
+    flex:0 0 auto;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);
+  }
+  .startup-logo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .startup-title{
+    margin:0 0 8px;
+    color:#fff;
+    font-size:30px;font-weight:600;
+  }
+  .startup-subtitle{
+    margin:0 0 26px;
+    color:#fff;
+    font-size:18px;font-weight:400;
+    line-height:1.5;
+  }
+  .startup-title-tight{margin:0 0 18px;}
+  .startup-avatar-select{
+    display:flex;flex-direction:column;align-items:center;
+    margin-bottom:22px;
+  }
+  .startup-avatar-select img{
+    width:100px;height:100px;
+    border-radius:50%;object-fit:cover;
+    border:3px solid #fff;
+    background:#e8f4f2;
+  }
+  .startup-avatar-select span{
+    margin-top:10px;
+    color:#fff;font-size:18px;font-weight:600;
+  }
+  .startup-field{
+    width:100%;
+    max-width:452px;
+    text-align:left;
+    margin-bottom:22px;
+  }
+  .startup-field label{
+    display:block;
+    color:#fff;
+    font-size:18px;font-weight:500;
+    margin-bottom:8px;
+  }
+  .startup-field input[type="text"]{
+    width:100%;height:64px;
+    border:none;border-radius:8px;
+    padding:0 18px;
+    font-size:18px;color:#333;
+    font-family:inherit;
+    background:#fff;
+  }
+  .startup-field input[type="text"]::placeholder{color:#b3b3b3;}
+  .startup-field input[type="text"]:focus{outline:3px solid var(--accent);outline-offset:2px;}
+  .startup-field.invalid input[type="text"]{outline:3px solid var(--red);outline-offset:2px;}
+  .startup-select-wrap{position:relative;}
+  .startup-select-wrap select{
+    width:100%;height:64px;
+    border:none;border-radius:8px;
+    padding:0 62px 0 18px;
+    font-size:18px;color:#333;
+    font-family:inherit;
+    background:#fff;
+    appearance:none;-webkit-appearance:none;-moz-appearance:none;
+    cursor:pointer;
+  }
+  .startup-select-wrap select:invalid{color:#b3b3b3;}
+  .startup-select-wrap select:focus{outline:3px solid var(--accent);outline-offset:2px;}
+  .startup-field.invalid .startup-select-wrap select{outline:3px solid var(--red);outline-offset:2px;}
+  .startup-field-wide{max-width:540px;}
+  .startup-uni-row{display:flex;align-items:stretch;gap:12px;}
+  .startup-uni-row .startup-select-wrap{flex:1 1 auto;min-width:0;}
+  .startup-add-uni-btn{
+    flex:0 0 auto;
+    width:64px;height:64px;
+    border:none;border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    font-size:32px;font-weight:600;
+    line-height:1;
+    font-family:inherit;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:filter .15s ease, transform .15s ease;
+  }
+  .startup-add-uni-btn:hover{filter:brightness(1.06);transform:translateY(-1px);}
+  .startup-add-uni-btn:active{transform:translateY(0);}
+  .startup-select-arrow{
+    position:absolute;
+    right:8px;top:50%;
+    transform:translateY(-50%);
+    width:46px;height:46px;
+    border-radius:50%;
+    background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  }
+  .startup-select-arrow::after{
+    content:'';
+    width:0;height:0;
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-top:10px solid #fff;
+    margin-top:3px;
+  }
+  .startup-terms{
+    display:flex;align-items:flex-start;gap:10px;
+    width:100%;max-width:452px;
+    text-align:left;
+    margin-bottom:26px;
+  }
+  .startup-terms input[type="checkbox"]{
+    width:22px;height:22px;
+    margin:2px 0 0;
+    flex:0 0 auto;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+  .startup-terms label{
+    color:#fff;font-size:15px;line-height:1.55;
+    cursor:pointer;
+  }
+  .startup-terms label a{color:#fff;text-decoration:underline;}
+  .startup-terms.invalid label{color:#ff8888;}
+  .startup-btn{
+    background:#fff;
+    border:3px solid #ffae00;
+    border-radius:16px;
+    padding:16px 42px;
+    font-size:22px;font-weight:600;
+    color:#5c5c5c;
+    font-family:inherit;
+    cursor:pointer;
+    box-shadow:0 10px 24px rgba(0,0,0,.3);
+    transition:filter .15s ease, transform .15s ease;
+  }
+  .startup-btn:hover{filter:brightness(.96);transform:translateY(-1px);}
+  .startup-btn:active{transform:translateY(0);}
+  .startup-footer{margin-top:36px;}
+  .startup-footer .startup-copy{
+    margin:0 0 8px;
+    color:#fff;font-size:14px;font-weight:700;
+  }
+  .startup-footer .startup-links{
+    margin:0;
+    color:#fff;font-size:14px;font-weight:300;
+  }
+  .startup-footer .startup-links a{color:#fff;text-decoration:none;}
+  .startup-footer .startup-links a:hover{text-decoration:underline;}
+
+  @media (max-width:560px){
+    .startup-title{font-size:24px;}
+    .startup-subtitle{font-size:15px;}
+    .startup-field label{font-size:15px;}
+    .startup-field input[type="text"],
+    .startup-select-wrap select{height:54px;font-size:15px;}
+    .startup-btn{font-size:18px;padding:13px 32px;}
+    .startup-terms label{font-size:13px;}
+    .startup-add-uni-btn{width:54px;height:54px;font-size:26px;}
+  }
+
+  /* =====================================================================
+     RESPONSIVE — rewritten from scratch, mobile-first stability priority.
+
+     Strategy:
+     - >900px  : original multi-pane desktop layout (rail + sidebar + chat
+                 [+ docked profile]), just with fluid narrowing.
+     - <=900px : "app shell" stack navigation. Only ONE full-screen pane is
+                 visible at a time (channel/DM list -> chat -> profile),
+                 controlled by body[data-mobile-view]. The university rail
+                 becomes an off-canvas drawer opened by the hamburger.
+                 Nothing that exists on desktop is removed on mobile —
+                 the profile panel especially is reachable, not hidden.
+     - Real device fixes baked in: 16px inputs (stops iOS auto-zoom),
+       dvh-based heights (stops URL-bar resize jumps), safe-area insets
+       (notches / home indicator), and >=40px tap targets throughout.
+     ===================================================================== */
+
+  @media (max-width: 1180px){
+    :root{--sidebar-w:270px;}
+    .profile-panel{flex-basis:300px;}
+  }
+
+  @media (max-width: 1100px){
+    :root{--sidebar-w:250px;}
+    .profile-nick{display:none;}
+  }
+
+  /* ---------- mobile app-shell (<=900px) ---------- */
+  @media (max-width: 900px){
+    :root{--header-h:54px;}
+
+    html{-webkit-text-size-adjust:100%;}
+    body{min-height:100dvh;}
+
+    /* never let a focused input trigger iOS zoom */
+    input[type="text"],
+    input[type="search"],
+    select,
+    textarea{font-size:16px;}
+
+    .topbar{
+      padding:0 10px;
+      gap:6px;
+      padding-left:calc(10px + env(safe-area-inset-left));
+      padding-right:calc(10px + env(safe-area-inset-right));
+      padding-top:env(safe-area-inset-top);
+      height:calc(var(--header-h) + env(safe-area-inset-top));
+    }
+    .menu-toggle{display:flex;flex:0 0 auto;width:36px;height:36px;}
+    .brand{flex:1 1 auto;min-width:0;gap:8px;}
+    .brand img{width:32px;height:32px;flex:0 0 auto;}
+    .brand-text{min-width:0;flex:1 1 auto;}
+    .brand-text h1{
+      font-size:15px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .brand-text p{display:none;}
+    .profile{gap:6px;flex:0 0 auto;}
+    .profile-uni{display:none;}
+    .icon-btn{width:36px;height:36px;font-size:16px;}
+    .profile img{width:32px;height:32px;}
+
+    /* ---- university rail becomes an off-canvas drawer ---- */
+    .layout{position:relative;overflow:hidden;}
+    .uni-rail{
+      position:fixed;
+      top:calc(var(--header-h) + env(safe-area-inset-top));
+      bottom:0;left:0;
+      z-index:45;
+      width:84px;
+      padding-top:16px;
+      padding-bottom:calc(16px + env(safe-area-inset-bottom));
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      box-shadow:8px 0 24px rgba(0,0,0,.18);
+    }
+    body.nav-open .uni-rail{transform:translateX(0);}
+    body.nav-open .overlay{display:block;z-index:40;}
+
+    /* ---- app-shell: one full-screen pane at a time ---- */
+    .layout{
+      display:block;
+      height:calc(100dvh - var(--header-h) - env(safe-area-inset-top));
+    }
+    .channel-sidebar,
+    .chat-panel,
+    .profile-panel{
+      position:absolute;
+      inset:0;
+      width:100%;
+      max-width:none;
+      flex-basis:auto;
+      transition:transform .25s ease;
+    }
+    .channel-sidebar{z-index:10;border-right:none;}
+    .chat-panel{z-index:20;transform:translateX(100%);}
+    .profile-panel{z-index:30;transform:translateX(100%);}
+    .profile-panel.open{display:flex;} /* mounted, but off-screen until requested */
+
+    body[data-mobile-view="sidebar"] .channel-sidebar{transform:translateX(0);}
+    body[data-mobile-view="chat"] .chat-panel{transform:translateX(0);}
+    body[data-mobile-view="profile"] .profile-panel.open{transform:translateX(0);}
+
+    /* ---- back / info navigation buttons (mobile only) ---- */
+    .mobile-nav-btn{
+      display:flex;
+      align-items:center;justify-content:center;
+      flex:0 0 auto;
+      width:36px;height:36px;
+      border:none;background:none;
+      font-size:21px;color:var(--text);
+      cursor:pointer;
+      border-radius:50%;
+    }
+    .mobile-nav-btn:active{background:rgba(0,0,0,.08);}
+    body.theme-dark .mobile-nav-btn:active{background:rgba(255,255,255,.12);}
+    .profile-panel-mobile-close{display:flex;}
+
+    /* ---- channel sidebar: compact, list-style rows ---- */
+    .channel-sidebar,
+    .chat-panel,
+    .online-panel,
+    .modal-overlay,
+    .adduni-overlay{padding-bottom:env(safe-area-inset-bottom);}
+
+    .uni-card{padding:14px 16px 10px;}
+    .uni-card h2{font-size:16px;}
+    .uni-card .online{font-size:14px;}
+    .sidebar-tools .tool-btn{height:36px;min-width:36px;font-size:15px;padding:0 8px;}
+
+    .channel-group{padding:10px 16px 4px;}
+    .channel-group-title{font-size:13px;margin-bottom:6px;}
+    .channel{padding:9px 8px;min-height:40px;margin-bottom:2px;}
+    .channel-name{font-size:15.5px;}
+    .channel-count{font-size:12.5px;}
+    .channel-desc{font-size:13px;}
+    .channel.has-badge .channel-desc{padding-right:34px;}
+    .unread-badge{top:22px;font-size:11px;padding:2px 6px;}
+
+    .private-sidebar-header{padding:12px 12px 12px 8px;}
+    .private-sidebar-header h2{font-size:16px;}
+    .private-sidebar-header .back-btn-static{width:36px;height:36px;font-size:21px;}
+    .private-history-list{padding:8px 10px;gap:4px;}
+    .private-history-item{padding:8px 10px;min-height:48px;}
+    .private-history-avatar-wrap{width:44px;height:44px;}
+    .private-history-avatar-wrap img{width:44px;height:44px;}
+    .private-history-name{font-size:15px;padding-right:30px;}
+
+    /* ---- chat header: single line, truncates instead of wrapping ---- */
+    .chat-header{
+      padding:8px 12px;gap:6px;flex-wrap:nowrap;
+      padding-left:calc(12px + env(safe-area-inset-left));
+      padding-right:calc(12px + env(safe-area-inset-right));
+    }
+    .chat-header .title-block{flex:1 1 auto;min-width:0;}
+    .chat-header .title-block h2{
+      font-size:16px;gap:6px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;
+    }
+    .chat-header .title-block h2 .count{font-size:13px;}
+    .chat-header .title-block p{
+      font-size:12.5px;margin-top:1px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .private-title-prefix{display:none;}
+    .members-pill{margin-left:0;flex:0 0 auto;padding:7px;gap:0;}
+    .members-pill span{display:none;}
+
+    /* ---- messages: compact, no crowding of meta/actions ---- */
+    .messages{padding:10px 12px;gap:12px;}
+    .msg{max-width:88%;gap:8px;}
+    .msg img.avatar{width:38px;height:38px;}
+    .msg-meta{
+      flex-wrap:wrap;
+      row-gap:3px;
+      font-size:13.5px;
+    }
+    .msg-meta .time{font-size:11.5px;}
+    .msg-text{font-size:14.5px;margin-top:3px;}
+    .msg-actions{gap:12px;margin-left:auto;}
+    .msg-action{font-size:0;gap:0;padding:5px;margin:-5px;}
+    .msg-action img{width:16px;height:16px;}
+    .msg-attachment{max-width:78vw;}
+    .attachment-meta{gap:14px;margin-top:6px;}
+
+    /* ---- composer ---- */
+    .composer{
+      padding:8px 10px;gap:8px;
+      padding-bottom:calc(8px + env(safe-area-inset-bottom));
+      padding-left:calc(10px + env(safe-area-inset-left));
+      padding-right:calc(10px + env(safe-area-inset-right));
+    }
+    .composer .file-btn{height:40px;min-width:40px;font-size:14px;}
+    .composer input[type="text"]{height:40px;padding:0 14px;}
+    .composer .send-btn{height:40px;padding:0 16px;font-size:15px;}
+
+    /* ---- online members panel: full-width sheet on mobile ---- */
+    .online-panel{width:100%;height:100dvh;}
+    .online-panel-header{padding:14px 16px;}
+    .online-panel-header h3{font-size:16px;}
+    .online-panel-search{margin:12px 16px 2px;padding:9px 12px;}
+    .online-list{padding:8px 16px 16px;gap:12px;}
+    .online-member img{width:44px;height:44px;}
+    .online-member .name{font-size:14.5px;}
+
+    /* ---- profile panel becomes a full-screen sheet, not a hidden pane ---- */
+    .profile-panel-header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 18px;
+      padding-top:calc(16px + env(safe-area-inset-top));
+      font-size:17px;
+    }
+    .profile-panel-body{padding:24px 20px;}
+    .profile-avatar-wrap{width:96px;height:96px;margin-bottom:14px;}
+    .profile-avatar-wrap img{width:96px;height:96px;}
+    .profile-name{font-size:17px;margin-bottom:18px;}
+    .profile-joined-card{padding:12px 16px;}
+    .profile-action-btn{padding:11px;font-size:14.5px;}
+
+    /* ---- modals: comfortable full-width sheets ---- */
+    .modal-overlay,.adduni-overlay{padding:16px;}
+    .adduni-header{padding:16px 18px;}
+    .adduni-header h3{font-size:18px;}
+    .adduni-body{padding:16px 18px;}
+    .adduni-actions{padding:4px 18px 18px;}
+    .adduni-row{flex-direction:column;gap:0;}
+    .adduni-row .adduni-field.narrow{flex-basis:auto;}
+    .adduni-success-title{font-size:22px;}
+  }
+
+  /* ---------- small phones ---------- */
+  @media (max-width: 420px){
+    .topbar{gap:5px;}
+    .brand{gap:6px;}
+    .brand img{width:30px;height:30px;}
+    .brand-text h1{font-size:14px;}
+    .icon-btn{width:34px;height:34px;font-size:15px;}
+    .profile img{width:30px;height:30px;}
+    .chat-header .title-block h2{font-size:15px;}
+    .msg{max-width:92%;}
+    .composer .send-btn{padding:0 14px;}
+  }
+</style>
+</head>
+<body data-mobile-view="sidebar">
+
+<div class="startup-overlay" id="startupOverlay" role="dialog" aria-modal="true" aria-labelledby="startupTitle1">
+<div class="startup-viewport">
+  <div class="startup-track" id="startupTrack">
+
+  <!-- STEP 1: nickname -->
+  <div class="startup-step" id="startupStep1">
+    <div class="startup-logo">
+      <img src="https://www.figma.com/api/mcp/asset/d73605f7-45ec-4938-abb9-6b078c5d32dd" alt="โลโก้ลานมหาวิทยาลัย">
+    </div>
+    <h2 class="startup-title" id="startupTitle1">ยินดีต้อนรับ</h2>
+    <p class="startup-subtitle">กรอกข้อมูลนิ๊ดดดดเดียว เพื่อคุยกับเพื่อนๆ</p>
+
+    <div class="startup-field" id="startupNameField">
+      <label for="startupNickname">ชื่อเล่น หรือ นามแฝง</label>
+      <input type="text" id="startupNickname" placeholder="ทรงอย่างแบดแซดอย่างบอย" autocomplete="off" maxlength="40">
+    </div>
+
+    <button type="button" class="startup-btn" id="startupNextBtn">ถัดไป</button>
+
+    <div class="startup-footer">
+      <p class="startup-copy">© 2026 Pongsakorn Sriwichai. All rights reversed.</p>
+      <p class="startup-links">กฎระเบียบชุมชน &nbsp;|&nbsp; เงื่อนไขการใช้งาน &nbsp;|&nbsp; นโยบายความเป็นส่วนตัว &nbsp;|&nbsp; ติดต่อเรา</p>
+    </div>
+  </div>
+
+  <!-- STEP 2: profile / university / terms -->
+  <div class="startup-step" id="startupStep2">
+    <h2 class="startup-title startup-title-tight" id="startupOwnNameTitle">มาเป็นเจ้าของชื่อนี้กัน !</h2>
+
+    <div class="startup-avatar-select">
+      <img src="https://www.figma.com/api/mcp/asset/2546d9bd-1774-468b-b0f2-77e2835da844.png" alt="โปรไฟล์ที่เลือก" id="startupAvatarImg">
+      <span>เลือกโปรไฟล์</span>
+    </div>
+
+    <div class="startup-field startup-field-wide" id="startupUniField">
+      <div class="startup-uni-row">
+        <div class="startup-select-wrap">
+          <select id="startupUni" required>
+            <option value="" disabled selected hidden>มหาลัยวัวชน</option>
+            <option value="จุฬาลงกรณ์มหาวิทยาลัย">จุฬาลงกรณ์มหาวิทยาลัย</option>
+            <option value="มหาวิทยาลัยธรรมศาสตร์">มหาวิทยาลัยธรรมศาสตร์</option>
+            <option value="มหาวิทยาลัยมหิดล">มหาวิทยาลัยมหิดล</option>
+            <option value="มหาวิทยาลัยเกษตรศาสตร์">มหาวิทยาลัยเกษตรศาสตร์</option>
+            <option value="สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง">สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง</option>
+            <option value="มหาวิทยาลัยศรีนครินทรวิโรฒ">มหาวิทยาลัยศรีนครินทรวิโรฒ</option>
+          </select>
+          <span class="startup-select-arrow"></span>
+        </div>
+        <button type="button" class="startup-add-uni-btn" id="startupAddUniBtn" aria-label="เพิ่มมหาวิทยาลัย">+</button>
+      </div>
+    </div>
+
+    <div class="startup-terms" id="startupTermsField">
+      <input type="checkbox" id="startupTerms">
+      <label for="startupTerms">คุณยอมรับ <a href="#">เงื่อนไขการใช้งาน</a> และ <a href="#">กฎระเบียบของชุมชน</a> ที่ต้องปฏิบัติตาม</label>
+    </div>
+
+    <button type="button" class="startup-btn" id="startupConnectBtn">เชื่อมต่อ</button>
+
+    <div class="startup-footer">
+      <p class="startup-copy">© 2026 Pongsakorn Sriwichai. All rights reversed.</p>
+      <p class="startup-links">กฎระเบียบชุมชน &nbsp;|&nbsp; เงื่อนไขการใช้งาน &nbsp;|&nbsp; นโยบายความเป็นส่วนตัว &nbsp;|&nbsp; ติดต่อเรา</p>
+    </div>
+  </div>
+
+  </div>
+</div>
+</div>
+
+<header class="topbar">
+  <button class="menu-toggle" id="menuToggle" aria-label="เปิดเมนู">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="brand">
+    <img src="https://www.figma.com/api/mcp/asset/d73605f7-45ec-4938-abb9-6b078c5d32dd" alt="โลโก้ลานมหาวิทยาลัย">
+    <div class="brand-text">
+      <h1>ลาน มหาวิทยาลัย</h1>
+      <p>ศูนย์กลางแชททุกมหาวิทยาลัยออนไลน์ รวมในที่เดียว</p>
+    </div>
+  </div>
+  <div class="profile">
+    <button type="button" class="icon-btn" id="topPrivateBtn" aria-label="ข้อความส่วนตัว">
+      💬<span class="badge-dot"></span>
+    </button>
+    <button type="button" class="icon-btn" id="topNotifBtn" aria-label="การแจ้งเตือน">
+      🔔<span class="badge-dot"></span>
+    </button>
+    <span class="profile-uni">จุฬาลงกรณ์มหาวิทยาลัย [จฬ]</span>
+    <div class="profile-nick"><span>ชื่อเล่น</span><b>มะม่วงเบา</b></div>
+    <div class="profile-menu-wrap">
+      <img id="profileAvatarBtn" src="https://www.figma.com/api/mcp/asset/1c746e12-92f4-4da0-adf0-aabd437b099d" alt="รูปโปรไฟล์">
+      <div class="profile-dropdown" id="profileDropdown">
+        <button type="button" class="dropdown-item" id="openSettingsBtn">
+          <span class="dropdown-icon">⚙️</span> การตั้งค่า
+        </button>
+        <button type="button" class="dropdown-item">
+          <span class="dropdown-icon">🚪</span> ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-header">
+      <h3 id="settingsTitle">ตั้งค่า</h3>
+      <button type="button" class="modal-close" id="closeSettingsBtn" aria-label="ปิด">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="setting-row" for="themeSelect">
+        <span>เปลี่ยนธีม</span>
+        <select id="themeSelect">
+          <option value="light">สว่าง</option>
+          <option value="dark">มืด</option>
+        </select>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" id="cancelSettingsBtn">ยกเลิก</button>
+      <button type="button" class="btn-primary" id="saveSettingsBtn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="layout">
+
+  <!-- university icon rail -->
+  <nav class="uni-rail" aria-label="เลือกมหาวิทยาลัย">
+    <div class="globe">🌐</div>
+    <div class="uni-icon active">
+      <img src="https://www.figma.com/api/mcp/asset/4c951303-73b3-4a27-b788-89de1b27616f" alt="จุฬาลงกรณ์มหาวิทยาลัย">
+    </div>
+    <div class="uni-icon">
+      <img src="https://www.figma.com/api/mcp/asset/ed23ed11-7722-40be-9120-be229ddecb1d" alt="มหาวิทยาลัย">
+    </div>
+    <div class="uni-icon">
+      <img src="https://www.figma.com/api/mcp/asset/15c87942-d95a-474f-a44c-e61479eb571c" alt="มหาวิทยาลัย">
+    </div>
+    <div class="uni-icon">
+      <img src="https://www.figma.com/api/mcp/asset/a10582ed-4533-49af-95c0-486a997f800b" alt="มหาวิทยาลัย">
+    </div>
+    <div class="uni-icon">
+      <img src="https://www.figma.com/api/mcp/asset/5c276519-8a71-48bd-8f0d-4e07b9405b09" alt="มหาวิทยาลัย">
+    </div>
+    <div class="uni-icon">
+      <img src="https://www.figma.com/api/mcp/asset/01ee8794-d515-43a8-9986-6de6a1d4e87b" alt="มหาวิทยาลัย">
+    </div>
+    <button class="uni-add" id="openAddUniBtn" aria-label="เพิ่มมหาวิทยาลัย">+</button>
+  </nav>
+
+  <!-- channel list sidebar -->
+  <aside class="channel-sidebar">
+   <div id="channelSidebarView" style="display:flex;flex-direction:column;min-height:0;flex:1 1 auto;">
+    <div class="uni-card">
+      <h2>จุฬาลงกรณ์มหาวิทยาลัย</h2>
+      <div class="uni-card-row">
+        <p class="online">กำลังอยู่ 75 คน</p>
+        <div class="sidebar-tools">
+          <button class="tool-btn" id="notifBellBtn" aria-label="การแจ้งเตือน">🔔</button>
+          <button class="tool-btn" id="openAddTempRoomBtn" aria-label="เพิ่มห้อง">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="channel-group">
+      <p class="channel-group-title">ห้องทางการ</p>
+      <div class="channel active">
+        <div class="channel-top">
+          <span class="channel-name">#general</span>
+          <div class="channel-stats"><span class="channel-count">• 16 คน</span></div>
+        </div>
+        <span class="channel-desc">ห้องคุยหลัก</span>
+      </div>
+      <div class="channel has-badge">
+        <div class="channel-top">
+          <span class="channel-name">#annoucne</span>
+          <div class="channel-stats">
+            <span class="channel-count zero">• 0 คน</span>
+            <span class="unread-badge">1</span>
+          </div>
+        </div>
+        <span class="channel-desc">ห้องประกาศ</span>
+      </div>
+    </div>
+
+    <div class="channel-group">
+      <p class="channel-group-title">ชุมชนถาวร</p>
+      <div class="channel has-badge">
+        <div class="channel-top">
+          <span class="channel-name">#dek70</span>
+          <div class="channel-stats">
+            <span class="channel-count">• 43 คน</span>
+            <span class="unread-badge">99+</span>
+          </div>
+        </div>
+        <span class="channel-desc">ช่วยน้องเตรียมเข้ามหาลัยร<span class="more">...ดูเพิ่ม</span></span>
+      </div>
+      <div class="channel">
+        <div class="channel-top">
+          <span class="channel-name">#หาเพื่อนติว</span>
+          <div class="channel-stats"><span class="channel-count">• 6 คน</span></div>
+        </div>
+        <span class="channel-desc">มาช่วยกันติวหนังสือออ</span>
+      </div>
+    </div>
+
+    <div class="channel-group" id="tempRoomGroup">
+      <p class="channel-group-title">ชุมชนชั่วคราว</p>
+      <div class="channel has-badge">
+        <div class="channel-top">
+          <span class="channel-name">#คืนนี้ใครไปงานดนตรี</span>
+          <div class="channel-stats">
+            <span class="channel-count">• 7 คน</span>
+            <span class="unread-badge">12</span>
+          </div>
+        </div>
+        <span class="channel-desc">เผื่อใครไปนะจ๊ะะ</span>
+      </div>
+      <div class="channel">
+        <div class="channel-top">
+          <span class="channel-name">#มีใครเจอแมวส้มบ้าง</span>
+          <div class="channel-stats"><span class="channel-count">• 2 คน</span></div>
+        </div>
+        <span class="channel-desc">แมวหายตั้งแต่ 12:00 บริเว<span class="more">...ดูเพิ่ม</span></span>
+      </div>
+      <div class="channel">
+        <div class="channel-top">
+          <span class="channel-name">#ใครกำลังเรียนอยู่ตึกวิทย์</span>
+          <div class="channel-stats"><span class="channel-count">• 1 คน</span></div>
+        </div>
+        <span class="channel-desc">พอดีลืมกระเป๋าตังไว้ตรงชั้น<span class="more">...ดูเพิ่ม</span></span>
+      </div>
+    </div>
+   </div>
+
+   <!-- private chat history sidebar (shown while a private chat is open) -->
+   <div id="privateSidebarView" style="display:none;flex-direction:column;min-height:0;flex:1 1 auto;">
+    <div class="private-sidebar-header">
+      <button type="button" class="back-btn-static" id="backToChannelsBtn" aria-label="ย้อนกลับ">‹</button>
+      <h2>ประวัติการแชทส่วนตัว</h2>
+    </div>
+    <div class="private-history-list" id="privateHistoryList"></div>
+   </div>
+  </aside>
+
+  <!-- main chat panel -->
+  <main class="chat-panel" id="generalPanel">
+    <div class="chat-header">
+      <button type="button" class="mobile-nav-btn" id="backToListBtn" aria-label="กลับไปหน้ารายการห้อง">‹</button>
+      <div class="title-block">
+        <h2>#general <span class="dot">•</span> <span class="count">16 คน</span></h2>
+        <p>ห้องคุยหลัก</p>
+      </div>
+      <div class="members-pill online-toggle-btn">
+        <span>ใครออนไลน์ ?</span>
+        <img src="https://www.figma.com/api/mcp/asset/f0b93d64-ca68-4341-af25-df1d45c2eb1e" alt="สมาชิก">
+      </div>
+    </div>
+
+    <div class="messages">
+      <div class="msg">
+        <img class="avatar user-trigger" data-contact="tungtung" src="https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2" alt="ทุงทุง ซาฮัวรา">
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="tag user-trigger" data-contact="tungtung">[มศว]</span><span class="user-trigger" data-contact="tungtung">ทุงทุง ซาฮัวรา</span><span class="time">11:02</span>
+            <div class="msg-actions">
+              <button class="msg-action report-trigger" data-report-tag="[มศว]" data-report-name="ทุงทุง ซาฮัวรา"><img src="https://www.figma.com/api/mcp/asset/e0ad2bb8-406e-4f32-a588-9b19519ec9c8" alt="">รายงาน</button>
+              <button class="msg-action"><img src="https://www.figma.com/api/mcp/asset/196d5e89-9fa1-411b-9788-7ab1689950f8" alt="">ตอบกลับ</button>
+            </div>
+          </div>
+          <p class="msg-text">สวัสดีครับบ จุฬาโรงอาหารมีคนเยอะไหมครับ จะเข้าไปเที่ยว</p>
+        </div>
+      </div>
+
+      <div class="msg">
+        <img class="avatar user-trigger" data-contact="mickey" src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="ชอบมิกกี้เมาส์">
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:12</span>
+            <div class="msg-actions">
+              <button class="msg-action report-trigger" data-report-tag="[จฬ]" data-report-name="ชอบมิกกี้เมาส์"><img src="https://www.figma.com/api/mcp/asset/e0ad2bb8-406e-4f32-a588-9b19519ec9c8" alt="">รายงาน</button>
+              <button class="msg-action"><img src="https://www.figma.com/api/mcp/asset/196d5e89-9fa1-411b-9788-7ab1689950f8" alt="">ตอบกลับ</button>
+            </div>
+          </div>
+          <p class="msg-text">ไม่</p>
+          <div class="msg-attachment">
+            <img src="https://www.figma.com/api/mcp/asset/2191dc61-0a9d-487d-b7fa-5a1b8f3bc140" alt="รูปแนบ">
+          </div>
+          <div class="attachment-meta">
+            <button class="msg-action"><img src="https://www.figma.com/api/mcp/asset/219f76f9-1287-4b3b-9f62-efee6f74701c" alt="">บันทึก</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg own">
+        <img class="avatar" src="https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5" alt="มะม่วงเบา">
+        <div class="msg-body">
+          <div class="msg-meta"><span class="time">11:14</span><span class="tag">[จฬ]</span><span>มะม่วงเบา</span></div>
+          <p class="msg-text">ไม่เยอะ ?</p>
+        </div>
+      </div>
+
+      <div class="msg">
+        <img class="avatar user-trigger" data-contact="mickey" src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="ชอบมิกกี้เมาส์">
+        <div class="msg-body">
+          <div class="msg-meta">
+            <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:14</span>
+            <div class="msg-actions">
+              <button class="msg-action report-trigger" data-report-tag="[จฬ]" data-report-name="ชอบมิกกี้เมาส์"><img src="https://www.figma.com/api/mcp/asset/e0ad2bb8-406e-4f32-a588-9b19519ec9c8" alt="">รายงาน</button>
+              <button class="msg-action"><img src="https://www.figma.com/api/mcp/asset/196d5e89-9fa1-411b-9788-7ab1689950f8" alt="">ตอบกลับ</button>
+            </div>
+          </div>
+          <p class="msg-text">ไม่เหลือ 555</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-bar">
+      <b>[มศว]</b> ทุงทุง ซาฮัวรา, <b>[จฬ]</b> สวัสดีคนไทย กำลังพิม...
+    </div>
+
+    <form class="composer" id="composerForm">
+      <div class="file-btn">ไฟล์</div>
+      <input type="text" placeholder="พิมข้อความ..." aria-label="พิมพ์ข้อความ">
+      <button type="submit" class="send-btn">ส่ง</button>
+    </form>
+  </main>
+
+  <!-- private chat panel (mockup, hidden by default) -->
+  <main class="chat-panel" id="privateChatPanel" style="display:none;">
+    <div class="chat-header">
+      <button type="button" class="mobile-nav-btn" id="backToListBtnPrivate" aria-label="กลับไปหน้ารายการแชท">‹</button>
+      <div class="title-block">
+        <h2 class="private-title"><span class="private-title-prefix">คุณกำลังคุยส่วนตัวกับ</span> <span class="tag" id="privateTag"></span> <span id="privateName"></span></h2>
+      </div>
+      <button type="button" class="mobile-nav-btn" id="openProfileBtnMobile" aria-label="ดูข้อมูลโปรไฟล์">ⓘ</button>
+    </div>
+
+    <div class="messages" id="privateMessages"></div>
+
+    <div class="typing-bar">
+      <b>ฝ่ายตรงข้าม</b> กำลังพิม...
+    </div>
+
+    <form class="composer" id="privateComposerForm">
+      <div class="file-btn">ไฟล์</div>
+      <input type="text" placeholder="พิมข้อความ..." aria-label="พิมพ์ข้อความ">
+      <button type="submit" class="send-btn">ส่ง</button>
+    </form>
+  </main>
+
+  <!-- profile panel (docked, shown alongside private chat) -->
+  <aside class="profile-panel" id="profilePanel">
+    <div class="profile-panel-header">
+      ข้อมูลส่วนตัว
+      <button type="button" class="mobile-nav-btn profile-panel-mobile-close" id="closeProfilePanelMobileBtn" aria-label="ปิดข้อมูลส่วนตัว">✕</button>
+    </div>
+    <div class="profile-panel-body">
+      <div class="profile-avatar-wrap">
+        <img id="profileAvatarImg" src="" alt="">
+        <span class="profile-online-dot"></span>
+      </div>
+      <p class="profile-name"><span class="tag" id="profileTag"></span> <span id="profileName"></span></p>
+      <div class="profile-joined-card">
+        <div class="profile-info-row">
+          <p class="label">เข้าร่วมครั้งแรก เมื่อ</p>
+          <p class="date" id="profileJoinDate"></p>
+        </div>
+        <div class="profile-info-row">
+          <p class="label">โปรไฟล์ไอดี</p>
+          <p class="date" id="profileIdVal"></p>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button type="button" class="profile-action-btn profile-block-btn" id="profileBlockBtn">บล็อก</button>
+        <button type="button" class="profile-action-btn profile-notif-btn" id="profileNotifBtn">เปิดการแจ้งเตือน</button>
+        <button type="button" class="profile-action-btn profile-namehistory-btn" id="profileNameHistoryBtn">ประวัติการเปลี่ยนชื่อ</button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- online members slide-in panel -->
+<div class="online-overlay" id="onlineOverlay"></div>
+<aside class="online-panel" id="onlinePanel" aria-hidden="true">
+  <div class="online-panel-header">
+    <h3><b>16</b> กำลังอยู่ห้องนี้</h3>
+    <button type="button" class="online-panel-close" id="onlinePanelClose" aria-label="ปิด">✕</button>
+  </div>
+  <div class="online-panel-search">
+    <img src="https://www.figma.com/api/mcp/asset/80643372-49eb-4e99-aff6-64613c4db3b6" alt="">
+    <input type="text" placeholder="ค้นหาสมาชิก...">
+  </div>
+  <div class="online-list">
+    <div class="online-member" data-contact="helloworld">
+      <img src="https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25" alt="">
+      <span class="name"><span class="tag">[สจล]</span> hello world !</span>
+    </div>
+    <div class="online-member" data-contact="mickey">
+      <img src="https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d" alt="">
+      <span class="name"><span class="tag">[จฬ]</span> ชอบมิกกี้เมาส์</span>
+    </div>
+    <div class="online-member" data-contact="tungtung">
+      <img src="https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2" alt="">
+      <span class="name"><span class="tag">[มศว]</span> ทุงทุง ซาฮัวรา</span>
+    </div>
+    <div class="online-member" data-contact="sawadee">
+      <img src="https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b" alt="">
+      <span class="name"><span class="tag">[จฬ]</span> สวัสดีคนไทย</span>
+    </div>
+    <div class="online-member" data-contact="hametc">
+      <img src="https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b" alt="">
+      <span class="name"><span class="tag">[จฬ]</span> หาเพื่อนคุย</span>
+    </div>
+    <div class="online-member self">
+      <img src="https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5" alt="">
+      <span class="name"><span class="tag">[dek70]</span> มะม่วงเบา (คุณ)</span>
+    </div>
+    <div class="online-member" data-contact="david">
+      <img src="https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25" alt="">
+      <span class="name"><span class="tag">[จฬ]</span> David คร้าบ</span>
+    </div>
+  </div>
+</aside>
+
+<!-- add university modal -->
+<div class="adduni-overlay" id="adduniOverlay">
+  <div class="adduni-box" role="dialog" aria-modal="true" aria-labelledby="adduniTitle">
+
+    <!-- form view -->
+    <div id="adduniFormView">
+      <div class="adduni-header">
+        <h3 id="adduniTitle">เพิ่มมหาวิทยาลัย</h3>
+        <p>มหาวิทยาลัยของน้องยังไม่มีในระบบ ? ส่งคำขอ เพื่อเพิ่มเป็นห้องแชทมหาวิทยาลัยใหม่ใน <b>ลาน</b></p>
+      </div>
+      <form id="adduniForm">
+        <div class="adduni-body">
+          <div class="adduni-field" id="adduniNameField">
+            <label for="adduniName">ชื่อมหาวิทยาลัย (ภาษาไทย)</label>
+            <input type="text" id="adduniName" placeholder="เช่น มหาวิทยาลัยเชียงใหม่" autocomplete="off">
+          </div>
+          <div class="adduni-row">
+            <div class="adduni-field narrow">
+              <label for="adduniShort">ชื่อย่อมหาวิทยาลัย (ภาษาไทย)</label>
+              <input type="text" id="adduniShort" placeholder="มช" autocomplete="off">
+            </div>
+            <div class="adduni-field">
+              <label for="adduniProvince">จังหวัดที่ตั้งมหาวิทยาลัย (เฉพาะ จังหวัด)</label>
+              <input type="text" id="adduniProvince" placeholder="เชียงใหม่" autocomplete="off">
+            </div>
+          </div>
+          <div class="adduni-field">
+            <label for="adduniUrl">เว็บไซต์มหาวิทยาลัย (ส่งแบบ https:// หรือ http:// หรือ www นำหน้าเท่านั้น)</label>
+            <input type="text" id="adduniUrl" placeholder="https://www.example.ac.th" autocomplete="off">
+          </div>
+        </div>
+        <div class="adduni-actions">
+          <button type="button" class="adduni-btn cancel" id="adduniCancelBtn">ยกเลิก</button>
+          <button type="submit" class="adduni-btn submit">ส่งคำขอ</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- success view -->
+    <div id="adduniSuccessView" style="display:none;">
+      <div class="adduni-header">
+        <h3>เพิ่มมหาวิทยาลัย</h3>
+        <p>มหาวิทยาลัยของน้องยังไม่มีในระบบ ? ส่งคำขอ เพื่อเพิ่มเป็นห้องแชทมหาวิทยาลัยใหม่ใน <b>ลาน</b></p>
+      </div>
+      <div class="adduni-success-body">
+        <p class="adduni-success-title">ส่งคำขอเรียบร้อยแล้ว</p>
+        <p class="adduni-success-desc">
+          โปรดรอภายใน 24-48 ชั่วโมง เพื่อทำการคัดกรองเนื้อหา ความน่าเชื่อถือ รวมไปถึงความถูกต้องตามวัตถุประสงค์ของแพลตฟอร์ม<br><br>
+          หากคำขอนี้อนุมัติ คุณจะเห็นว่ามหาวิทยาลัยที่คุณเพิ่มอยู่ใน<span class="link">รายชื่อห้องของแพลตฟอร์ม</span>ไปเป็นที่เรียบร้อยแล้ว
+        </p>
+        <button type="button" class="adduni-ok-btn" id="adduniOkBtn">โอเค</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- add temporary room modal -->
+<div class="adduni-overlay" id="addtemproomOverlay">
+  <div class="adduni-box" role="dialog" aria-modal="true" aria-labelledby="addtemproomTitle">
+    <div class="adduni-header">
+      <h3 id="addtemproomTitle">เพิ่ม ชุมชนชั่วคราว</h3>
+      <p><b>ห้องชั่วคราว</b> คือห้องที่สร้างขึ้นมาเพื่อใช้พูดคุยเฉพาะเรื่องในเวลาไม่นาน และมีวันหมดอายุตามที่ตั้งไว้ ซึ่งต้องได้รับการโหวตเพื่อยกสิทธิ์เป็น <b>ห้องถาวร</b></p>
+    </div>
+    <form id="addtemproomForm">
+      <div class="adduni-body">
+        <div class="adduni-field" id="addtemproomNameField">
+          <label for="addtemproomName">ชื่อห้อง</label>
+          <input type="text" id="addtemproomName" placeholder="เช่น ใครไปเที่ยวเขาใหญ่บ้าง" autocomplete="off">
+        </div>
+        <div class="adduni-field">
+          <label for="addtemproomDesc">คำอธิบาย</label>
+          <input type="text" id="addtemproomDesc" placeholder="อธิบายสั้นๆ ว่าห้องนี้คุยเรื่องอะไร" autocomplete="off">
+        </div>
+        <div class="adduni-field">
+          <label for="addtemproomAge">อายุห้อง</label>
+          <div class="select-wrap">
+            <select id="addtemproomAge">
+              <option value="1">1 วัน</option>
+              <option value="3" selected>3 วัน</option>
+              <option value="7">7 วัน</option>
+              <option value="14">14 วัน</option>
+              <option value="30">30 วัน</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="adduni-actions">
+        <button type="button" class="adduni-btn cancel" id="addtemproomCancelBtn">ยกเลิก</button>
+        <button type="submit" class="adduni-btn submit">ส่งคำขอ</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ask for notification permission modal -->
+<div class="adduni-overlay" id="notifOverlay">
+  <div class="adduni-box" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
+    <div class="adduni-header">
+      <h3 id="notifTitle">เปิดการแจ้งเตือน</h3>
+      <p>แจ้งเตือนผ่านเบราเซอร์ เพื่อไม่ให้คุณพลาดข่าวสาร แม้กำลังปิดเว็บ</p>
+    </div>
+    <div class="notif-body">
+      <p class="notif-target">เปิดแจ้งเตือนสำหรับ: <b>มหาวิทยาลัยจุฬาลงกรณ์มหาวิทยาลัย</b></p>
+      <p class="notif-list-title">คุณจะได้รับการแจ้งเตือนเหล่านี้</p>
+      <ul class="notif-list">
+        <li>ชื่อห้องชุมชนชั่วคราวที่พึ่งสร้างใหม่</li>
+        <li>แจ้งเตือนจำนวนข้อความที่คุณยังไม่ได้อ่าน ในห้องย่อยต่างๆของมหาลัยดังเกล่า</li>
+      </ul>
+      <div class="notif-actions">
+        <button type="button" class="notif-allow-btn" id="notifAllowBtn">อนุญาติและเปิดใช้งาน</button>
+        <p class="notif-caption">คุณสามารถยกเลิกได้ในภายหลังผ่านเมนู การตั้งค่า</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- report content modal -->
+<div class="adduni-overlay" id="reportOverlay">
+  <div class="adduni-box" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+
+    <!-- form view -->
+    <div id="reportFormView">
+      <div class="adduni-header">
+        <h3 id="reportTitle">รายงานเนื้อหาการสนทนาที่ไม่เหมาะสม</h3>
+        <p>โปรดรายงานตามความจริงเท่านั้น เนื้อหาที่คุณรายงานเราจะตรวจสอบเนื้อหาอีกครั้ง ว่าผิดกฎจริงๆ และจะทำการลงโทษผู้กระทำผิด</p>
+      </div>
+      <form id="reportForm">
+        <div class="adduni-body">
+          <p class="report-target">คุณกำลังรายงาน: <b id="reportTargetName">[จฬ] ชอบมิกกี้เมาส์</b></p>
+          <p class="report-subtitle">ในหัวข้อ</p>
+          <div class="report-options" id="reportOptions">
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason1" value="สแปม/ ปั๊มข้อความ/ บอท">
+              <label for="reportReason1">สแปม/ ปั๊มข้อความ/ บอท</label>
+            </div>
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason2" value="เว็บพนัน/ โฆษณาผิดกฎหมาย/ ลิงค์อันตราย">
+              <label for="reportReason2">เว็บพนัน/ โฆษณาผิดกฎหมาย/ ลิงค์อันตราย</label>
+            </div>
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason3" value="Toxic/ คำหยาบคาบ/ คุกคามทางเพศ">
+              <label for="reportReason3">Toxic/ คำหยาบคาบ/ คุกคามทางเพศ</label>
+            </div>
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason4" value="แฉข้อมูลส่วนตัว/ ประจาน/ สร้างความอับอาย">
+              <label for="reportReason4">แฉข้อมูลส่วนตัว/ ประจาน/ สร้างความอับอาย</label>
+            </div>
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason5" value="ป่วนห้อง/ นอกเรื่อง/ คนบ้าหลุด">
+              <label for="reportReason5">ป่วนห้อง/ นอกเรื่อง/ คนบ้าหลุด</label>
+            </div>
+            <div class="report-option">
+              <input type="radio" name="reportReason" id="reportReason6" value="อื่นๆ">
+              <label for="reportReason6">อื่นๆ</label>
+              <input type="text" id="reportOtherText" class="report-other-input" placeholder="โปรดอธิบายเหตุผลอย่างละเอียด">
+            </div>
+          </div>
+        </div>
+        <div class="adduni-actions">
+          <button type="button" class="adduni-btn cancel" id="reportCancelBtn">ยกเลิก</button>
+          <button type="submit" class="adduni-btn report-submit">รายงาน</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- success view -->
+    <div id="reportSuccessView" style="display:none;">
+      <div class="adduni-header">
+        <h3>รายงานเนื้อหาการสนทนาที่ไม่เหมาะสม</h3>
+        <p>โปรดรายงานตามความจริงเท่านั้น เนื้อหาที่คุณรายงานเราจะตรวจสอบเนื้อหาอีกครั้ง ว่าผิดกฎจริงๆ และจะทำการลงโทษผู้กระทำผิด</p>
+      </div>
+      <div class="adduni-success-body">
+        <p class="adduni-success-title">รายงานสำเร็จแล้ว</p>
+        <p class="adduni-success-desc">ขอบคุณที่ทำให้พื้นที่นี้ ปลอยภัย และอบอุ่นมากขึ้นสำหรับทุกคน</p>
+        <button type="button" class="adduni-ok-btn" id="reportOkBtn">โอเค</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- name change history modal -->
+<div class="modal-overlay" id="nameHistoryOverlay">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nameHistoryTitle">
+    <div class="modal-header">
+      <h3 id="nameHistoryTitle">ประวัติการเปลี่ยนชื่อ</h3>
+      <button type="button" class="modal-close" id="closeNameHistoryBtn" aria-label="ปิด">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="nameHistoryText" style="margin:0;font-size:15px;font-weight:400;color:var(--muted);">ยังไม่มีประวัติการเปลี่ยนชื่อ</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-primary" id="nameHistoryOkBtn">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const menuToggle = document.getElementById('menuToggle');
+  const overlay = document.getElementById('overlay');
+  menuToggle.addEventListener('click', () => document.body.classList.toggle('nav-open'));
+  overlay.addEventListener('click', () => document.body.classList.remove('nav-open'));
+
+  /* ---------- MOBILE APP-SHELL NAVIGATION ---------- */
+  // On screens <=900px only one pane (channel/DM list, chat, profile) is
+  // shown full-screen at a time. Above that breakpoint this attribute is
+  // simply ignored by the CSS, so it's always safe to set.
+  function setMobileView(view){
+    document.body.dataset.mobileView = view;
+  }
+
+  // picking a university closes the off-canvas rail drawer
+  document.querySelectorAll('.uni-icon').forEach(el => {
+    el.addEventListener('click', () => document.body.classList.remove('nav-open'));
+  });
+  document.getElementById('openAddUniBtn').addEventListener('click', () => document.body.classList.remove('nav-open'));
+
+  // tapping any channel opens the chat pane on mobile
+  document.querySelectorAll('.channel-group .channel').forEach(el => {
+    el.addEventListener('click', () => setMobileView('chat'));
+  });
+
+  document.getElementById('backToListBtn').addEventListener('click', () => setMobileView('sidebar'));
+  document.getElementById('backToListBtnPrivate').addEventListener('click', () => setMobileView('sidebar'));
+  document.getElementById('openProfileBtnMobile').addEventListener('click', () => setMobileView('profile'));
+  document.getElementById('closeProfilePanelMobileBtn').addEventListener('click', () => setMobileView('chat'));
+
+  document.getElementById('composerForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const input = this.querySelector('input[type="text"]');
+    if(!input.value.trim()) return;
+    input.value = '';
+  });
+
+  /* ---------- PROFILE DROPDOWN ---------- */
+  const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+  const profileDropdown  = document.getElementById('profileDropdown');
+
+  profileAvatarBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    profileDropdown.classList.toggle('open');
+  });
+  profileDropdown.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => profileDropdown.classList.remove('open'));
+
+  /* ---------- SETTINGS MODAL / THEME SWITCH ---------- */
+  const settingsOverlay  = document.getElementById('settingsOverlay');
+  const openSettingsBtn  = document.getElementById('openSettingsBtn');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  const cancelSettingsBtn= document.getElementById('cancelSettingsBtn');
+  const saveSettingsBtn  = document.getElementById('saveSettingsBtn');
+  const themeSelect      = document.getElementById('themeSelect');
+
+  function currentTheme(){
+    return document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+  }
+  function openSettings(){
+    profileDropdown.classList.remove('open');
+    themeSelect.value = currentTheme();
+    settingsOverlay.classList.add('open');
+  }
+  function closeSettings(){
+    settingsOverlay.classList.remove('open');
+  }
+
+  openSettingsBtn.addEventListener('click', openSettings);
+  closeSettingsBtn.addEventListener('click', closeSettings);
+  cancelSettingsBtn.addEventListener('click', closeSettings);
+  settingsOverlay.addEventListener('click', (e) => {
+    if(e.target === settingsOverlay) closeSettings();
+  });
+
+  saveSettingsBtn.addEventListener('click', () => {
+    document.body.classList.toggle('theme-dark', themeSelect.value === 'dark');
+    closeSettings();
+  });
+
+  /* ---------- ONLINE MEMBERS SLIDE PANEL ---------- */
+  const onlinePanel     = document.getElementById('onlinePanel');
+  const onlineOverlay   = document.getElementById('onlineOverlay');
+  const onlinePanelClose= document.getElementById('onlinePanelClose');
+
+  function openOnlinePanel(){
+    onlinePanel.classList.add('open');
+    onlineOverlay.classList.add('open');
+    onlinePanel.setAttribute('aria-hidden', 'false');
+  }
+  function closeOnlinePanel(){
+    onlinePanel.classList.remove('open');
+    onlineOverlay.classList.remove('open');
+    onlinePanel.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('.online-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', openOnlinePanel);
+  });
+  onlinePanelClose.addEventListener('click', closeOnlinePanel);
+  onlineOverlay.addEventListener('click', closeOnlinePanel);
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      closeOnlinePanel();
+    }
+  });
+
+  /* ---------- PRIVATE CHAT (mockup) ---------- */
+  const MY_TAG   = '[จฬ]';
+  const MY_NAME  = 'มะม่วงเบา';
+  const MY_AVATAR= 'https://www.figma.com/api/mcp/asset/b394e419-6ca2-499a-ad18-035a0a1a0fe5';
+
+  const contacts = {
+    helloworld: {
+      tag:'[สจล]', name:'hello world !',
+      avatar:'https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25',
+      joinDate:'1 กรกฎาคม 2569', profileId:'1000',
+      online:true, unread:0, blocked:false, notifOn:false,
+      messages:[
+        {mine:false, time:'11:02', text:'สวัสดีครับ ผมขอสอบถามอะไรหน่อยได้ไหมครับ'},
+        {mine:true,  time:'11:14', text:'อะไรเหรอครับ'}
+      ]
+    },
+    mickey: {
+      tag:'[จฬ]', name:'ชอบมิกกี้เมาส์',
+      avatar:'https://www.figma.com/api/mcp/asset/873f382c-ffb5-4307-8e39-b15e5b1dfb7d',
+      joinDate:'15 มิถุนายน 2569', profileId:'1001',
+      online:true, unread:4, blocked:false, notifOn:false,
+      messages:[]
+    },
+    tungtung: {
+      tag:'[มศว]', name:'ทุงทุง ซาฮัวรา',
+      avatar:'https://www.figma.com/api/mcp/asset/329c1b4a-e8d4-4c5f-916b-62e04157a6e2',
+      joinDate:'2 กรกฎาคม 2569', profileId:'1002',
+      online:true, unread:0, blocked:false, notifOn:false,
+      messages:[]
+    },
+    sawadee: {
+      tag:'[จฬ]', name:'สวัสดีคนไทย',
+      avatar:'https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b',
+      joinDate:'20 มิถุนายน 2569', profileId:'1003',
+      online:false, unread:0, blocked:false, notifOn:false,
+      messages:[]
+    },
+    hametc: {
+      tag:'[จฬ]', name:'หาเพื่อนคุย',
+      avatar:'https://www.figma.com/api/mcp/asset/5dd010df-bc79-4ec4-870d-f4f7e2b2c76b',
+      joinDate:'22 มิถุนายน 2569', profileId:'1004',
+      online:false, unread:0, blocked:false, notifOn:false,
+      messages:[]
+    },
+    david: {
+      tag:'[จฬ]', name:'David คร้าบ',
+      avatar:'https://www.figma.com/api/mcp/asset/7baad36a-c329-42cf-bf0d-75583425ac25',
+      joinDate:'28 มิถุนายน 2569', profileId:'1005',
+      online:false, unread:0, blocked:false, notifOn:false,
+      messages:[]
+    }
+  };
+
+  const generalPanel      = document.getElementById('generalPanel');
+  const privateChatPanel  = document.getElementById('privateChatPanel');
+  const privateMessagesEl = document.getElementById('privateMessages');
+  const privateTagEl      = document.getElementById('privateTag');
+  const privateNameEl     = document.getElementById('privateName');
+  const privateComposerForm = document.getElementById('privateComposerForm');
+  const privateComposerInput = privateComposerForm.querySelector('input[type="text"]');
+
+  const channelSidebarView = document.getElementById('channelSidebarView');
+  const privateSidebarView = document.getElementById('privateSidebarView');
+  const privateHistoryList = document.getElementById('privateHistoryList');
+  const topPrivateBtn      = document.getElementById('topPrivateBtn');
+
+  const profilePanel      = document.getElementById('profilePanel');
+  const profileAvatarImg  = document.getElementById('profileAvatarImg');
+  const profileTagEl      = document.getElementById('profileTag');
+  const profileNameEl     = document.getElementById('profileName');
+  const profileJoinDateEl = document.getElementById('profileJoinDate');
+  const profileIdValEl    = document.getElementById('profileIdVal');
+  const profileBlockBtn   = document.getElementById('profileBlockBtn');
+  const profileNotifBtn   = document.getElementById('profileNotifBtn');
+  const profileNameHistoryBtn = document.getElementById('profileNameHistoryBtn');
+  const nameHistoryOverlay = document.getElementById('nameHistoryOverlay');
+  const closeNameHistoryBtn = document.getElementById('closeNameHistoryBtn');
+  const nameHistoryOkBtn  = document.getElementById('nameHistoryOkBtn');
+
+  function renderPrivateMessage(contact, m){
+    const avatar = m.mine ? MY_AVATAR : contact.avatar;
+    const metaHTML = m.mine
+      ? `<span class="time">${m.time}</span><span class="tag">${MY_TAG}</span><span>${MY_NAME}</span>`
+      : `<span class="tag">${contact.tag}</span><span>${contact.name}</span><span class="time">${m.time}</span>
+         <div class="msg-actions">
+           <button class="msg-action report-trigger" data-report-tag="${contact.tag}" data-report-name="${contact.name}"><img src="https://www.figma.com/api/mcp/asset/e0ad2bb8-406e-4f32-a588-9b19519ec9c8" alt="">รายงาน</button>
+         </div>`;
+    return `<div class="msg${m.mine ? ' own' : ''}">
+      <img class="avatar" src="${avatar}" alt="">
+      <div class="msg-body">
+        <div class="msg-meta">${metaHTML}</div>
+        <p class="msg-text">${m.text}</p>
+      </div>
+    </div>`;
+  }
+
+  function renderPrivateHistoryList(activeKey){
+    privateHistoryList.innerHTML = Object.keys(contacts).map(key => {
+      const c = contacts[key];
+      const hasBadge = c.unread > 0;
+      return `<div class="private-history-item${key === activeKey ? ' active' : ''}${hasBadge ? ' has-badge' : ''}" data-contact="${key}">
+        <div class="private-history-avatar-wrap">
+          <img src="${c.avatar}" alt="${c.name}">
+          ${c.online ? '<span class="private-history-online-dot"></span>' : ''}
+        </div>
+        <span class="private-history-name"><span class="tag">${c.tag}</span> ${c.name}</span>
+        ${hasBadge ? `<span class="unread-badge">${c.unread > 99 ? '99+' : c.unread}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    privateHistoryList.querySelectorAll('.private-history-item[data-contact]').forEach(el => {
+      el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+    });
+  }
+
+  function updateProfileActionButtons(contact){
+    profileBlockBtn.textContent = contact.blocked ? 'เลิกบล็อก' : 'บล็อก';
+    profileBlockBtn.classList.toggle('is-blocked', contact.blocked);
+    profileNotifBtn.textContent = contact.notifOn ? 'ปิดการแจ้งเตือน' : 'เปิดการแจ้งเตือน';
+    profileNotifBtn.classList.toggle('is-on', contact.notifOn);
+    privateComposerInput.disabled = contact.blocked;
+    privateComposerInput.placeholder = contact.blocked ? 'คุณได้บล็อกผู้ใช้นี้แล้ว' : 'พิมข้อความ...';
+  }
+
+  function openPrivateChat(key){
+    const contact = contacts[key];
+    if(!contact) return;
+
+    closeOnlinePanel();
+    contact.unread = 0;
+
+    // header
+    privateTagEl.textContent = contact.tag;
+    privateNameEl.textContent = contact.name;
+
+    // messages
+    if(contact.messages.length){
+      privateMessagesEl.innerHTML = contact.messages.map(m => renderPrivateMessage(contact, m)).join('');
+    } else {
+      privateMessagesEl.innerHTML = `<p class="private-empty">ยังไม่มีข้อความ พิมพ์เพื่อเริ่มบทสนทนากับ ${contact.tag} ${contact.name}</p>`;
+    }
+
+    // profile panel
+    profileAvatarImg.src = contact.avatar;
+    profileAvatarImg.alt = contact.name;
+    profileTagEl.textContent = contact.tag;
+    profileNameEl.textContent = contact.name;
+    profileJoinDateEl.textContent = contact.joinDate;
+    profileIdValEl.textContent = contact.profileId;
+    updateProfileActionButtons(contact);
+
+    generalPanel.style.display = 'none';
+    privateChatPanel.style.display = 'flex';
+    profilePanel.classList.add('open');
+    channelSidebarView.style.display = 'none';
+    privateSidebarView.style.display = 'flex';
+    topPrivateBtn.classList.add('active');
+
+    privateChatPanel.dataset.activeContact = key;
+    renderPrivateHistoryList(key);
+    privateMessagesEl.scrollTop = privateMessagesEl.scrollHeight;
+    setMobileView('chat');
+  }
+
+  function closePrivateChat(){
+    privateChatPanel.style.display = 'none';
+    generalPanel.style.display = 'flex';
+    profilePanel.classList.remove('open');
+    channelSidebarView.style.display = 'flex';
+    privateSidebarView.style.display = 'none';
+    topPrivateBtn.classList.remove('active');
+    delete privateChatPanel.dataset.activeContact;
+    setMobileView('sidebar');
+  }
+
+  document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
+    el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+  });
+  document.querySelectorAll('.online-member[data-contact]').forEach(el => {
+    el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+  });
+
+  topPrivateBtn.addEventListener('click', () => {
+    if(privateChatPanel.style.display === 'flex'){
+      closePrivateChat();
+    } else {
+      const key = privateChatPanel.dataset.activeContact || Object.keys(contacts)[0];
+      openPrivateChat(key);
+    }
+  });
+
+  document.getElementById('backToChannelsBtn').addEventListener('click', closePrivateChat);
+
+  profileBlockBtn.addEventListener('click', () => {
+    const key = privateChatPanel.dataset.activeContact;
+    if(!key) return;
+    const contact = contacts[key];
+    contact.blocked = !contact.blocked;
+    updateProfileActionButtons(contact);
+  });
+
+  profileNotifBtn.addEventListener('click', () => {
+    const key = privateChatPanel.dataset.activeContact;
+    if(!key) return;
+    const contact = contacts[key];
+    contact.notifOn = !contact.notifOn;
+    updateProfileActionButtons(contact);
+  });
+
+  profileNameHistoryBtn.addEventListener('click', () => {
+    nameHistoryOverlay.classList.add('open');
+  });
+  function closeNameHistoryModal(){ nameHistoryOverlay.classList.remove('open'); }
+  closeNameHistoryBtn.addEventListener('click', closeNameHistoryModal);
+  nameHistoryOkBtn.addEventListener('click', closeNameHistoryModal);
+  nameHistoryOverlay.addEventListener('click', (e) => {
+    if(e.target === nameHistoryOverlay) closeNameHistoryModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && nameHistoryOverlay.classList.contains('open')) closeNameHistoryModal();
+  });
+
+  privateComposerForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const key = privateChatPanel.dataset.activeContact;
+    if(!key) return;
+    const contact = contacts[key];
+    if(contact.blocked) return;
+    const input = privateComposerInput;
+    const text = input.value.trim();
+    if(!text) return;
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    contact.messages.push({mine:true, time, text});
+    privateMessagesEl.innerHTML = contact.messages.map(m => renderPrivateMessage(contact, m)).join('');
+    privateMessagesEl.scrollTop = privateMessagesEl.scrollHeight;
+    input.value = '';
+  });
+
+  /* ---------- ADD UNIVERSITY MODAL ---------- */
+  const openAddUniBtn   = document.getElementById('openAddUniBtn');
+  const adduniOverlay   = document.getElementById('adduniOverlay');
+  const adduniFormView  = document.getElementById('adduniFormView');
+  const adduniSuccessView = document.getElementById('adduniSuccessView');
+  const adduniForm      = document.getElementById('adduniForm');
+  const adduniNameField = document.getElementById('adduniNameField');
+  const adduniName      = document.getElementById('adduniName');
+  const adduniCancelBtn = document.getElementById('adduniCancelBtn');
+  const adduniOkBtn     = document.getElementById('adduniOkBtn');
+
+  function resetAdduniForm(){
+    adduniForm.reset();
+    adduniNameField.classList.remove('invalid');
+    adduniFormView.style.display = '';
+    adduniSuccessView.style.display = 'none';
+  }
+
+  function openAddUniModal(){
+    resetAdduniForm();
+    adduniOverlay.classList.add('open');
+  }
+  function closeAddUniModal(){
+    adduniOverlay.classList.remove('open');
+  }
+
+  openAddUniBtn.addEventListener('click', openAddUniModal);
+  adduniCancelBtn.addEventListener('click', closeAddUniModal);
+  adduniOkBtn.addEventListener('click', closeAddUniModal);
+  adduniOverlay.addEventListener('click', (e) => {
+    if(e.target === adduniOverlay) closeAddUniModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && adduniOverlay.classList.contains('open')) closeAddUniModal();
+  });
+
+  adduniForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!adduniName.value.trim()){
+      adduniNameField.classList.add('invalid');
+      adduniName.focus();
+      return;
+    }
+    adduniNameField.classList.remove('invalid');
+    adduniFormView.style.display = 'none';
+    adduniSuccessView.style.display = '';
+  });
+
+  /* ---------- ADD TEMPORARY ROOM MODAL ---------- */
+  const openAddTempRoomBtn = document.getElementById('openAddTempRoomBtn');
+  const addtemproomOverlay = document.getElementById('addtemproomOverlay');
+  const addtemproomForm    = document.getElementById('addtemproomForm');
+  const addtemproomNameField = document.getElementById('addtemproomNameField');
+  const addtemproomName    = document.getElementById('addtemproomName');
+  const addtemproomDesc    = document.getElementById('addtemproomDesc');
+  const addtemproomAge     = document.getElementById('addtemproomAge');
+  const addtemproomCancelBtn = document.getElementById('addtemproomCancelBtn');
+  const tempRoomGroup      = document.getElementById('tempRoomGroup');
+
+  function resetAddTempRoomForm(){
+    addtemproomForm.reset();
+    addtemproomNameField.classList.remove('invalid');
+  }
+  function openAddTempRoomModal(){
+    resetAddTempRoomForm();
+    addtemproomOverlay.classList.add('open');
+  }
+  function closeAddTempRoomModal(){
+    addtemproomOverlay.classList.remove('open');
+  }
+
+  openAddTempRoomBtn.addEventListener('click', openAddTempRoomModal);
+  addtemproomCancelBtn.addEventListener('click', closeAddTempRoomModal);
+  addtemproomOverlay.addEventListener('click', (e) => {
+    if(e.target === addtemproomOverlay) closeAddTempRoomModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && addtemproomOverlay.classList.contains('open')) closeAddTempRoomModal();
+  });
+
+  function addTempRoomToSidebar(name, desc, days){
+    const channel = document.createElement('div');
+    channel.className = 'channel';
+
+    const top = document.createElement('div');
+    top.className = 'channel-top';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'channel-name';
+    nameSpan.textContent = name.startsWith('#') ? name : '#' + name;
+
+    const stats = document.createElement('div');
+    stats.className = 'channel-stats';
+    const countSpan = document.createElement('span');
+    countSpan.className = 'channel-count';
+    countSpan.textContent = '• 1 คน';
+    stats.appendChild(countSpan);
+
+    top.appendChild(nameSpan);
+    top.appendChild(stats);
+
+    const descSpan = document.createElement('span');
+    descSpan.className = 'channel-desc';
+    descSpan.textContent = desc || `ห้องชั่วคราว หมดอายุใน ${days} วัน`;
+
+    channel.appendChild(top);
+    channel.appendChild(descSpan);
+    channel.addEventListener('click', () => setMobileView('chat'));
+    tempRoomGroup.appendChild(channel);
+  }
+
+  addtemproomForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const name = addtemproomName.value.trim();
+    if(!name){
+      addtemproomNameField.classList.add('invalid');
+      addtemproomName.focus();
+      return;
+    }
+    addtemproomNameField.classList.remove('invalid');
+    addTempRoomToSidebar(name, addtemproomDesc.value.trim(), addtemproomAge.value);
+    closeAddTempRoomModal();
+  });
+
+  /* ---------- ASK FOR NOTIFICATION MODAL ---------- */
+  const notifBellBtn  = document.getElementById('notifBellBtn');
+  const notifOverlay  = document.getElementById('notifOverlay');
+  const notifAllowBtn = document.getElementById('notifAllowBtn');
+
+  function openNotifModal(){
+    notifOverlay.classList.add('open');
+  }
+  function closeNotifModal(){
+    notifOverlay.classList.remove('open');
+  }
+
+  notifBellBtn.addEventListener('click', openNotifModal);
+  notifAllowBtn.addEventListener('click', closeNotifModal);
+  notifOverlay.addEventListener('click', (e) => {
+    if(e.target === notifOverlay) closeNotifModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && notifOverlay.classList.contains('open')) closeNotifModal();
+  });
+
+  /* ---------- REPORT CONTENT MODAL ---------- */
+  const reportOverlay    = document.getElementById('reportOverlay');
+  const reportFormView   = document.getElementById('reportFormView');
+  const reportSuccessView= document.getElementById('reportSuccessView');
+  const reportForm       = document.getElementById('reportForm');
+  const reportTargetName = document.getElementById('reportTargetName');
+  const reportOptions    = document.getElementById('reportOptions');
+  const reportOtherText  = document.getElementById('reportOtherText');
+  const reportCancelBtn  = document.getElementById('reportCancelBtn');
+  const reportOkBtn      = document.getElementById('reportOkBtn');
+
+  function resetReportForm(){
+    reportForm.reset();
+    reportOptions.classList.remove('invalid');
+    reportFormView.style.display = '';
+    reportSuccessView.style.display = 'none';
+  }
+
+  function openReportModal(tag, name){
+    resetReportForm();
+    reportTargetName.textContent = `${tag} ${name}`.trim();
+    reportOverlay.classList.add('open');
+  }
+  function closeReportModal(){
+    reportOverlay.classList.remove('open');
+  }
+
+  // event delegation: works for both static messages and dynamically-rendered private chat messages
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.report-trigger');
+    if(!btn) return;
+    openReportModal(btn.dataset.reportTag || '', btn.dataset.reportName || '');
+  });
+
+  reportCancelBtn.addEventListener('click', closeReportModal);
+  reportOkBtn.addEventListener('click', closeReportModal);
+  reportOverlay.addEventListener('click', (e) => {
+    if(e.target === reportOverlay) closeReportModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && reportOverlay.classList.contains('open')) closeReportModal();
+  });
+
+  reportForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    const selected = reportForm.querySelector('input[name="reportReason"]:checked');
+    if(!selected){
+      reportOptions.classList.add('invalid');
+      return;
+    }
+    reportOptions.classList.remove('invalid');
+    reportFormView.style.display = 'none';
+    reportSuccessView.style.display = '';
+  });
+
+  /* ---------- STARTUP ONBOARDING OVERLAY ---------- */
+  (function(){
+    const overlay      = document.getElementById('startupOverlay');
+    const track         = document.getElementById('startupTrack');
+    const nameField     = document.getElementById('startupNameField');
+    const nicknameInput = document.getElementById('startupNickname');
+    const nextBtn        = document.getElementById('startupNextBtn');
+    const uniField      = document.getElementById('startupUniField');
+    const uniSelect      = document.getElementById('startupUni');
+    const termsField    = document.getElementById('startupTermsField');
+    const termsCheckbox  = document.getElementById('startupTerms');
+    const connectBtn      = document.getElementById('startupConnectBtn');
+    const addUniBtn        = document.getElementById('startupAddUniBtn');
+
+    // always start on step 1, every time the page loads / refreshes
+    document.body.style.overflow = 'hidden';
+    nicknameInput.focus();
+
+    nextBtn.addEventListener('click', () => {
+      const nickname = nicknameInput.value.trim();
+      if(!nickname){
+        nameField.classList.add('invalid');
+        nicknameInput.focus();
+        return;
+      }
+      nameField.classList.remove('invalid');
+      track.classList.add('show-step2');
+      overlay.scrollTop = 0;
+      window.setTimeout(() => uniSelect.focus(), 560);
+    });
+
+    nicknameInput.addEventListener('input', () => nameField.classList.remove('invalid'));
+    nicknameInput.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){ e.preventDefault(); nextBtn.click(); }
+    });
+
+    connectBtn.addEventListener('click', () => {
+      let valid = true;
+      if(!uniSelect.value){
+        uniField.classList.add('invalid');
+        valid = false;
+      } else {
+        uniField.classList.remove('invalid');
+      }
+      if(!termsCheckbox.checked){
+        termsField.classList.add('invalid');
+        valid = false;
+      } else {
+        termsField.classList.remove('invalid');
+      }
+      if(!valid) return;
+
+      // reflect the chosen nickname / university in the header, for a nice touch
+      const nickname = nicknameInput.value.trim();
+      if(nickname){
+        const nickEl = document.querySelector('.profile-nick b');
+        if(nickEl) nickEl.textContent = nickname;
+      }
+      const uniEl = document.querySelector('.profile-uni');
+      if(uniEl) uniEl.textContent = uniSelect.value;
+
+      overlay.classList.add('fade-out');
+      document.body.style.overflow = '';
+      overlay.addEventListener('transitionend', () => {
+        overlay.style.display = 'none';
+      }, { once:true });
+    });
+
+    uniSelect.addEventListener('change', () => uniField.classList.remove('invalid'));
+    termsCheckbox.addEventListener('change', () => termsField.classList.remove('invalid'));
+
+    // "+" next to the university select reuses the same "เพิ่มมหาวิทยาลัย" modal
+    // used elsewhere in the app (bottom-left of the university rail).
+    addUniBtn.addEventListener('click', () => {
+      if(typeof openAddUniModal === 'function') openAddUniModal();
+    });
+  })();
+</script>
+
+</body>
+</html>
