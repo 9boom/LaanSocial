@@ -173,10 +173,12 @@
     width:56px;height:56px;
     border-radius:12px;
     border:2px solid var(--border-soft);
+    padding:0;
     overflow:hidden;
     cursor:pointer;
     flex:0 0 auto;
     background:#eee;
+    display:block;
   }
   .uni-icon img{width:100%;height:100%;object-fit:cover;}
   .uni-icon.active{border:3px solid var(--accent);}
@@ -1137,6 +1139,14 @@
     appearance:none;-webkit-appearance:none;-moz-appearance:none;
     cursor:pointer;
   }
+  .startup-select-wrap select.open-down{
+    height:min(420px,52vh);
+    padding-top:12px;
+    padding-bottom:12px;
+    overflow-y:auto;
+    position:relative;
+    z-index:4;
+  }
   .startup-select-wrap select:invalid{color:#b3b3b3;}
   .startup-select-wrap select:focus{outline:3px solid var(--accent);outline-offset:2px;}
   .startup-field.invalid .startup-select-wrap select{outline:3px solid var(--red);outline-offset:2px;}
@@ -1526,12 +1536,6 @@
         <div class="startup-select-wrap">
           <select id="startupUni" required>
             <option value="" disabled selected hidden>มหาลัยวัวชน</option>
-            <option value="จุฬาลงกรณ์มหาวิทยาลัย">จุฬาลงกรณ์มหาวิทยาลัย</option>
-            <option value="มหาวิทยาลัยธรรมศาสตร์">มหาวิทยาลัยธรรมศาสตร์</option>
-            <option value="มหาวิทยาลัยมหิดล">มหาวิทยาลัยมหิดล</option>
-            <option value="มหาวิทยาลัยเกษตรศาสตร์">มหาวิทยาลัยเกษตรศาสตร์</option>
-            <option value="สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง">สถาบันเทคโนโลยีพระจอมเกล้าเจ้าคุณทหารลาดกระบัง</option>
-            <option value="มหาวิทยาลัยศรีนครินทรวิโรฒ">มหาวิทยาลัยศรีนครินทรวิโรฒ</option>
           </select>
           <span class="startup-select-arrow"></span>
         </div>
@@ -1619,24 +1623,6 @@
   <!-- university icon rail -->
   <nav class="uni-rail" aria-label="เลือกมหาวิทยาลัย">
     <div class="globe">🌐</div>
-    <div class="uni-icon active">
-      <img src="https://www.figma.com/api/mcp/asset/4c951303-73b3-4a27-b788-89de1b27616f" alt="จุฬาลงกรณ์มหาวิทยาลัย">
-    </div>
-    <div class="uni-icon">
-      <img src="https://www.figma.com/api/mcp/asset/ed23ed11-7722-40be-9120-be229ddecb1d" alt="มหาวิทยาลัย">
-    </div>
-    <div class="uni-icon">
-      <img src="https://www.figma.com/api/mcp/asset/15c87942-d95a-474f-a44c-e61479eb571c" alt="มหาวิทยาลัย">
-    </div>
-    <div class="uni-icon">
-      <img src="https://www.figma.com/api/mcp/asset/a10582ed-4533-49af-95c0-486a997f800b" alt="มหาวิทยาลัย">
-    </div>
-    <div class="uni-icon">
-      <img src="https://www.figma.com/api/mcp/asset/5c276519-8a71-48bd-8f0d-4e07b9405b09" alt="มหาวิทยาลัย">
-    </div>
-    <div class="uni-icon">
-      <img src="https://www.figma.com/api/mcp/asset/01ee8794-d515-43a8-9986-6de6a1d4e87b" alt="มหาวิทยาลัย">
-    </div>
     <button class="uni-add" id="openAddUniBtn" aria-label="เพิ่มมหาวิทยาลัย">+</button>
   </nav>
 
@@ -2128,10 +2114,99 @@
     document.body.dataset.mobileView = view;
   }
 
-  // picking a university closes the off-canvas rail drawer
-  document.querySelectorAll('.uni-icon').forEach(el => {
-    el.addEventListener('click', () => document.body.classList.remove('nav-open'));
-  });
+  function updateRailUniversity(name){
+    const sidebarTitle = document.querySelector('.uni-card h2');
+
+    if(sidebarTitle) sidebarTitle.textContent = name;
+  }
+
+  function selectUniversity(button){
+    document.querySelectorAll('.uni-icon').forEach(el => {
+      el.classList.toggle('active', el === button);
+    });
+    updateRailUniversity(button.dataset.name);
+    document.body.classList.remove('nav-open');
+  }
+
+  function renderUniversityRail(universities){
+    const rail = document.querySelector('.uni-rail');
+    const addButton = document.getElementById('openAddUniBtn');
+    if(!rail || !addButton) return;
+
+    rail.querySelectorAll('.uni-icon').forEach(el => el.remove());
+
+    const fragment = document.createDocumentFragment();
+    universities.forEach((university, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `uni-icon${index === 0 ? ' active' : ''}`;
+      button.dataset.name = university.name;
+      button.setAttribute('aria-label', university.name);
+
+      const image = document.createElement('img');
+      image.src = university.image;
+      image.alt = university.name;
+      button.appendChild(image);
+
+      button.addEventListener('click', () => selectUniversity(button));
+      fragment.appendChild(button);
+    });
+
+    rail.insertBefore(fragment, addButton);
+    if(universities[0]) updateRailUniversity(universities[0].name);
+  }
+
+  function setupStartupSelectOpenDown(select){
+    if(!select || select.dataset.openDownReady) return;
+    select.dataset.openDownReady = 'true';
+
+    const close = () => {
+      select.size = 0;
+      select.classList.remove('open-down');
+    };
+    const open = () => {
+      const optionCount = Math.max(select.options.length, 1);
+      select.size = Math.min(optionCount, 8);
+      select.classList.add('open-down');
+    };
+
+    select.addEventListener('focus', open);
+    select.addEventListener('mousedown', open);
+    select.addEventListener('change', close);
+    select.addEventListener('blur', () => window.setTimeout(close, 100));
+  }
+
+  function renderUniversitySelect(universities){
+    const select = document.getElementById('startupUni');
+    if(!select) return;
+
+    const placeholder = select.querySelector('option[value=""]');
+    select.textContent = '';
+    if(placeholder) select.appendChild(placeholder);
+
+    universities.forEach(university => {
+      const option = document.createElement('option');
+      option.value = university.name;
+      option.textContent = university.name;
+      select.appendChild(option);
+    });
+    setupStartupSelectOpenDown(select);
+  }
+
+  async function initializeUniversities(){
+    try {
+      const response = await fetch('/api/universities');
+      if(!response.ok) throw new Error(`Failed to load universities: ${response.status}`);
+      const universities = await response.json();
+
+      renderUniversityRail(universities);
+      renderUniversitySelect(universities);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  initializeUniversities();
   document.getElementById('openAddUniBtn').addEventListener('click', () => document.body.classList.remove('nav-open'));
 
   // tapping any channel opens the chat pane on mobile
