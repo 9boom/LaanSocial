@@ -2139,7 +2139,6 @@
   });
 
   document.getElementById('backToListBtn').addEventListener('click', () => setMobileView('sidebar'));
-  document.getElementById('backToListBtnPrivate').addEventListener('click', () => setMobileView('sidebar'));
   document.getElementById('openProfileBtnMobile').addEventListener('click', () => setMobileView('profile'));
   document.getElementById('closeProfilePanelMobileBtn').addEventListener('click', () => setMobileView('chat'));
 
@@ -2292,6 +2291,8 @@
   const privateSidebarView = document.getElementById('privateSidebarView');
   const privateHistoryList = document.getElementById('privateHistoryList');
   const topPrivateBtn      = document.getElementById('topPrivateBtn');
+  let privateReturnMobileView = document.body.dataset.mobileView || 'sidebar';
+  let privateEntryMode = null;
 
   const profilePanel      = document.getElementById('profilePanel');
   const profileAvatarImg  = document.getElementById('profileAvatarImg');
@@ -2338,7 +2339,10 @@
     }).join('');
 
     privateHistoryList.querySelectorAll('.private-history-item[data-contact]').forEach(el => {
-      el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+      el.addEventListener('click', () => openPrivateChat(el.dataset.contact, {
+        entryMode:'history',
+        preserveReturn:true
+      }));
     });
   }
 
@@ -2351,9 +2355,31 @@
     privateComposerInput.placeholder = contact.blocked ? 'คุณได้บล็อกผู้ใช้นี้แล้ว' : 'พิมข้อความ...';
   }
 
-  function openPrivateChat(key){
+  function showPrivateHistory(){
+    closeOnlinePanel();
+    privateReturnMobileView = document.body.dataset.mobileView || 'sidebar';
+    privateEntryMode = 'history';
+
+    generalPanel.style.display = 'flex';
+    privateChatPanel.style.display = 'none';
+    profilePanel.classList.remove('open');
+    channelSidebarView.style.display = 'none';
+    privateSidebarView.style.display = 'flex';
+    topPrivateBtn.classList.add('active');
+
+    delete privateChatPanel.dataset.activeContact;
+    renderPrivateHistoryList(null);
+    setMobileView('sidebar');
+  }
+
+  function openPrivateChat(key, options = {}){
     const contact = contacts[key];
     if(!contact) return;
+    const entryMode = options.entryMode || 'direct';
+    if(!options.preserveReturn){
+      privateReturnMobileView = document.body.dataset.mobileView || 'chat';
+    }
+    privateEntryMode = entryMode;
 
     closeOnlinePanel();
     contact.unread = 0;
@@ -2391,7 +2417,8 @@
     setMobileView('chat');
   }
 
-  function closePrivateChat(){
+  function closePrivateMode(){
+    const returnView = privateReturnMobileView || 'chat';
     privateChatPanel.style.display = 'none';
     generalPanel.style.display = 'flex';
     profilePanel.classList.remove('open');
@@ -2399,26 +2426,27 @@
     privateSidebarView.style.display = 'none';
     topPrivateBtn.classList.remove('active');
     delete privateChatPanel.dataset.activeContact;
-    setMobileView('sidebar');
+    privateEntryMode = null;
+    setMobileView(returnView);
   }
 
   document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
-    el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+    el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
   });
   document.querySelectorAll('.online-member[data-contact]').forEach(el => {
-    el.addEventListener('click', () => openPrivateChat(el.dataset.contact));
+    el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
   });
 
   topPrivateBtn.addEventListener('click', () => {
-    if(privateChatPanel.style.display === 'flex'){
-      closePrivateChat();
+    if(privateEntryMode){
+      closePrivateMode();
     } else {
-      const key = privateChatPanel.dataset.activeContact || Object.keys(contacts)[0];
-      openPrivateChat(key);
+      showPrivateHistory();
     }
   });
 
-  document.getElementById('backToChannelsBtn').addEventListener('click', closePrivateChat);
+  document.getElementById('backToChannelsBtn').addEventListener('click', closePrivateMode);
+  document.getElementById('backToListBtnPrivate').addEventListener('click', closePrivateMode);
 
   profileBlockBtn.addEventListener('click', () => {
     const key = privateChatPanel.dataset.activeContact;
