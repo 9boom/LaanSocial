@@ -2359,7 +2359,10 @@
     closeOnlinePanel();
     privateReturnMobileView = document.body.dataset.mobileView || 'sidebar';
     privateEntryMode = 'history';
+    showPrivateHistoryPane();
+  }
 
+  function showPrivateHistoryPane(){
     generalPanel.style.display = 'flex';
     privateChatPanel.style.display = 'none';
     profilePanel.classList.remove('open');
@@ -2430,6 +2433,14 @@
     setMobileView(returnView);
   }
 
+  function leavePrivateChat(){
+    if(privateEntryMode === 'history'){
+      showPrivateHistoryPane();
+    } else {
+      closePrivateMode();
+    }
+  }
+
   document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
     el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
   });
@@ -2446,7 +2457,7 @@
   });
 
   document.getElementById('backToChannelsBtn').addEventListener('click', closePrivateMode);
-  document.getElementById('backToListBtnPrivate').addEventListener('click', closePrivateMode);
+  document.getElementById('backToListBtnPrivate').addEventListener('click', leavePrivateChat);
 
   profileBlockBtn.addEventListener('click', () => {
     const key = privateChatPanel.dataset.activeContact;
