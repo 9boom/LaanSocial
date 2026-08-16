@@ -33,7 +33,7 @@ app.get('/api/universities', async (req, res) => {
         return {
           id: baseName,
           order: orderMatch ? Number(orderMatch[1]) : Number.MAX_SAFE_INTEGER,
-          name: baseName,
+          name: baseName.replace(/^\d+\./, ''),
           image: `assets/sim_db/universities_logos/${encodeURIComponent(file.name)}`
         };
       })
