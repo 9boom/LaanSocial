@@ -29,11 +29,17 @@ app.get('/api/universities', async (req, res) => {
         const ext = path.extname(file.name);
         const baseName = path.basename(file.name, ext);
         const orderMatch = baseName.match(/^(\d+)\./);
+        const cleanName = baseName.replace(/^\d+\./, '');
+        const shortNameMatch = cleanName.match(/_(.+)$/);
+        const name = cleanName.replace(/_.+$/, '');
+        const shortName = shortNameMatch ? shortNameMatch[1] : '';
 
         return {
           id: baseName,
           order: orderMatch ? Number(orderMatch[1]) : Number.MAX_SAFE_INTEGER,
-          name: baseName.replace(/^\d+\./, ''),
+          name,
+          shortName,
+          displayName: shortName ? `${name} [${shortName}]` : name,
           image: `assets/sim_db/universities_logos/${encodeURIComponent(file.name)}`
         };
       })

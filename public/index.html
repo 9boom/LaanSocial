@@ -2290,8 +2290,8 @@
 
     universities.forEach(university => {
       const option = document.createElement('option');
-      option.value = university.name;
-      option.textContent = university.name;
+      option.value = university.displayName || university.name;
+      option.textContent = university.displayName || university.name;
       select.appendChild(option);
     });
     setupStartupUniversityDropdown(select);
