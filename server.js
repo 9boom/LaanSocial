@@ -5,6 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 80;
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
+const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg']);
 
 app.use(express.json());
@@ -50,6 +51,32 @@ app.get('/api/universities', async (req, res) => {
   } catch (error) {
     console.error('Unable to read university logos:', error);
     res.status(500).json({ error: 'Unable to load universities' });
+  }
+});
+
+app.get('/api/profile-images', async (req, res) => {
+  try {
+    const files = await fs.promises.readdir(USER_PROFILE_IMAGES_DIR, { withFileTypes: true });
+    const profileImages = files
+      .filter(file => file.isFile() && IMAGE_EXTENSIONS.has(path.extname(file.name).toLowerCase()))
+      .map(file => {
+        const ext = path.extname(file.name);
+        const baseName = path.basename(file.name, ext);
+        const displayName = baseName.replace(/[-_]+/g, ' ').trim();
+
+        return {
+          id: baseName,
+          fileName: file.name,
+          name: displayName || baseName,
+          src: `assets/sim_db/users_profile_image/${encodeURIComponent(file.name)}`
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+
+    res.json(profileImages);
+  } catch (error) {
+    console.error('Unable to read profile images:', error);
+    res.status(500).json({ error: 'Unable to load profile images' });
   }
 });
 

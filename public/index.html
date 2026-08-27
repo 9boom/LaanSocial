@@ -1559,13 +1559,7 @@
       <button type="button" id="startupAvatarBtn" aria-label="เลือกโปรไฟล์">
         <img src="assets/sim_db/users_profile_image/dog.png" alt="โปรไฟล์ที่เลือก" id="startupAvatarImg">
       </button>
-      <div class="startup-avatar-list" id="startupAvatarList">
-        <button type="button" class="startup-avatar-option active" data-avatar="assets/sim_db/users_profile_image/dog.png"><img src="assets/sim_db/users_profile_image/dog.png" alt="dog"></button>
-        <button type="button" class="startup-avatar-option" data-avatar="assets/sim_db/users_profile_image/cat.png"><img src="assets/sim_db/users_profile_image/cat.png" alt="cat"></button>
-        <button type="button" class="startup-avatar-option" data-avatar="assets/sim_db/users_profile_image/fox.png"><img src="assets/sim_db/users_profile_image/fox.png" alt="fox"></button>
-        <button type="button" class="startup-avatar-option" data-avatar="assets/sim_db/users_profile_image/panda.png"><img src="assets/sim_db/users_profile_image/panda.png" alt="panda"></button>
-        <button type="button" class="startup-avatar-option" data-avatar="assets/sim_db/users_profile_image/rabbit.png"><img src="assets/sim_db/users_profile_image/rabbit.png" alt="rabbit"></button>
-      </div>
+      <div class="startup-avatar-list" id="startupAvatarList"></div>
       <span>เลือกโปรไฟล์</span>
     </div>
 
@@ -2905,24 +2899,65 @@
     // always start on step 1, every time the page loads / refreshes
     document.body.style.overflow = 'hidden';
     nicknameInput.focus();
-    let selectedAvatar = AVATAR_ASSETS.dog;
+    const FALLBACK_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+    let selectedAvatar = AVATAR_ASSETS.dog || FALLBACK_AVATAR;
+
+    function setSelectedAvatar(src, option){
+      selectedAvatar = src;
+      avatarImg.src = selectedAvatar;
+      avatarList.querySelectorAll('.startup-avatar-option').forEach(item => {
+        item.classList.toggle('active', item === option);
+      });
+    }
+
+    function renderAvatarOptions(profileImages){
+      avatarList.innerHTML = '';
+      const images = profileImages.length ? profileImages : [{
+        name: 'annonymous',
+        src: FALLBACK_AVATAR
+      }];
+
+      images.forEach((profileImage, index) => {
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'startup-avatar-option';
+        option.dataset.avatar = profileImage.src;
+        option.setAttribute('aria-label', profileImage.name);
+
+        const img = document.createElement('img');
+        img.src = profileImage.src;
+        img.alt = profileImage.name;
+
+        option.appendChild(img);
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setSelectedAvatar(profileImage.src, option);
+          avatarList.classList.remove('open');
+        });
+
+        avatarList.appendChild(option);
+        if(index === 0) setSelectedAvatar(profileImage.src, option);
+      });
+    }
+
+    async function loadProfileImages(){
+      try {
+        const response = await fetch('/api/profile-images');
+        if(!response.ok) throw new Error('Unable to load profile images');
+        const profileImages = await response.json();
+        renderAvatarOptions(Array.isArray(profileImages) ? profileImages : []);
+      } catch (error) {
+        console.error(error);
+        renderAvatarOptions([]);
+      }
+    }
 
     avatarBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       avatarList.classList.toggle('open');
     });
 
-    avatarList.querySelectorAll('.startup-avatar-option').forEach(option => {
-      option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedAvatar = option.dataset.avatar;
-        avatarImg.src = selectedAvatar;
-        avatarList.querySelectorAll('.startup-avatar-option').forEach(item => {
-          item.classList.toggle('active', item === option);
-        });
-        avatarList.classList.remove('open');
-      });
-    });
+    loadProfileImages();
 
     document.addEventListener('click', (e) => {
       if(!avatarList.contains(e.target) && e.target !== avatarBtn && !avatarBtn.contains(e.target)){
