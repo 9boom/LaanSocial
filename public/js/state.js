@@ -11,7 +11,6 @@ const AVATAR_ASSETS = {
 const MY_TAG   = '[จฬ]';
 const MY_NAME  = 'มะม่วงเบา';
 let MY_AVATAR = AVATAR_ASSETS.dog;
-
 const contacts = {
   helloworld: {
     tag:'[สจล]', name:'hello world !',
