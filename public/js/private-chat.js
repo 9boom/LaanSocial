@@ -21,12 +21,7 @@ const profileTagEl      = document.getElementById('profileTag');
 const profileNameEl     = document.getElementById('profileName');
 const profileJoinDateEl = document.getElementById('profileJoinDate');
 const profileIdValEl    = document.getElementById('profileIdVal');
-const profileBlockBtn   = document.getElementById('profileBlockBtn');
 const profileNotifBtn   = document.getElementById('profileNotifBtn');
-const profileNameHistoryBtn = document.getElementById('profileNameHistoryBtn');
-const nameHistoryOverlay = document.getElementById('nameHistoryOverlay');
-const closeNameHistoryBtn = document.getElementById('closeNameHistoryBtn');
-const nameHistoryOkBtn  = document.getElementById('nameHistoryOkBtn');
 
 // Converts a message object into the DOM markup used by the private chat thread.
 function renderPrivateMessage(contact, m){
@@ -71,8 +66,6 @@ function renderPrivateHistoryList(activeKey){
 
 // Applies the current contact state to profile actions and the private composer.
 function updateProfileActionButtons(contact){
-  profileBlockBtn.textContent = contact.blocked ? 'เลิกบล็อก' : 'บล็อก';
-  profileBlockBtn.classList.toggle('is-blocked', contact.blocked);
   profileNotifBtn.textContent = contact.notifOn ? 'ปิดการแจ้งเตือน' : 'เปิดการแจ้งเตือน';
   profileNotifBtn.classList.toggle('is-on', contact.notifOn);
   privateComposerInput.disabled = contact.blocked;
@@ -188,33 +181,12 @@ topPrivateBtn.addEventListener('click', () => {
 document.getElementById('backToChannelsBtn').addEventListener('click', closePrivateMode);
 document.getElementById('backToListBtnPrivate').addEventListener('click', leavePrivateChat);
 
-profileBlockBtn.addEventListener('click', () => {
-  const key = privateChatPanel.dataset.activeContact;
-  if(!key) return;
-  const contact = contacts[key];
-  contact.blocked = !contact.blocked;
-  updateProfileActionButtons(contact);
-});
-
 profileNotifBtn.addEventListener('click', () => {
   const key = privateChatPanel.dataset.activeContact;
   if(!key) return;
   const contact = contacts[key];
   contact.notifOn = !contact.notifOn;
   updateProfileActionButtons(contact);
-});
-
-profileNameHistoryBtn.addEventListener('click', () => {
-  nameHistoryOverlay.classList.add('open');
-});
-function closeNameHistoryModal(){ nameHistoryOverlay.classList.remove('open'); }
-closeNameHistoryBtn.addEventListener('click', closeNameHistoryModal);
-nameHistoryOkBtn.addEventListener('click', closeNameHistoryModal);
-nameHistoryOverlay.addEventListener('click', (e) => {
-  if(e.target === nameHistoryOverlay) closeNameHistoryModal();
-});
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape' && nameHistoryOverlay.classList.contains('open')) closeNameHistoryModal();
 });
 
 privateComposerForm.addEventListener('submit', function(e){
