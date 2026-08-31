@@ -251,6 +251,13 @@ img{display:block;max-width:100%;}
 }
 .channel.has-badge .channel-desc{padding-right:40px;}
 .channel-desc .more{font-weight:200;}
+.channel-state{
+  margin:2px 0 8px;
+  padding:8px 4px;
+  font-size:14px;
+  color:#888;
+}
+.channel-state.error{color:#e53935;}
 .unread-badge{
   position:absolute;
   top:26px;right:10px;
@@ -879,6 +886,16 @@ body.theme-dark .profile-notif-btn{background:var(--accent);color:#fff;}
 .adduni-btn.cancel:hover{background:#828282;}
 .adduni-btn.submit{background:var(--accent);}
 .adduni-btn.submit:hover{filter:brightness(1.06);}
+.adduni-btn:disabled{
+  cursor:not-allowed;
+  opacity:.72;
+}
+.adduni-error{
+  margin:0 24px 14px;
+  color:#e53935;
+  font-size:14px;
+  line-height:1.35;
+}
 
 .adduni-success-body{
   padding:44px 32px 36px;

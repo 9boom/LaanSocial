@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { promisify } = require('util');
+const { addDays } = require('date-fns');
 const { MongoClient } = require('mongodb');
 
 try {
@@ -18,13 +19,18 @@ const PORT = process.env.PORT || 80;
 const MONGODB_URI = process.env.MONGODB_URI;
 const DB_NAME = 'LaanDBDevelopment';
 const USERS_COLLECTION = 'users';
+const UNIVERSITIES_COLLECTION = 'universities';
+const SUBROOM_UNI_COLLECTION = 'subroom_uni';
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
 const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg']);
 const PROFILE_IMAGE_URL_PREFIX = 'assets/sim_db/users_profile_image/';
 const scryptAsync = promisify(crypto.scrypt);
+const SUBROOM_TYPES = ['official', 'community', 'temp'];
+const ALLOWED_EXPIRE_DAYS = new Set([1, 3, 7, 14, 30]);
 let mongoClientPromise = null;
 let usersCollectionPromise = null;
+let subroomUniCollectionPromise = null;
 
 app.use(express.json());
 
@@ -84,6 +90,72 @@ async function getUsersCollection() {
   }
 
   return usersCollectionPromise;
+}
+
+async function getDbCollection(collectionName) {
+  const client = await getMongoClient();
+  return client.db(DB_NAME).collection(collectionName);
+}
+
+async function getUniversitiesCollection() {
+  return getDbCollection(UNIVERSITIES_COLLECTION);
+}
+
+async function getSubroomUniCollection() {
+  if (!subroomUniCollectionPromise) {
+    subroomUniCollectionPromise = (async () => {
+      const collection = await getDbCollection(SUBROOM_UNI_COLLECTION);
+
+      await Promise.all([
+        collection.createIndex({ uniroom_id: 1, subroom_type: 1 }),
+        collection.createIndex({ subroom_id: 1 }, { unique: true })
+      ]);
+
+      return collection;
+    })().catch((error) => {
+      subroomUniCollectionPromise = null;
+      throw error;
+    });
+  }
+
+  return subroomUniCollectionPromise;
+}
+
+function normalizeSubroomName(name) {
+  return typeof name === 'string' ? name.trim() : '';
+}
+
+function normalizeSubroomDesc(desc) {
+  return typeof desc === 'string' ? desc.trim() : '';
+}
+
+function publicSubroom(subroom) {
+  return {
+    uniroom_id: subroom.uniroom_id,
+    subroom_id: subroom.subroom_id,
+    subroom_name: subroom.subroom_name,
+    subroom_desc: subroom.subroom_desc || '',
+    subroom_type: subroom.subroom_type,
+    expire_days: subroom.expire_days,
+    created_at: subroom.created_at
+  };
+}
+
+function groupedSubrooms(subrooms) {
+  return SUBROOM_TYPES.reduce((groups, type) => {
+    groups[type] = subrooms
+      .filter(subroom => subroom.subroom_type === type)
+      .map(publicSubroom);
+    return groups;
+  }, {});
+}
+
+function sendSubroomError(res, statusCode, code, message) {
+  return res.status(statusCode).json({
+    status: 'error',
+    code,
+    message
+  });
 }
 
 async function hashAccessKey(accessKey) {
@@ -267,6 +339,115 @@ app.get('/api/universities', async (req, res) => {
   } catch (error) {
     console.error('Unable to read university logos:', error);
     res.status(500).json({ error: 'Unable to load universities' });
+  }
+});
+
+app.get('/api/subrooms', async (req, res) => {
+  const uniroomName = typeof req.query.uniroom_name === 'string' ? req.query.uniroom_name.trim() : '';
+
+  if (!uniroomName) {
+    return sendSubroomError(res, 400, 'invalid_university', 'กรุณาระบุชื่อมหาวิทยาลัย');
+  }
+
+  try {
+    const universities = await getUniversitiesCollection();
+    const university = await universities.findOne(
+      { uniroom_name: uniroomName },
+      { projection: { _id: 0, uniroom_id: 1, uniroom_name: 1 } }
+    );
+
+    if (!university) {
+      return sendSubroomError(res, 404, 'university_not_found', 'ไม่พบมหาวิทยาลัยนี้ในระบบ');
+    }
+
+    const subroomUni = await getSubroomUniCollection();
+    const subrooms = await subroomUni
+      .find(
+        {
+          uniroom_id: university.uniroom_id,
+          subroom_type: { $in: SUBROOM_TYPES }
+        },
+        {
+          projection: {
+            _id: 0,
+            uniroom_id: 1,
+            subroom_id: 1,
+            subroom_name: 1,
+            subroom_desc: 1,
+            subroom_type: 1,
+            expire_days: 1,
+            created_at: 1
+          }
+        }
+      )
+      .sort({ created_at: 1, subroom_name: 1 })
+      .toArray();
+
+    return res.json({
+      status: 'success',
+      university,
+      subrooms: groupedSubrooms(subrooms)
+    });
+  } catch (error) {
+    console.error('Subroom list API error:', error);
+    return sendSubroomError(res, 500, 'server_error', 'ระบบเชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  }
+});
+
+app.post('/add-subroom', async (req, res) => {
+  const uniroomName = typeof req.body.uniroom_name === 'string' ? req.body.uniroom_name.trim() : '';
+  const subroomName = normalizeSubroomName(req.body.subroom_name);
+  const subroomDesc = normalizeSubroomDesc(req.body.subroom_desc);
+  const expireDays = Number(req.body.expire_days);
+
+  if (!uniroomName) {
+    return sendSubroomError(res, 400, 'invalid_university', 'กรุณาระบุชื่อมหาวิทยาลัย');
+  }
+
+  if (!subroomName) {
+    return sendSubroomError(res, 400, 'invalid_subroom_name', 'กรุณากรอกชื่อห้อง');
+  }
+
+  if (subroomName.length > 25) {
+    return sendSubroomError(res, 400, 'invalid_subroom_name', 'ชื่อห้องต้องไม่เกิน 25 ตัวอักษร');
+  }
+
+  if (!Number.isInteger(expireDays) || !ALLOWED_EXPIRE_DAYS.has(expireDays)) {
+    return sendSubroomError(res, 400, 'invalid_expire_days', 'อายุห้องไม่ถูกต้อง');
+  }
+
+  try {
+    const universities = await getUniversitiesCollection();
+    const university = await universities.findOne(
+      { uniroom_name: uniroomName },
+      { projection: { _id: 0, uniroom_id: 1, uniroom_name: 1 } }
+    );
+
+    if (!university) {
+      return sendSubroomError(res, 404, 'university_not_found', 'ไม่พบมหาวิทยาลัยนี้ในระบบ');
+    }
+
+    const createdAt = new Date();
+    const subroom = {
+      uniroom_id: university.uniroom_id,
+      subroom_id: `subroomnum_${crypto.randomUUID()}`,
+      subroom_name: subroomName,
+      subroom_desc: subroomDesc,
+      subroom_type: 'temp',
+      expire_days: addDays(createdAt, expireDays),
+      created_at: createdAt
+    };
+
+    const subroomUni = await getSubroomUniCollection();
+    await subroomUni.insertOne(subroom);
+
+    return res.status(201).json({
+      status: 'success',
+      subroom: publicSubroom(subroom)
+    });
+  } catch (error) {
+    console.error('Add subroom API error:', error);
+    return sendSubroomError(res, 500, 'server_error', 'ระบบเชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
   }
 });
 

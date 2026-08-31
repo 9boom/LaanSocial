@@ -160,72 +160,17 @@
 
     <div class="channel-group">
       <p class="channel-group-title">ห้องทางการ</p>
-      <div class="channel active">
-        <div class="channel-top">
-          <span class="channel-name">#general</span>
-          <div class="channel-stats"><span class="channel-count">• 16 คน</span></div>
-        </div>
-        <span class="channel-desc">ห้องคุยหลัก</span>
-      </div>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#annoucne</span>
-          <div class="channel-stats">
-            <span class="channel-count zero">• 0 คน</span>
-            <span class="unread-badge">1</span>
-          </div>
-        </div>
-        <span class="channel-desc">ห้องประกาศ</span>
-      </div>
+      <div class="subroom-list" id="officialRoomGroup" data-subroom-type="official"></div>
     </div>
 
     <div class="channel-group">
       <p class="channel-group-title">ชุมชนถาวร</p>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#dek70</span>
-          <div class="channel-stats">
-            <span class="channel-count">• 43 คน</span>
-            <span class="unread-badge">99+</span>
-          </div>
-        </div>
-        <span class="channel-desc">ช่วยน้องเตรียมเข้ามหาลัยร<span class="more">...ดูเพิ่ม</span></span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#หาเพื่อนติว</span>
-          <div class="channel-stats"><span class="channel-count">• 6 คน</span></div>
-        </div>
-        <span class="channel-desc">มาช่วยกันติวหนังสือออ</span>
-      </div>
+      <div class="subroom-list" id="communityRoomGroup" data-subroom-type="community"></div>
     </div>
 
-    <div class="channel-group" id="tempRoomGroup">
+    <div class="channel-group">
       <p class="channel-group-title">ชุมชนชั่วคราว</p>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#คืนนี้ใครไปงานดนตรี</span>
-          <div class="channel-stats">
-            <span class="channel-count">• 7 คน</span>
-            <span class="unread-badge">12</span>
-          </div>
-        </div>
-        <span class="channel-desc">เผื่อใครไปนะจ๊ะะ</span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#มีใครเจอแมวส้มบ้าง</span>
-          <div class="channel-stats"><span class="channel-count">• 2 คน</span></div>
-        </div>
-        <span class="channel-desc">แมวหายตั้งแต่ 12:00 บริเว<span class="more">...ดูเพิ่ม</span></span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#ใครกำลังเรียนอยู่ตึกวิทย์</span>
-          <div class="channel-stats"><span class="channel-count">• 1 คน</span></div>
-        </div>
-        <span class="channel-desc">พอดีลืมกระเป๋าตังไว้ตรงชั้น<span class="more">...ดูเพิ่ม</span></span>
-      </div>
+      <div class="subroom-list" id="tempRoomGroup" data-subroom-type="temp"></div>
     </div>
    </div>
 
@@ -486,7 +431,7 @@
       <div class="adduni-body">
         <div class="adduni-field" id="addtemproomNameField">
           <label for="addtemproomName">ชื่อห้อง</label>
-          <input type="text" id="addtemproomName" placeholder="เช่น ใครไปเที่ยวเขาใหญ่บ้าง" autocomplete="off">
+          <input type="text" id="addtemproomName" placeholder="เช่น ใครไปเที่ยวเขาใหญ่บ้าง" autocomplete="off" maxlength="25">
         </div>
         <div class="adduni-field">
           <label for="addtemproomDesc">คำอธิบาย</label>
