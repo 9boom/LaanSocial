@@ -720,11 +720,37 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
 .online-member.self{cursor:default;}
 .online-member.self:hover{background:none;}
 
-/* ---------- CLICKABLE USER (open private chat) ---------- */
+/* ---------- CLICKABLE USER (private chat prompt) ---------- */
 .user-trigger{cursor:pointer;}
 .msg-meta .user-trigger:hover,
 .msg-meta .tag.user-trigger:hover{text-decoration:underline;}
 img.avatar.user-trigger:hover{opacity:.85;}
+.private-chat-prompt{
+  position:fixed;
+  z-index:90;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  min-width:112px;
+  min-height:38px;
+  padding:9px 14px;
+  border:1px solid rgba(0,0,0,.16);
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+  cursor:pointer;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.private-chat-prompt.open{display:flex;}
+.private-chat-prompt:hover{filter:brightness(.96);}
+body.theme-dark .private-chat-prompt{
+  border-color:rgba(255,255,255,.18);
+  box-shadow:0 12px 28px rgba(0,0,0,.38);
+}
 
 /* ---------- PROFILE PANEL (docked, shown during private chat) ---------- */
 .profile-panel{

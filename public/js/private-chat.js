@@ -22,6 +22,11 @@ const profileNameEl     = document.getElementById('profileName');
 const profileJoinDateEl = document.getElementById('profileJoinDate');
 const profileIdValEl    = document.getElementById('profileIdVal');
 const profileNotifBtn   = document.getElementById('profileNotifBtn');
+const privateChatPromptBtn = document.createElement('button');
+privateChatPromptBtn.type = 'button';
+privateChatPromptBtn.className = 'private-chat-prompt';
+privateChatPromptBtn.textContent = 'แชทส่วนตัว';
+document.body.appendChild(privateChatPromptBtn);
 
 // Converts a message object into the DOM markup used by the private chat thread.
 function renderPrivateMessage(contact, m){
@@ -163,12 +168,52 @@ function leavePrivateChat(){
   }
 }
 
+function hidePrivateChatPrompt(){
+  privateChatPromptBtn.classList.remove('open');
+  delete privateChatPromptBtn.dataset.contact;
+}
+
+function showPrivateChatPrompt(triggerEl, key){
+  if(!contacts[key]) return;
+  const rect = triggerEl.getBoundingClientRect();
+  privateChatPromptBtn.dataset.contact = key;
+  privateChatPromptBtn.classList.add('open');
+
+  const promptRect = privateChatPromptBtn.getBoundingClientRect();
+  const gap = 8;
+  const left = Math.min(
+    rect.right + gap,
+    window.innerWidth - promptRect.width - gap
+  );
+  const top = Math.min(
+    rect.top + (rect.height - promptRect.height) / 2,
+    window.innerHeight - promptRect.height - gap
+  );
+
+  privateChatPromptBtn.style.left = `${Math.max(gap, left)}px`;
+  privateChatPromptBtn.style.top = `${Math.max(gap, top)}px`;
+}
+
 document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
-  el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showPrivateChatPrompt(el, el.dataset.contact);
+  });
 });
 document.querySelectorAll('.online-member[data-contact]').forEach(el => {
   el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
 });
+
+privateChatPromptBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const key = privateChatPromptBtn.dataset.contact;
+  hidePrivateChatPrompt();
+  if(key) openPrivateChat(key, { entryMode:'direct' });
+});
+
+document.addEventListener('click', hidePrivateChatPrompt);
+window.addEventListener('resize', hidePrivateChatPrompt);
+window.addEventListener('scroll', hidePrivateChatPrompt, true);
 
 topPrivateBtn.addEventListener('click', () => {
   if(privateEntryMode){
