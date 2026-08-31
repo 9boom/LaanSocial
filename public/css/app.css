@@ -634,6 +634,43 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
   color:#fff;
 }
 
+/* ---------- PRIVATE CHAT TOOLTIP ---------- */
+.tooltip{
+  position:fixed;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:8px 12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  z-index:60;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.2s ease;
+  display:none;
+}
+.tooltip.active{
+  display:block;
+  pointer-events:auto;
+  opacity:1;
+}
+.tooltip-btn{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:8px 16px;
+  font-size:14px;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background 0.15s ease;
+}
+.tooltip-btn:hover{
+  background:var(--accent-soft);
+  color:var(--text);
+}
+
 /* ---------- ONLINE MEMBERS SLIDE PANEL ---------- */
 .online-overlay{
   display:none;

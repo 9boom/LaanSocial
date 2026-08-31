@@ -28,12 +28,12 @@ function renderPrivateMessage(contact, m){
   const avatar = m.mine ? MY_AVATAR : contact.avatar;
   const metaHTML = m.mine
     ? `<span class="time">${m.time}</span><span class="tag">${MY_TAG}</span><span>${MY_NAME}</span>`
-    : `<span class="tag">${contact.tag}</span><span>${contact.name}</span><span class="time">${m.time}</span>
+    : `<span class="tag user-trigger" data-contact="${privateChatPanel.dataset.activeContact}">${contact.tag}</span><span class="user-trigger" data-contact="${privateChatPanel.dataset.activeContact}">${contact.name}</span><span class="time">${m.time}</span>
        <div class="msg-actions">
          <button class="msg-action report-trigger" data-report-tag="${contact.tag}" data-report-name="${contact.name}"><img src="assets/symbols/report.svg" alt="">รายงาน</button>
        </div>`;
   return `<div class="msg${m.mine ? ' own' : ''}">
-    <img class="avatar" src="${avatar}" alt="">
+    <img class="avatar user-trigger" src="${avatar}" alt="" data-contact="${!m.mine ? privateChatPanel.dataset.activeContact : ''}">
     <div class="msg-body">
       <div class="msg-meta">${metaHTML}</div>
       <p class="msg-text">${m.text}</p>
@@ -162,6 +162,71 @@ function leavePrivateChat(){
     closePrivateMode();
   }
 }
+
+// Tooltip functionality for user profiles in chat messages
+const privateChatTooltip = document.getElementById('privateChatTooltip');
+const privateChatTooltipBtn = document.getElementById('privateChatTooltipBtn');
+let tooltipTimeoutId = null;
+let currentTooltipContactKey = null;
+
+function showPrivateChatTooltip(trigger){
+  const contactKey = trigger.dataset.contact;
+  if(!contactKey) return;
+  
+  currentTooltipContactKey = contactKey;
+  const rect = trigger.getBoundingClientRect();
+  
+  // Position tooltip below the trigger element
+  const tooltipTop = rect.bottom + 8;
+  const tooltipLeft = rect.left + (rect.width / 2);
+  
+  privateChatTooltip.style.top = tooltipTop + 'px';
+  privateChatTooltip.style.left = tooltipLeft + 'px';
+  privateChatTooltip.style.transform = 'translateX(-50%)';
+  
+  privateChatTooltip.classList.add('active');
+}
+
+function hidePrivateChatTooltip(){
+  privateChatTooltip.classList.remove('active');
+  currentTooltipContactKey = null;
+}
+
+// Attach hover listeners to user triggers in messages using event delegation
+const privateMessagesContainer = document.getElementById('privateMessages');
+if(privateMessagesContainer){
+  privateMessagesContainer.addEventListener('mouseenter', (e) => {
+    const trigger = e.target.closest('.user-trigger[data-contact]');
+    if(trigger){
+      clearTimeout(tooltipTimeoutId);
+      showPrivateChatTooltip(trigger);
+    }
+  }, true);
+  
+  privateMessagesContainer.addEventListener('mouseleave', (e) => {
+    const trigger = e.target.closest('.user-trigger[data-contact]');
+    if(trigger){
+      tooltipTimeoutId = setTimeout(hidePrivateChatTooltip, 100);
+    }
+  }, true);
+}
+
+// Tooltip button click handler
+if(privateChatTooltipBtn){
+  privateChatTooltipBtn.addEventListener('click', () => {
+    if(currentTooltipContactKey){
+      openPrivateChat(currentTooltipContactKey, { entryMode:'direct' });
+      hidePrivateChatTooltip();
+    }
+  });
+}
+
+// Hide tooltip when clicking elsewhere
+document.addEventListener('click', (e) => {
+  if(!privateChatTooltip.contains(e.target) && !e.target.closest('.user-trigger[data-contact]')){
+    hidePrivateChatTooltip();
+  }
+});
 
 document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
   el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
