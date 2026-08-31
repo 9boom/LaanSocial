@@ -9,6 +9,10 @@ function openOnlinePanel(){
   onlinePanel.classList.add('open');
   onlineOverlay.classList.add('open');
   onlinePanel.setAttribute('aria-hidden', 'false');
+  const searchInput = onlinePanel.querySelector('.online-panel-search input');
+  if(searchInput){
+    window.setTimeout(() => searchInput.focus(), 150);
+  }
 }
 function closeOnlinePanel(){
   onlinePanel.classList.remove('open');

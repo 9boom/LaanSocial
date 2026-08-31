@@ -1,20 +1,165 @@
-/* Loads university data and renders both the rail buttons and onboarding select. */
+/* Loads university data and renders rail buttons, onboarding select, and real subrooms. */
+
+const SUBROOM_GROUPS = {
+  official: document.getElementById('officialRoomGroup'),
+  community: document.getElementById('communityRoomGroup'),
+  temp: document.getElementById('tempRoomGroup')
+};
+
+let activeUniversityName = '';
+let activeUniversity = null;
+let activeSubroomRequest = 0;
 
 function updateRailUniversity(name){
   const sidebarTitle = document.querySelector('.uni-card h2');
-
   if(sidebarTitle) sidebarTitle.textContent = name;
+}
+
+function getSubroomEmptyMessage(type){
+  if(type === 'official') return 'ยังไม่มีห้องทางการ';
+  if(type === 'community') return 'ยังไม่มีชุมชนถาวร';
+  return 'ยังไม่มีชุมชนชั่วคราว';
+}
+
+function setSubroomGroupMessage(type, message, className){
+  const group = SUBROOM_GROUPS[type];
+  if(!group) return;
+
+  group.textContent = '';
+  const state = document.createElement('p');
+  state.className = className;
+  state.textContent = message;
+  group.appendChild(state);
+}
+
+function setAllSubroomGroupsLoading(){
+  Object.keys(SUBROOM_GROUPS).forEach(type => {
+    setSubroomGroupMessage(type, 'กำลังโหลด...', 'channel-state');
+  });
+}
+
+function formatSubroomName(name){
+  const value = typeof name === 'string' ? name.trim() : '';
+  if(!value) return '#ไม่ระบุชื่อห้อง';
+  return value.startsWith('#') ? value : `#${value}`;
+}
+
+function renderSubroomChannel(subroom){
+  const channel = document.createElement('div');
+  channel.className = 'channel';
+  channel.dataset.subroomId = subroom.subroom_id || '';
+  channel.dataset.subroomType = subroom.subroom_type || '';
+
+  const top = document.createElement('div');
+  top.className = 'channel-top';
+
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'channel-name';
+  nameSpan.textContent = formatSubroomName(subroom.subroom_name);
+
+  const stats = document.createElement('div');
+  stats.className = 'channel-stats';
+  const countSpan = document.createElement('span');
+  const count = Number(subroom.channel_count || 0);
+  countSpan.className = `channel-count${count ? '' : ' zero'}`;
+  countSpan.textContent = `• ${count} คน`;
+  stats.appendChild(countSpan);
+
+  top.appendChild(nameSpan);
+  top.appendChild(stats);
+
+  const descSpan = document.createElement('span');
+  descSpan.className = 'channel-desc';
+  descSpan.textContent = subroom.subroom_desc || '';
+
+  channel.appendChild(top);
+  channel.appendChild(descSpan);
+  channel.addEventListener('click', () => {
+    if(window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
+      window.PublicChat.openSubroom(subroom);
+    }
+  });
+
+  return channel;
+}
+
+function renderSubroomGroups(subroomsByType){
+  const firstSubroom = [];
+
+  Object.keys(SUBROOM_GROUPS).forEach(type => {
+    const group = SUBROOM_GROUPS[type];
+    if(!group) return;
+
+    const subrooms = Array.isArray(subroomsByType?.[type]) ? subroomsByType[type] : [];
+    group.textContent = '';
+
+    if(!subrooms.length){
+      setSubroomGroupMessage(type, getSubroomEmptyMessage(type), 'channel-state empty');
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    subrooms.forEach(subroom => {
+      if(!firstSubroom.length) firstSubroom.push(subroom);
+      fragment.appendChild(renderSubroomChannel(subroom));
+    });
+    group.appendChild(fragment);
+  });
+
+  if(firstSubroom[0] && window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
+    window.PublicChat.openSubroom(firstSubroom[0]);
+  }
+}
+
+async function loadSubroomsForUniversity(uniroomName){
+  activeUniversityName = typeof uniroomName === 'string' ? uniroomName.trim() : '';
+  updateRailUniversity(activeUniversityName || 'มหาวิทยาลัย');
+
+  if(!activeUniversityName){
+    Object.keys(SUBROOM_GROUPS).forEach(type => {
+      setSubroomGroupMessage(type, getSubroomEmptyMessage(type), 'channel-state empty');
+    });
+    return;
+  }
+
+  const requestId = ++activeSubroomRequest;
+  setAllSubroomGroupsLoading();
+
+  try {
+    const params = new URLSearchParams({ uniroom_name: activeUniversityName });
+    const headers = window.PublicChat ? await window.PublicChat.authHeaders() : {};
+    const response = await fetch(`/api/subrooms?${params.toString()}`, { headers });
+    const data = await response.json().catch(() => ({}));
+
+    if(requestId !== activeSubroomRequest) return;
+
+    if(!response.ok || data.status === 'error'){
+      throw new Error(data.message || 'ไม่สามารถโหลดห้องย่อยได้');
+    }
+
+    activeUniversity = data.university || null;
+    if(window.PublicChat && typeof window.PublicChat.updateUniversityOnline === 'function'){
+      window.PublicChat.updateUniversityOnline(activeUniversity?.online_count || 0);
+    }
+    renderSubroomGroups(data.subrooms || {});
+  } catch (error) {
+    console.error(error);
+    if(requestId !== activeSubroomRequest) return;
+
+    Object.keys(SUBROOM_GROUPS).forEach(type => {
+      setSubroomGroupMessage(type, error.message || 'โหลดห้องย่อยไม่สำเร็จ', 'channel-state error');
+    });
+  }
 }
 
 function selectUniversity(button){
   document.querySelectorAll('.uni-icon').forEach(el => {
     el.classList.toggle('active', el === button);
   });
-  updateRailUniversity(button.dataset.name);
+  loadSubroomsForUniversity(button.dataset.name);
   document.body.classList.remove('nav-open');
 }
 
-// Rebuilds the university rail from API data while keeping the add button at the end.
 function renderUniversityRail(universities){
   const rail = document.querySelector('.uni-rail');
   const addButton = document.getElementById('openAddUniBtn');
@@ -24,15 +169,16 @@ function renderUniversityRail(universities){
 
   const fragment = document.createDocumentFragment();
   universities.forEach((university, index) => {
+    const displayName = university.displayName || university.name;
     const button = document.createElement('button');
     button.type = 'button';
     button.className = `uni-icon${index === 0 ? ' active' : ''}`;
-    button.dataset.name = university.name;
-    button.setAttribute('aria-label', university.name);
+    button.dataset.name = displayName;
+    button.setAttribute('aria-label', displayName);
 
     const image = document.createElement('img');
     image.src = university.image;
-    image.alt = university.name;
+    image.alt = displayName;
     button.appendChild(image);
 
     button.addEventListener('click', () => selectUniversity(button));
@@ -40,10 +186,9 @@ function renderUniversityRail(universities){
   });
 
   rail.insertBefore(fragment, addButton);
-  if(universities[0]) updateRailUniversity(universities[0].name);
+  if(universities[0]) loadSubroomsForUniversity(universities[0].displayName || universities[0].name);
 }
 
-// Replaces the native select UI with the styled searchable-looking dropdown used on startup.
 function setupStartupUniversityDropdown(select){
   if(!select || select.dataset.customReady) return;
   select.dataset.customReady = 'true';
@@ -130,7 +275,6 @@ function setupStartupUniversityDropdown(select){
   syncTrigger();
 }
 
-// Keeps the startup university select in sync with the same API source as the rail.
 function renderUniversitySelect(universities){
   const select = document.getElementById('startupUni');
   if(!select) return;
@@ -148,7 +292,6 @@ function renderUniversitySelect(universities){
   setupStartupUniversityDropdown(select);
 }
 
-// Loads available universities once on page load and renders every university picker.
 async function initializeUniversities(){
   try {
     const response = await fetch('/api/universities');
@@ -163,3 +306,15 @@ async function initializeUniversities(){
 }
 
 initializeUniversities();
+
+window.getActiveUniversityName = function(){
+  return activeUniversityName;
+};
+
+window.getActiveUniversity = function(){
+  return activeUniversity;
+};
+
+window.reloadActiveSubrooms = function(){
+  return loadSubroomsForUniversity(activeUniversityName);
+};

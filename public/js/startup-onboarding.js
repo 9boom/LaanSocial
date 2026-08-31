@@ -126,6 +126,7 @@
 
   function applyLoggedInUser(user){
     if(!user) return;
+    window.LaanCurrentUser = user;
 
     if(user.user_nick){
       const nickEl = document.querySelector('.profile-nick b');
@@ -150,6 +151,10 @@
         img.src = user.user_profile_url;
       });
     }
+
+    document.dispatchEvent(new CustomEvent('laan:user-ready', {
+      detail: { user }
+    }));
   }
 
   function closeStartupOverlay(){

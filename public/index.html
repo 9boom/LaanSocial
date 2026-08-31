@@ -90,9 +90,6 @@
     </div>
   </div>
   <div class="profile">
-    <button type="button" class="icon-btn" id="topPrivateBtn" aria-label="ข้อความส่วนตัว">
-      💬<span class="badge-dot"></span>
-    </button>
     <button type="button" class="icon-btn" id="topNotifBtn" aria-label="การแจ้งเตือน">
       🔔<span class="badge-dot"></span>
     </button>
@@ -160,82 +157,18 @@
 
     <div class="channel-group">
       <p class="channel-group-title">ห้องทางการ</p>
-      <div class="channel active">
-        <div class="channel-top">
-          <span class="channel-name">#general</span>
-          <div class="channel-stats"><span class="channel-count">• 16 คน</span></div>
-        </div>
-        <span class="channel-desc">ห้องคุยหลัก</span>
-      </div>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#annoucne</span>
-          <div class="channel-stats">
-            <span class="channel-count zero">• 0 คน</span>
-            <span class="unread-badge">1</span>
-          </div>
-        </div>
-        <span class="channel-desc">ห้องประกาศ</span>
-      </div>
+      <div class="subroom-list" id="officialRoomGroup" data-subroom-type="official"></div>
     </div>
 
     <div class="channel-group">
       <p class="channel-group-title">ชุมชนถาวร</p>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#dek70</span>
-          <div class="channel-stats">
-            <span class="channel-count">• 43 คน</span>
-            <span class="unread-badge">99+</span>
-          </div>
-        </div>
-        <span class="channel-desc">ช่วยน้องเตรียมเข้ามหาลัยร<span class="more">...ดูเพิ่ม</span></span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#หาเพื่อนติว</span>
-          <div class="channel-stats"><span class="channel-count">• 6 คน</span></div>
-        </div>
-        <span class="channel-desc">มาช่วยกันติวหนังสือออ</span>
-      </div>
+      <div class="subroom-list" id="communityRoomGroup" data-subroom-type="community"></div>
     </div>
 
-    <div class="channel-group" id="tempRoomGroup">
+    <div class="channel-group">
       <p class="channel-group-title">ชุมชนชั่วคราว</p>
-      <div class="channel has-badge">
-        <div class="channel-top">
-          <span class="channel-name">#คืนนี้ใครไปงานดนตรี</span>
-          <div class="channel-stats">
-            <span class="channel-count">• 7 คน</span>
-            <span class="unread-badge">12</span>
-          </div>
-        </div>
-        <span class="channel-desc">เผื่อใครไปนะจ๊ะะ</span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#มีใครเจอแมวส้มบ้าง</span>
-          <div class="channel-stats"><span class="channel-count">• 2 คน</span></div>
-        </div>
-        <span class="channel-desc">แมวหายตั้งแต่ 12:00 บริเว<span class="more">...ดูเพิ่ม</span></span>
-      </div>
-      <div class="channel">
-        <div class="channel-top">
-          <span class="channel-name">#ใครกำลังเรียนอยู่ตึกวิทย์</span>
-          <div class="channel-stats"><span class="channel-count">• 1 คน</span></div>
-        </div>
-        <span class="channel-desc">พอดีลืมกระเป๋าตังไว้ตรงชั้น<span class="more">...ดูเพิ่ม</span></span>
-      </div>
+      <div class="subroom-list" id="tempRoomGroup" data-subroom-type="temp"></div>
     </div>
-   </div>
-
-   <!-- private chat history sidebar (shown while a private chat is open) -->
-   <div id="privateSidebarView" style="display:none;flex-direction:column;min-height:0;flex:1 1 auto;">
-    <div class="private-sidebar-header">
-      <button type="button" class="back-btn-static" id="backToChannelsBtn" aria-label="ย้อนกลับ">‹</button>
-      <h2>ประวัติการแชทส่วนตัว</h2>
-    </div>
-    <div class="private-history-list" id="privateHistoryList"></div>
    </div>
   </aside>
 
@@ -244,8 +177,8 @@
     <div class="chat-header">
       <button type="button" class="mobile-nav-btn" id="backToListBtn" aria-label="กลับไปหน้ารายการห้อง">‹</button>
       <div class="title-block">
-        <h2>#general <span class="dot">•</span> <span class="count">16 คน</span></h2>
-        <p>ห้องคุยหลัก</p>
+        <h2 id="publicChatTitle">เลือกห้อง <span class="dot">•</span> <span class="count" id="publicChatCount">0 คน</span></h2>
+        <p id="publicChatDesc">เลือก subroom เพื่อเริ่มคุย</p>
       </div>
       <div class="members-pill online-toggle-btn">
         <span>ใครออนไลน์ ?</span>
@@ -253,127 +186,48 @@
       </div>
     </div>
 
-    <div class="messages">
-      <div class="msg">
-        <img class="avatar user-trigger" data-contact="tungtung" src="assets/sim_db/users_profile_image/fox.png" alt="ทุงทุง ซาฮัวรา">
-        <div class="msg-body">
-          <div class="msg-meta">
-            <span class="tag user-trigger" data-contact="tungtung">[มศว]</span><span class="user-trigger" data-contact="tungtung">ทุงทุง ซาฮัวรา</span><span class="time">11:02</span>
-            <div class="msg-actions">
-              <button class="msg-action report-trigger" data-report-tag="[มศว]" data-report-name="ทุงทุง ซาฮัวรา"><img src="assets/symbols/report.svg" alt="">รายงาน</button>
-              <button class="msg-action"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
-            </div>
-          </div>
-          <p class="msg-text">สวัสดีครับบ จุฬาโรงอาหารมีคนเยอะไหมครับ จะเข้าไปเที่ยว</p>
-        </div>
-      </div>
+    <div class="messages" id="publicMessages" aria-live="polite"></div>
 
-      <div class="msg">
-        <img class="avatar user-trigger" data-contact="mickey" src="assets/sim_db/users_profile_image/cat.png" alt="ชอบมิกกี้เมาส์">
-        <div class="msg-body">
-          <div class="msg-meta">
-            <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:12</span>
-            <div class="msg-actions">
-              <button class="msg-action report-trigger" data-report-tag="[จฬ]" data-report-name="ชอบมิกกี้เมาส์"><img src="assets/symbols/report.svg" alt="">รายงาน</button>
-              <button class="msg-action"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
-            </div>
-          </div>
-          <p class="msg-text">ไม่</p>
-          <div class="msg-attachment">
-            <img src="https://www.figma.com/api/mcp/asset/2191dc61-0a9d-487d-b7fa-5a1b8f3bc140" alt="รูปแนบ">
-          </div>
-          <div class="attachment-meta">
-            <button class="msg-action"><img src="assets/symbols/download.svg" alt="">บันทึก</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="msg own">
-        <img class="avatar" src="assets/sim_db/users_profile_image/dog.png" alt="มะม่วงเบา">
-        <div class="msg-body">
-          <div class="msg-meta"><span class="time">11:14</span><span class="tag">[จฬ]</span><span>มะม่วงเบา</span></div>
-          <p class="msg-text">ไม่เยอะ ?</p>
-        </div>
-      </div>
-
-      <div class="msg">
-        <img class="avatar user-trigger" data-contact="mickey" src="assets/sim_db/users_profile_image/cat.png" alt="ชอบมิกกี้เมาส์">
-        <div class="msg-body">
-          <div class="msg-meta">
-            <span class="tag user-trigger" data-contact="mickey">[จฬ]</span><span class="user-trigger" data-contact="mickey">ชอบมิกกี้เมาส์</span><span class="time">11:14</span>
-            <div class="msg-actions">
-              <button class="msg-action report-trigger" data-report-tag="[จฬ]" data-report-name="ชอบมิกกี้เมาส์"><img src="assets/symbols/report.svg" alt="">รายงาน</button>
-              <button class="msg-action"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
-            </div>
-          </div>
-          <p class="msg-text">ไม่เหลือ 555</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="typing-bar">
-      <b>[มศว]</b> ทุงทุง ซาฮัวรา, <b>[จฬ]</b> สวัสดีคนไทย กำลังพิม...
-    </div>
+    <div class="typing-bar" id="publicTypingBar" hidden></div>
 
     <form class="composer" id="composerForm">
-      <div class="file-btn">ไฟล์</div>
-      <input type="text" placeholder="พิมข้อความ..." aria-label="พิมพ์ข้อความ">
+      <button type="button" class="file-btn" id="publicAttachBtn">ไฟล์</button>
+      <input type="file" id="publicAttachmentInput" hidden accept="image/png,image/jpeg,image/webp,image/gif,application/pdf">
+      <div class="composer-input" id="publicComposerInput" contenteditable="true" role="textbox" aria-label="พิมพ์ข้อความ" data-placeholder="พิมข้อความ..."></div>
       <button type="submit" class="send-btn">ส่ง</button>
     </form>
   </main>
-
-  <!-- private chat panel (mockup, hidden by default) -->
-  <main class="chat-panel" id="privateChatPanel" style="display:none;">
-    <div class="chat-header">
-      <button type="button" class="mobile-nav-btn" id="backToListBtnPrivate" aria-label="กลับไปหน้ารายการแชท">‹</button>
-      <div class="title-block">
-        <h2 class="private-title"><span class="private-title-prefix">คุณกำลังคุยส่วนตัวกับ</span> <span class="tag" id="privateTag"></span> <span id="privateName"></span></h2>
-      </div>
-      <button type="button" class="mobile-nav-btn" id="openProfileBtnMobile" aria-label="ดูข้อมูลโปรไฟล์">ⓘ</button>
-    </div>
-
-    <div class="messages" id="privateMessages"></div>
-
-    <div class="typing-bar">
-      <b>ฝ่ายตรงข้าม</b> กำลังพิม...
-    </div>
-
-    <form class="composer" id="privateComposerForm">
-      <div class="file-btn">ไฟล์</div>
-      <input type="text" placeholder="พิมข้อความ..." aria-label="พิมพ์ข้อความ">
-      <button type="submit" class="send-btn">ส่ง</button>
-    </form>
-  </main>
-
-  <!-- profile panel (docked, shown alongside private chat) -->
-  <aside class="profile-panel" id="profilePanel">
-    <div class="profile-panel-header">
-      ข้อมูลส่วนตัว
-      <button type="button" class="mobile-nav-btn profile-panel-mobile-close" id="closeProfilePanelMobileBtn" aria-label="ปิดข้อมูลส่วนตัว">✕</button>
-    </div>
-    <div class="profile-panel-body">
-      <div class="profile-avatar-wrap">
-        <img id="profileAvatarImg" src="" alt="">
-        <span class="profile-online-dot"></span>
-      </div>
-      <p class="profile-name"><span class="tag" id="profileTag"></span> <span id="profileName"></span></p>
-      <div class="profile-joined-card">
-        <div class="profile-info-row">
-          <p class="label">เข้าร่วมครั้งแรก เมื่อ</p>
-          <p class="date" id="profileJoinDate"></p>
-        </div>
-        <div class="profile-info-row">
-          <p class="label">โปรไฟล์ไอดี</p>
-          <p class="date" id="profileIdVal"></p>
-        </div>
-      </div>
-      <div class="profile-actions">
-        <button type="button" class="profile-action-btn profile-notif-btn" id="profileNotifBtn">เปิดการแจ้งเตือน</button>
-      </div>
-    </div>
-  </aside>
 
 </div>
+
+<!-- user profile slide-in panel -->
+<div class="profile-overlay" id="profileOverlay"></div>
+<aside class="profile-panel" id="profilePanel" aria-hidden="true">
+  <div class="profile-panel-header">
+    <h3>ข้อมูลส่วนตัว</h3>
+    <button type="button" class="profile-panel-close" id="profilePanelClose" aria-label="ปิด">✕</button>
+  </div>
+  <div class="profile-panel-body">
+    <div class="profile-avatar-wrap">
+      <img id="profileAvatarImg" src="" alt="รูปโปรไฟล์">
+      <span class="profile-online-dot"></span>
+    </div>
+    <p class="profile-name"><span class="tag" id="profileTag"></span> <span id="profileName"></span></p>
+    <div class="profile-joined-card">
+      <div class="profile-info-row">
+        <p class="label">เข้าร่วมครั้งแรก เมื่อ</p>
+        <p class="date" id="profileJoinDate"></p>
+      </div>
+      <div class="profile-info-row">
+        <p class="label">โปรไฟล์ไอดี</p>
+        <p class="date" id="profileIdVal"></p>
+      </div>
+    </div>
+    <div class="profile-actions">
+      <button type="button" class="profile-action-btn profile-report-btn" id="profileReportBtn">🚩 รายงานผู้ใช้</button>
+    </div>
+  </div>
+</aside>
 
 <!-- online members slide-in panel -->
 <div class="online-overlay" id="onlineOverlay"></div>
@@ -386,36 +240,7 @@
     <img src="assets/symbols/search.svg" alt="">
     <input type="text" placeholder="ค้นหาสมาชิก...">
   </div>
-  <div class="online-list">
-    <div class="online-member" data-contact="helloworld">
-      <img src="assets/sim_db/users_profile_image/panda.png" alt="">
-      <span class="name"><span class="tag">[สจล]</span> hello world !</span>
-    </div>
-    <div class="online-member" data-contact="mickey">
-      <img src="assets/sim_db/users_profile_image/cat.png" alt="">
-      <span class="name"><span class="tag">[จฬ]</span> ชอบมิกกี้เมาส์</span>
-    </div>
-    <div class="online-member" data-contact="tungtung">
-      <img src="assets/sim_db/users_profile_image/fox.png" alt="">
-      <span class="name"><span class="tag">[มศว]</span> ทุงทุง ซาฮัวรา</span>
-    </div>
-    <div class="online-member" data-contact="sawadee">
-      <img src="assets/sim_db/users_profile_image/rabbit.png" alt="">
-      <span class="name"><span class="tag">[จฬ]</span> สวัสดีคนไทย</span>
-    </div>
-    <div class="online-member" data-contact="hametc">
-      <img src="assets/sim_db/users_profile_image/rabbit.png" alt="">
-      <span class="name"><span class="tag">[จฬ]</span> หาเพื่อนคุย</span>
-    </div>
-    <div class="online-member self">
-      <img src="assets/sim_db/users_profile_image/dog.png" alt="">
-      <span class="name"><span class="tag">[dek70]</span> มะม่วงเบา (คุณ)</span>
-    </div>
-    <div class="online-member" data-contact="david">
-      <img src="assets/sim_db/users_profile_image/panda.png" alt="">
-      <span class="name"><span class="tag">[จฬ]</span> David คร้าบ</span>
-    </div>
-  </div>
+  <div class="online-list" id="onlineList"></div>
 </aside>
 
 <!-- add university modal -->
@@ -603,10 +428,11 @@
 <script src="js/utils/indexed-db-storage.js"></script>
 <script src="js/state.js"></script>
 <script src="js/mobile-nav.js"></script>
+<script src="js/public-chat.js"></script>
 <script src="js/universities.js"></script>
 <script src="js/profile-settings.js"></script>
 <script src="js/online-panel.js"></script>
-<script src="js/private-chat.js"></script>
+<script src="js/profile-panel.js"></script>
 <script src="js/modals.js"></script>
 <script src="js/startup-onboarding.js"></script>
 

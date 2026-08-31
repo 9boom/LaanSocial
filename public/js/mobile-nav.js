@@ -16,18 +16,4 @@ function setMobileView(view){
 
 document.getElementById('openAddUniBtn').addEventListener('click', () => document.body.classList.remove('nav-open'));
 
-// tapping any channel opens the chat pane on mobile
-document.querySelectorAll('.channel-group .channel').forEach(el => {
-  el.addEventListener('click', () => setMobileView('chat'));
-});
-
 document.getElementById('backToListBtn').addEventListener('click', () => setMobileView('sidebar'));
-document.getElementById('openProfileBtnMobile').addEventListener('click', () => setMobileView('profile'));
-document.getElementById('closeProfilePanelMobileBtn').addEventListener('click', () => setMobileView('chat'));
-
-document.getElementById('composerForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const input = this.querySelector('input[type="text"]');
-  if(!input.value.trim()) return;
-  input.value = '';
-});

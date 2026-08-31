@@ -59,11 +59,29 @@ const addtemproomName    = document.getElementById('addtemproomName');
 const addtemproomDesc    = document.getElementById('addtemproomDesc');
 const addtemproomAge     = document.getElementById('addtemproomAge');
 const addtemproomCancelBtn = document.getElementById('addtemproomCancelBtn');
-const tempRoomGroup      = document.getElementById('tempRoomGroup');
+const addtemproomSubmitBtn = addtemproomForm.querySelector('button[type="submit"]');
+const addtemproomError = document.createElement('p');
+addtemproomError.className = 'adduni-error';
+addtemproomError.setAttribute('aria-live', 'polite');
+addtemproomError.hidden = true;
+addtemproomForm.querySelector('.adduni-actions').insertAdjacentElement('beforebegin', addtemproomError);
 
 function resetAddTempRoomForm(){
   addtemproomForm.reset();
   addtemproomNameField.classList.remove('invalid');
+  setAddTempRoomError('');
+  setAddTempRoomLoading(false);
+}
+function setAddTempRoomError(message){
+  addtemproomError.textContent = message || '';
+  addtemproomError.hidden = !message;
+}
+function setAddTempRoomLoading(isLoading){
+  if(!addtemproomSubmitBtn) return;
+  if(!addtemproomSubmitBtn.dataset.idleText) addtemproomSubmitBtn.dataset.idleText = addtemproomSubmitBtn.textContent;
+  addtemproomSubmitBtn.disabled = isLoading;
+  addtemproomSubmitBtn.classList.toggle('is-loading', isLoading);
+  addtemproomSubmitBtn.textContent = isLoading ? 'กำลังส่ง...' : addtemproomSubmitBtn.dataset.idleText;
 }
 function openAddTempRoomModal(){
   resetAddTempRoomForm();
@@ -82,49 +100,72 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape' && addtemproomOverlay.classList.contains('open')) closeAddTempRoomModal();
   });
 
-// Adds a newly-created temporary room to the sidebar without a page reload.
-function addTempRoomToSidebar(name, desc, days){
-  const channel = document.createElement('div');
-  channel.className = 'channel';
-
-  const top = document.createElement('div');
-  top.className = 'channel-top';
-
-  const nameSpan = document.createElement('span');
-  nameSpan.className = 'channel-name';
-  nameSpan.textContent = name.startsWith('#') ? name : '#' + name;
-
-  const stats = document.createElement('div');
-  stats.className = 'channel-stats';
-  const countSpan = document.createElement('span');
-  countSpan.className = 'channel-count';
-  countSpan.textContent = '• 1 คน';
-  stats.appendChild(countSpan);
-
-  top.appendChild(nameSpan);
-  top.appendChild(stats);
-
-  const descSpan = document.createElement('span');
-  descSpan.className = 'channel-desc';
-  descSpan.textContent = desc || `ห้องชั่วคราว หมดอายุใน ${days} วัน`;
-
-  channel.appendChild(top);
-  channel.appendChild(descSpan);
-  channel.addEventListener('click', () => setMobileView('chat'));
-  tempRoomGroup.appendChild(channel);
+function validateTempRoomName(name){
+  if(!name) return 'กรุณากรอกชื่อห้อง';
+  if(name.length > 25) return 'ชื่อห้องต้องไม่เกิน 25 ตัวอักษร';
+  return '';
 }
 
-addtemproomForm.addEventListener('submit', function(e){
+addtemproomForm.addEventListener('submit', async function(e){
   e.preventDefault();
   const name = addtemproomName.value.trim();
-  if(!name){
+  const nameError = validateTempRoomName(name);
+  if(nameError){
     addtemproomNameField.classList.add('invalid');
+    setAddTempRoomError(nameError);
     addtemproomName.focus();
     return;
   }
+
   addtemproomNameField.classList.remove('invalid');
-  addTempRoomToSidebar(name, addtemproomDesc.value.trim(), addtemproomAge.value);
-  closeAddTempRoomModal();
+  setAddTempRoomError('');
+
+  const uniroomName = typeof window.getActiveUniversityName === 'function' ? window.getActiveUniversityName() : '';
+  if(!uniroomName){
+    setAddTempRoomError('กรุณาเลือกมหาวิทยาลัยก่อนสร้างห้อง');
+    return;
+  }
+
+  setAddTempRoomLoading(true);
+
+  try {
+    const headers = window.PublicChat ? await window.PublicChat.authHeaders() : {};
+    const response = await fetch('/add-subroom', {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        uniroom_name: uniroomName,
+        subroom_name: name,
+        subroom_desc: addtemproomDesc.value.trim(),
+        expire_days: Number(addtemproomAge.value)
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if(!response.ok || data.status === 'error'){
+      throw new Error(data.message || 'สร้างห้องไม่สำเร็จ');
+    }
+
+    if(typeof window.reloadActiveSubrooms === 'function') {
+      await window.reloadActiveSubrooms();
+    }
+    closeAddTempRoomModal();
+  } catch (error) {
+    console.error(error);
+    setAddTempRoomError(error.message || 'สร้างห้องไม่สำเร็จ');
+  } finally {
+    setAddTempRoomLoading(false);
+  }
+});
+
+addtemproomName.addEventListener('input', () => {
+  const name = addtemproomName.value.trim();
+  const message = name.length > 25 ? 'ชื่อห้องต้องไม่เกิน 25 ตัวอักษร' : '';
+  addtemproomNameField.classList.toggle('invalid', Boolean(message));
+  setAddTempRoomError(message);
 });
 
 /* ---------- ASK FOR NOTIFICATION MODAL ---------- */

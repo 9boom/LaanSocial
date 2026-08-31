@@ -10,6 +10,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
-    "mongodb": "^7.6.0"
+    "mongodb": "^7.6.0",
+    "multer": "^2.3.0",
+    "ws": "^8.21.3"
   }
 }
