@@ -23,6 +23,11 @@ const profileJoinDateEl = document.getElementById('profileJoinDate');
 const profileIdValEl    = document.getElementById('profileIdVal');
 const profileNotifBtn   = document.getElementById('profileNotifBtn');
 
+// Context menu for user interactions
+const userContextMenu   = document.getElementById('userContextMenu');
+const sendMessageBtn    = document.getElementById('sendMessageBtn');
+let contextMenuContactKey = null;
+
 // Converts a message object into the DOM markup used by the private chat thread.
 function renderPrivateMessage(contact, m){
   const avatar = m.mine ? MY_AVATAR : contact.avatar;
@@ -163,11 +168,45 @@ function leavePrivateChat(){
   }
 }
 
+// Shows context menu at cursor position when user clicks on a contact
+function showContextMenu(event, contactKey){
+  event.stopPropagation();
+  contextMenuContactKey = contactKey;
+  
+  // Position menu near the click point
+  userContextMenu.style.left = event.pageX + 'px';
+  userContextMenu.style.top = (event.pageY + 10) + 'px';
+  userContextMenu.style.display = 'block';
+}
+
+// Hides context menu
+function hideContextMenu(){
+  userContextMenu.style.display = 'none';
+  contextMenuContactKey = null;
+}
+
+// Closes context menu when clicking outside
+document.addEventListener('click', (e) => {
+  if(!userContextMenu.contains(e.target) && 
+     !e.target.classList.contains('user-trigger') && 
+     !e.target.classList.contains('online-member')){
+    hideContextMenu();
+  }
+});
+
 document.querySelectorAll('.user-trigger[data-contact]').forEach(el => {
-  el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
+  el.addEventListener('click', (e) => showContextMenu(e, el.dataset.contact));
 });
 document.querySelectorAll('.online-member[data-contact]').forEach(el => {
-  el.addEventListener('click', () => openPrivateChat(el.dataset.contact, { entryMode:'direct' }));
+  el.addEventListener('click', (e) => showContextMenu(e, el.dataset.contact));
+});
+
+// Context menu: Send Message button
+sendMessageBtn.addEventListener('click', () => {
+  if(contextMenuContactKey){
+    openPrivateChat(contextMenuContactKey, { entryMode:'direct' });
+    hideContextMenu();
+  }
 });
 
 topPrivateBtn.addEventListener('click', () => {
