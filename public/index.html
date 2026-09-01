@@ -151,10 +151,31 @@
         </div>
         <p class="settings-profile-error" id="settingsProfileError" aria-live="polite" hidden></p>
       </fieldset>
+      <fieldset class="danger-settings-group">
+        <legend>เขตอันตราย</legend>
+        <button type="button" class="danger-action-btn" id="deleteAccountBtn">ลบบัญชี</button>
+      </fieldset>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" id="cancelSettingsBtn">ยกเลิก</button>
       <button type="button" class="btn-primary" id="saveSettingsBtn">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay danger-confirm-overlay" id="deleteAccountOverlay">
+  <div class="modal-box danger-confirm-box" role="dialog" aria-modal="true" aria-labelledby="deleteAccountTitle">
+    <div class="modal-header">
+      <h3 id="deleteAccountTitle">ยืนยันการลบบัญชี</h3>
+      <button type="button" class="modal-close" id="closeDeleteAccountBtn" aria-label="ปิด">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="danger-confirm-text">การลบบัญชีจะลบข้อมูลผู้ใช้ของคุณออกจากระบบ และไม่สามารถย้อนกลับได้</p>
+      <p class="danger-confirm-error" id="deleteAccountError" aria-live="polite" hidden></p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" id="cancelDeleteAccountBtn">ยกเลิก</button>
+      <button type="button" class="danger-confirm-btn" id="confirmDeleteAccountBtn">ลบบัญชี</button>
     </div>
   </div>
 </div>

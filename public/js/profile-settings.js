@@ -36,6 +36,12 @@ const settingsSocialForm = document.getElementById('settingsSocialForm');
 const settingsFacebook = document.getElementById('settingsFacebook');
 const settingsInstagram = document.getElementById('settingsInstagram');
 const settingsProfileError = document.getElementById('settingsProfileError');
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+const deleteAccountOverlay = document.getElementById('deleteAccountOverlay');
+const closeDeleteAccountBtn = document.getElementById('closeDeleteAccountBtn');
+const cancelDeleteAccountBtn = document.getElementById('cancelDeleteAccountBtn');
+const confirmDeleteAccountBtn = document.getElementById('confirmDeleteAccountBtn');
+const deleteAccountError = document.getElementById('deleteAccountError');
 
 const FALLBACK_PROFILE_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
 const SOCIAL_DOMAINS = {
@@ -159,6 +165,32 @@ async function patchCurrentUser(url, payload){
   return data.user;
 }
 
+async function deleteCurrentUser(){
+  if(!window.PublicChat || typeof window.PublicChat.authHeaders !== 'function'){
+    throw new Error('กรุณาเข้าสู่ระบบใหม่');
+  }
+
+  const userId = currentUser().user_id || '';
+  if(!userId) throw new Error('ไม่พบข้อมูลบัญชีผู้ใช้');
+
+  const headers = await window.PublicChat.authHeaders();
+  const response = await fetch('/api/me', {
+    method: 'DELETE',
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ user_id: userId })
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if(!response.ok || data.status === 'error'){
+    throw new Error(data.message || 'ลบบัญชีไม่สำเร็จ');
+  }
+
+  return data;
+}
+
 function applyUpdatedUser(user){
   if(!user) return;
   window.LaanCurrentUser = user;
@@ -271,11 +303,56 @@ function closeSettings(){
   if(saveSettingsBtn) saveSettingsBtn.disabled = false;
 }
 
+function setDeleteAccountError(message){
+  if(!deleteAccountError) return;
+  deleteAccountError.textContent = message || '';
+  deleteAccountError.hidden = !message;
+}
+
+function setDeleteLoading(isLoading){
+  if(!confirmDeleteAccountBtn) return;
+  if(!confirmDeleteAccountBtn.dataset.idleText) confirmDeleteAccountBtn.dataset.idleText = confirmDeleteAccountBtn.textContent;
+  confirmDeleteAccountBtn.disabled = isLoading;
+  confirmDeleteAccountBtn.textContent = isLoading ? 'กำลังลบ...' : confirmDeleteAccountBtn.dataset.idleText;
+}
+
+function openDeleteAccountModal(){
+  setDeleteAccountError('');
+  deleteAccountOverlay?.classList.add('open');
+}
+
+function closeDeleteAccountModal(){
+  deleteAccountOverlay?.classList.remove('open');
+  setDeleteAccountError('');
+  setDeleteLoading(false);
+}
+
 openSettingsBtn.addEventListener('click', openSettings);
 closeSettingsBtn.addEventListener('click', closeSettings);
 cancelSettingsBtn.addEventListener('click', closeSettings);
 settingsOverlay.addEventListener('click', (e) => {
   if(e.target === settingsOverlay) closeSettings();
+});
+
+deleteAccountBtn?.addEventListener('click', openDeleteAccountModal);
+closeDeleteAccountBtn?.addEventListener('click', closeDeleteAccountModal);
+cancelDeleteAccountBtn?.addEventListener('click', closeDeleteAccountModal);
+deleteAccountOverlay?.addEventListener('click', (e) => {
+  if(e.target === deleteAccountOverlay) closeDeleteAccountModal();
+});
+
+confirmDeleteAccountBtn?.addEventListener('click', async () => {
+  setDeleteAccountError('');
+  setDeleteLoading(true);
+
+  try {
+    await deleteCurrentUser();
+    window.location.reload();
+  } catch (error) {
+    console.error('Failed to delete account:', error);
+    setDeleteAccountError(error.message || 'ลบบัญชีไม่สำเร็จ');
+    setDeleteLoading(false);
+  }
 });
 
 changeProfileImageBtn?.addEventListener('click', async () => {

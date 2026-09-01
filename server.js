@@ -906,6 +906,31 @@ app.patch('/api/me/social-media', requireUser, async (req, res) => {
   }
 });
 
+app.delete('/api/me', requireUser, async (req, res) => {
+  const userId = typeof req.body.user_id === 'string' ? req.body.user_id.trim() : '';
+
+  if (!userId || userId !== req.user.user_id) {
+    return sendApiError(res, 403, 'invalid_user_id', 'ไม่สามารถลบบัญชีนี้ได้');
+  }
+
+  try {
+    const users = await getUsersCollection();
+    const result = await users.deleteOne({ user_id: userId });
+
+    if (!result.deletedCount) {
+      return sendApiError(res, 404, 'user_not_found', 'ไม่พบบัญชีนี้ในระบบ');
+    }
+
+    return res.json({
+      status: 'success',
+      user_id: userId
+    });
+  } catch (error) {
+    console.error('Delete account API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'ลบบัญชีไม่สำเร็จ');
+  }
+});
+
 app.get('/api/universities', async (req, res) => {
   try {
     const files = await fs.promises.readdir(UNIVERSITY_LOGOS_DIR, { withFileTypes: true });
