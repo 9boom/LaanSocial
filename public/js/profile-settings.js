@@ -3,6 +3,7 @@
 /* ---------- PROFILE DROPDOWN ---------- */
 const profileAvatarBtn = document.getElementById('profileAvatarBtn');
 const profileDropdown  = document.getElementById('profileDropdown');
+const logoutBtn        = document.getElementById('logoutBtn');
 
 profileAvatarBtn.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -10,6 +11,14 @@ profileAvatarBtn.addEventListener('click', (e) => {
 });
 profileDropdown.addEventListener('click', (e) => e.stopPropagation());
 document.addEventListener('click', () => profileDropdown.classList.remove('open'));
+
+/* Logout Handler */
+logoutBtn?.addEventListener('click', async () => {
+  if (window.IDBStorage) {
+    await window.IDBStorage.removeItem('current_loggedin');
+  }
+  window.location.reload();
+});
 
 /* ---------- SETTINGS MODAL / THEME SWITCH ---------- */
 const settingsOverlay  = document.getElementById('settingsOverlay');
