@@ -215,7 +215,7 @@
 
   function renderMessage(message){
     const mine = message.user_owner_id && message.user_owner_id === state.currentUserId;
-    const nick = message.user_nick || 'ไม่ระบุชื่อ';
+    const nick = message.user_nick || 'This account has been deleted';
     const tag = userTag(message);
     const avatar = message.user_profile_url || FALLBACK_AVATAR;
     const actions = mine ? '' : `<div class="msg-actions">
