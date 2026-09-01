@@ -83,7 +83,11 @@ function normalizeSocialUrl(value) {
   return normalizePlainText(value, 300);
 }
 
-function normalizeSubmittedSocialUrl(value) {
+function isAllowedSocialHostname(hostname, domain) {
+  return hostname === domain || hostname === `www.${domain}`;
+}
+
+function normalizeSubmittedSocialUrl(value, domain) {
   const raw = normalizeSocialUrl(value);
   if (!raw) return '';
 
@@ -91,6 +95,7 @@ function normalizeSubmittedSocialUrl(value) {
   try {
     const url = new URL(candidate);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    if (!isAllowedSocialHostname(url.hostname.toLowerCase(), domain)) return null;
     return url.href.slice(0, 300);
   } catch (error) {
     return null;
@@ -871,8 +876,8 @@ app.patch('/api/me/profile-image', requireUser, async (req, res) => {
 
 app.patch('/api/me/social-media', requireUser, async (req, res) => {
   const socialMedia = {
-    facebook: normalizeSubmittedSocialUrl(req.body.facebook),
-    instagram: normalizeSubmittedSocialUrl(req.body.instagram)
+    facebook: normalizeSubmittedSocialUrl(req.body.facebook, 'facebook.com'),
+    instagram: normalizeSubmittedSocialUrl(req.body.instagram, 'instagram.com')
   };
 
   try {

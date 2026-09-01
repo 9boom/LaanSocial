@@ -38,8 +38,13 @@ const settingsInstagram = document.getElementById('settingsInstagram');
 const settingsProfileError = document.getElementById('settingsProfileError');
 
 const FALLBACK_PROFILE_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+const SOCIAL_DOMAINS = {
+  Facebook: 'facebook.com',
+  Instagram: 'instagram.com'
+};
 let settingsSelectedAvatar = '';
 let profileImagesLoaded = false;
+let settingsSaving = false;
 
 function currentTheme(){
   return document.body.classList.contains('theme-dark') ? 'dark' : 'light';
@@ -65,14 +70,19 @@ function setSettingsError(message){
 
 function setSaveLoading(isLoading){
   if(!saveSettingsBtn) return;
+  settingsSaving = isLoading;
   if(!saveSettingsBtn.dataset.idleText) saveSettingsBtn.dataset.idleText = saveSettingsBtn.textContent;
-  saveSettingsBtn.disabled = isLoading;
+  saveSettingsBtn.disabled = isLoading || !isSocialFormValid(false);
   saveSettingsBtn.textContent = isLoading ? 'กำลังบันทึก...' : saveSettingsBtn.dataset.idleText;
 }
 
 function getCssEscaped(value){
   if(window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value);
   return String(value || '').replace(/["\\]/g, '\\$&');
+}
+
+function isAllowedSocialHostname(hostname, domain){
+  return hostname === domain || hostname === `www.${domain}`;
 }
 
 function normalizeExternalUrl(value, label){
@@ -83,10 +93,47 @@ function normalizeExternalUrl(value, label){
   try {
     const url = new URL(candidate);
     if(url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Invalid protocol');
+    if(!isAllowedSocialHostname(url.hostname.toLowerCase(), SOCIAL_DOMAINS[label])) throw new Error('Invalid domain');
     return url.href;
   } catch (error) {
-    throw new Error(`ลิงก์ ${label} ไม่ถูกต้อง`);
+    throw new Error(`ลิงก์ ${label} ต้องเป็น ${SOCIAL_DOMAINS[label]} เท่านั้น`);
   }
+}
+
+function validateSocialValue(input, label){
+  if(!input) return '';
+  const raw = input.value.trim();
+  if(!raw){
+    input.setCustomValidity('');
+    return '';
+  }
+
+  try {
+    normalizeExternalUrl(raw, label);
+    input.setCustomValidity('');
+    return '';
+  } catch (error) {
+    input.setCustomValidity(error.message);
+    return error.message;
+  }
+}
+
+function socialValidationMessage(){
+  if(!settingsSocialForm || settingsSocialForm.hidden) return '';
+  const facebookMessage = validateSocialValue(settingsFacebook, 'Facebook');
+  const instagramMessage = validateSocialValue(settingsInstagram, 'Instagram');
+  return facebookMessage || instagramMessage;
+}
+
+function isSocialFormValid(showError){
+  const message = socialValidationMessage();
+  if(showError) setSettingsError(message);
+  return !message;
+}
+
+function updateSaveAvailability(){
+  if(!saveSettingsBtn || settingsSaving) return;
+  saveSettingsBtn.disabled = !isSocialFormValid(true);
 }
 
 async function patchCurrentUser(url, payload){
@@ -216,10 +263,12 @@ function openSettings(){
   themeSelect.value = currentTheme();
   syncSettingsProfileFields();
   settingsOverlay.classList.add('open');
+  updateSaveAvailability();
 }
 function closeSettings(){
   settingsOverlay.classList.remove('open');
   setSettingsError('');
+  if(saveSettingsBtn) saveSettingsBtn.disabled = false;
 }
 
 openSettingsBtn.addEventListener('click', openSettings);
@@ -232,17 +281,31 @@ settingsOverlay.addEventListener('click', (e) => {
 changeProfileImageBtn?.addEventListener('click', async () => {
   if(!settingsAvatarPicker) return;
   settingsAvatarPicker.hidden = !settingsAvatarPicker.hidden;
+  changeProfileImageBtn.classList.toggle('is-open', !settingsAvatarPicker.hidden);
+  changeProfileImageBtn.setAttribute('aria-expanded', String(!settingsAvatarPicker.hidden));
   if(!settingsAvatarPicker.hidden) await loadSettingsProfileImages();
 });
 
 editSocialMediaBtn?.addEventListener('click', () => {
   if(!settingsSocialForm) return;
   settingsSocialForm.hidden = !settingsSocialForm.hidden;
+  editSocialMediaBtn.classList.toggle('is-open', !settingsSocialForm.hidden);
+  editSocialMediaBtn.setAttribute('aria-expanded', String(!settingsSocialForm.hidden));
+  updateSaveAvailability();
+});
+
+settingsFacebook?.addEventListener('input', () => {
+  updateSaveAvailability();
+});
+
+settingsInstagram?.addEventListener('input', () => {
+  updateSaveAvailability();
 });
 
 saveSettingsBtn.addEventListener('click', async () => {
   const selectedTheme = themeSelect.value;
   setSettingsError('');
+  if(!isSocialFormValid(true)) return;
   setSaveLoading(true);
 
   try {

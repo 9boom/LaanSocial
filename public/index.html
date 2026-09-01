@@ -125,14 +125,20 @@
       </label>
       <fieldset class="profile-settings-group">
         <legend>ตั้งค่าโปรไฟล์</legend>
-        <button type="button" class="setting-action-btn" id="changeProfileImageBtn">เปลี่ยนรูปโปรไฟล์</button>
+        <button type="button" class="setting-action-btn" id="changeProfileImageBtn" aria-expanded="false" aria-controls="settingsAvatarPicker">
+          <span>เปลี่ยนรูปโปรไฟล์</span>
+          <span class="setting-action-arrow" aria-hidden="true"></span>
+        </button>
         <div class="settings-avatar-picker" id="settingsAvatarPicker" hidden>
           <div class="settings-avatar-preview">
             <img src="assets/sim_db/users_profile_image/annonymous.png" alt="รูปโปรไฟล์ที่เลือก" id="settingsAvatarPreview">
           </div>
           <div class="settings-avatar-list" id="settingsAvatarList"></div>
         </div>
-        <button type="button" class="setting-action-btn" id="editSocialMediaBtn">เพิ่มช่องทางโซเชียลมีเดีย</button>
+        <button type="button" class="setting-action-btn" id="editSocialMediaBtn" aria-expanded="false" aria-controls="settingsSocialForm">
+          <span>เพิ่มช่องทางโซเชียลมีเดีย</span>
+          <span class="setting-action-arrow" aria-hidden="true"></span>
+        </button>
         <div class="settings-social-form" id="settingsSocialForm" hidden>
           <label class="settings-social-field" for="settingsFacebook">
             <span>Facebook</span>

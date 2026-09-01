@@ -764,6 +764,12 @@ body.theme-dark .attachment-download-btn img{
   font-weight:700;
   font-family:inherit;
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 14px;
+  text-align:left;
 }
 .setting-action-btn + .setting-action-btn,
 .settings-avatar-picker + .setting-action-btn{
@@ -771,6 +777,18 @@ body.theme-dark .attachment-download-btn img{
 }
 .setting-action-btn:hover{
   border-color:var(--accent);
+}
+.setting-action-arrow{
+  width:9px;
+  height:9px;
+  border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;
+  transform:rotate(45deg);
+  transition:transform .18s ease;
+  flex:0 0 auto;
+}
+.setting-action-btn.is-open .setting-action-arrow{
+  transform:rotate(225deg);
 }
 .settings-avatar-picker{
   margin:12px 0;
