@@ -793,6 +793,10 @@ body.theme-dark .attachment-download-btn img{
 .settings-avatar-picker{
   margin:12px 0;
 }
+.settings-avatar-picker[hidden],
+.settings-social-form[hidden]{
+  display:none;
+}
 .settings-avatar-preview{
   display:flex;
   justify-content:center;
