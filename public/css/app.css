@@ -981,6 +981,12 @@ body.theme-dark .profile-panel-close:hover{
   display:flex;align-items:center;justify-content:center;gap:8px;
   transition:background .2s, border-color .2s;
 }
+.profile-action-btn img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  flex:0 0 auto;
+}
 .profile-reply-btn{
   background:var(--accent);
   color:#fff;
