@@ -12,6 +12,17 @@
 
   let activeProfileUser = null;
 
+  function formatJoinDate(value){
+    if(!value) return 'ไม่พบข้อมูลวันเข้าร่วม';
+    const date = new Date(value);
+    if(Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
   function openProfileDrawer(userData){
     if(!userData) return;
     activeProfileUser = userData;
@@ -19,7 +30,7 @@
     const nick = userData.nick || userData.name || userData.user_nick || 'ไม่ระบุชื่อ';
     const tag = userData.tag || userData.user_tag || '';
     const avatar = userData.avatar || userData.user_profile_url || 'assets/sim_db/users_profile_image/annonymous.png';
-    const joinDate = userData.joinDate || userData.created_at || 'มกราคม 2569';
+    const joinDate = formatJoinDate(userData.created_at || userData.joinDate);
     const profileId = userData.profileId || userData.user_id || 'USR-00000';
 
     if(profileAvatarImg){
@@ -28,7 +39,7 @@
     }
     if(profileTagEl) profileTagEl.textContent = tag;
     if(profileNameEl) profileNameEl.textContent = nick;
-    if(profileJoinDateEl) profileJoinDateEl.textContent = typeof joinDate === 'string' && joinDate.length > 20 ? joinDate.slice(0, 10) : joinDate;
+    if(profileJoinDateEl) profileJoinDateEl.textContent = joinDate;
     if(profileIdValEl) profileIdValEl.textContent = profileId;
 
     if(profilePanel) profilePanel.classList.add('open');

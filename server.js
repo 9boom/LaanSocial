@@ -419,6 +419,7 @@ function publicChatMessage(document, user) {
     user_nick: user?.user_nick || '',
     user_uniname: user?.user_uniname || '',
     user_profile_url: user?.user_profile_url || '',
+    user_created_at: user?.created_at || '',
     message: document.message,
     attachment_url: document.attachment_url || '',
     created_at: document.created_at
@@ -436,7 +437,7 @@ async function getUsersByIds(userIds) {
   const users = await getUsersCollection();
   const rows = await users
     .find({ user_id: { $in: ids } })
-    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1 })
+    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, created_at: 1 })
     .toArray();
 
   return new Map(rows.map(user => [user.user_id, user]));
@@ -476,6 +477,7 @@ function getPresencePayload(subroomId) {
       user_nick: member.user_nick,
       user_uniname: member.user_uniname,
       user_profile_url: member.user_profile_url,
+      created_at: member.created_at,
       last_seen_at: new Date(member.last_seen_at)
     }));
 
@@ -560,6 +562,7 @@ function trackPresence(ws, user, subroom) {
     user_nick: user.user_nick,
     user_uniname: user.user_uniname,
     user_profile_url: user.user_profile_url,
+    created_at: user.created_at,
     uniroom_id: subroom.uniroom_id,
     subroom_id: subroom.subroom_id,
     last_seen_at: Date.now()

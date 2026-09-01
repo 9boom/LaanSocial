@@ -217,7 +217,7 @@
       <button class="msg-action public-reply-btn" data-reply-user="${escapeHtml(nick)}"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
     </div>`;
 
-    const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(message.user_owner_id || 'USR-00000')}" data-profile-date="${escapeHtml(message.created_at ? new Date(message.created_at).toLocaleDateString('th-TH') : 'มกราคม 2569')}"`;
+    const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(message.user_owner_id || 'USR-00000')}" data-profile-date="${escapeHtml(message.user_created_at || '')}"`;
 
     const meta = mine
       ? `<span class="time">${formatTime(message.created_at)}</span><span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span>`
@@ -317,7 +317,7 @@
       const nick = user.user_nick || '';
       const tag = userTag(user);
       const avatar = user.user_profile_url || FALLBACK_AVATAR;
-      const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(user.user_id || 'USR-00000')}" data-profile-date="${escapeHtml(user.created_at ? new Date(user.created_at).toLocaleDateString('th-TH') : 'มกราคม 2569')}"`;
+      const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(user.user_id || 'USR-00000')}" data-profile-date="${escapeHtml(user.created_at || '')}"`;
 
       return `<div class="online-member${mine ? ' self' : ''} user-profile-trigger" ${profileAttrs}>
         <img src="${escapeHtml(avatar)}" alt="">
@@ -567,7 +567,7 @@
             tag: ds.profileTag,
             avatar: ds.profileAvatar,
             profileId: ds.profileId,
-            joinDate: ds.profileDate
+            created_at: ds.profileDate
           });
         }
       }
@@ -583,7 +583,7 @@
             tag: ds.profileTag,
             avatar: ds.profileAvatar,
             profileId: ds.profileId,
-            joinDate: ds.profileDate
+            created_at: ds.profileDate
           });
         }
       }
