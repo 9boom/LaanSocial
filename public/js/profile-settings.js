@@ -47,7 +47,18 @@ settingsOverlay.addEventListener('click', (e) => {
   if(e.target === settingsOverlay) closeSettings();
 });
 
-saveSettingsBtn.addEventListener('click', () => {
-  document.body.classList.toggle('theme-dark', themeSelect.value === 'dark');
+saveSettingsBtn.addEventListener('click', async () => {
+  const selectedTheme = themeSelect.value;
+  document.body.classList.toggle('theme-dark', selectedTheme === 'dark');
+  
+  // Save theme preference to IndexedDB
+  if (window.IDBStorage) {
+    try {
+      await window.IDBStorage.setItem('themestate', selectedTheme);
+    } catch (err) {
+      console.error('Failed to save theme to IndexedDB:', err);
+    }
+  }
+  
   closeSettings();
 });

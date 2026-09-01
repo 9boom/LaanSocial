@@ -1,5 +1,19 @@
 /* Shared mock data and session state used by chat and onboarding modules. */
 
+/* ---------- INITIALIZE THEME FROM INDEXEDDB ---------- */
+(async function initializeTheme() {
+  if (window.IDBStorage) {
+    try {
+      const savedTheme = await window.IDBStorage.getItem('themestate', 'light');
+      document.body.classList.toggle('theme-dark', savedTheme === 'dark');
+    } catch (err) {
+      console.error('Failed to load theme from IndexedDB:', err);
+      // Fallback to light theme on error
+      document.body.classList.remove('theme-dark');
+    }
+  }
+})();
+
 /* ---------- PRIVATE CHAT (mockup) ---------- */
 const AVATAR_ASSETS = {
   dog:'assets/sim_db/users_profile_image/dog.png',
