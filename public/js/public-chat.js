@@ -666,6 +666,38 @@
     if(user?.user_id) state.currentUserId = user.user_id;
   }
 
+  function updateCurrentUserSnapshot(user){
+    if(!user?.user_id) return;
+    setCurrentUser(user);
+
+    state.messages = state.messages.map(message => {
+      if(message.user_owner_id !== user.user_id) return message;
+      return {
+        ...message,
+        user_nick: user.user_nick || message.user_nick,
+        user_uniname: user.user_uniname || message.user_uniname,
+        user_profile_url: user.user_profile_url || message.user_profile_url,
+        social_media: user.social_media || message.social_media,
+        user_created_at: user.created_at || message.user_created_at
+      };
+    });
+
+    state.allOnlineUsers = state.allOnlineUsers.map(member => {
+      if(member.user_id !== user.user_id) return member;
+      return {
+        ...member,
+        user_nick: user.user_nick || member.user_nick,
+        user_uniname: user.user_uniname || member.user_uniname,
+        user_profile_url: user.user_profile_url || member.user_profile_url,
+        social_media: user.social_media || member.social_media,
+        created_at: user.created_at || member.created_at
+      };
+    });
+
+    renderMessages();
+    renderOnlineList();
+  }
+
   async function refreshIdentity(){
     state.currentUserId = await getCurrentUserId();
     if(window.LaanCurrentUser) setCurrentUser(window.LaanCurrentUser);
@@ -676,6 +708,7 @@
     authHeaders,
     openSubroom,
     setCurrentUser,
+    updateCurrentUserSnapshot,
     refreshIdentity,
     applyPresence,
     updateUniversityOnline,

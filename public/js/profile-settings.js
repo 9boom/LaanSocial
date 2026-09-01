@@ -133,7 +133,9 @@ function applyUpdatedUser(user){
     });
   }
 
-  if(window.PublicChat && typeof window.PublicChat.setCurrentUser === 'function'){
+  if(window.PublicChat && typeof window.PublicChat.updateCurrentUserSnapshot === 'function'){
+    window.PublicChat.updateCurrentUserSnapshot(user);
+  } else if(window.PublicChat && typeof window.PublicChat.setCurrentUser === 'function'){
     window.PublicChat.setCurrentUser(user);
   }
 
@@ -236,7 +238,6 @@ changeProfileImageBtn?.addEventListener('click', async () => {
 editSocialMediaBtn?.addEventListener('click', () => {
   if(!settingsSocialForm) return;
   settingsSocialForm.hidden = !settingsSocialForm.hidden;
-  if(!settingsSocialForm.hidden) syncSettingsProfileFields();
 });
 
 saveSettingsBtn.addEventListener('click', async () => {
@@ -249,7 +250,11 @@ saveSettingsBtn.addEventListener('click', async () => {
 
     // Save theme preference to IndexedDB
     if (window.IDBStorage) {
-      await window.IDBStorage.setItem('themestate', selectedTheme);
+      try {
+        await window.IDBStorage.setItem('themestate', selectedTheme);
+      } catch (err) {
+        console.error('Failed to save theme to IndexedDB:', err);
+      }
     }
 
     let updatedUser = null;

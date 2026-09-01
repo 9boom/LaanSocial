@@ -249,8 +249,8 @@ async function resolveUserFromAccessKey(accessKey) {
   let user = await users.findOne({ access_hkey_lookup: lookup });
 
   if (!user) {
-      const legacyCandidates = await users
-        .find({ access_hkey_lookup: { $exists: false } })
+    const legacyCandidates = await users
+      .find({ access_hkey_lookup: { $exists: false } })
       .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1 })
       .limit(100)
       .toArray();
