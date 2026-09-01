@@ -27,17 +27,197 @@ const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 const cancelSettingsBtn= document.getElementById('cancelSettingsBtn');
 const saveSettingsBtn  = document.getElementById('saveSettingsBtn');
 const themeSelect      = document.getElementById('themeSelect');
+const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
+const editSocialMediaBtn = document.getElementById('editSocialMediaBtn');
+const settingsAvatarPicker = document.getElementById('settingsAvatarPicker');
+const settingsAvatarPreview = document.getElementById('settingsAvatarPreview');
+const settingsAvatarList = document.getElementById('settingsAvatarList');
+const settingsSocialForm = document.getElementById('settingsSocialForm');
+const settingsFacebook = document.getElementById('settingsFacebook');
+const settingsInstagram = document.getElementById('settingsInstagram');
+const settingsProfileError = document.getElementById('settingsProfileError');
+
+const FALLBACK_PROFILE_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+let settingsSelectedAvatar = '';
+let profileImagesLoaded = false;
 
 function currentTheme(){
   return document.body.classList.contains('theme-dark') ? 'dark' : 'light';
 }
+
+function currentUser(){
+  return window.LaanCurrentUser || {};
+}
+
+function currentSocialMedia(){
+  const socialMedia = currentUser().social_media || {};
+  return {
+    facebook: typeof socialMedia.facebook === 'string' ? socialMedia.facebook : '',
+    instagram: typeof socialMedia.instagram === 'string' ? socialMedia.instagram : ''
+  };
+}
+
+function setSettingsError(message){
+  if(!settingsProfileError) return;
+  settingsProfileError.textContent = message || '';
+  settingsProfileError.hidden = !message;
+}
+
+function setSaveLoading(isLoading){
+  if(!saveSettingsBtn) return;
+  if(!saveSettingsBtn.dataset.idleText) saveSettingsBtn.dataset.idleText = saveSettingsBtn.textContent;
+  saveSettingsBtn.disabled = isLoading;
+  saveSettingsBtn.textContent = isLoading ? 'กำลังบันทึก...' : saveSettingsBtn.dataset.idleText;
+}
+
+function getCssEscaped(value){
+  if(window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value);
+  return String(value || '').replace(/["\\]/g, '\\$&');
+}
+
+function normalizeExternalUrl(value, label){
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if(!raw) return '';
+  const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+  try {
+    const url = new URL(candidate);
+    if(url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Invalid protocol');
+    return url.href;
+  } catch (error) {
+    throw new Error(`ลิงก์ ${label} ไม่ถูกต้อง`);
+  }
+}
+
+async function patchCurrentUser(url, payload){
+  if(!window.PublicChat || typeof window.PublicChat.authHeaders !== 'function'){
+    throw new Error('กรุณาเข้าสู่ระบบใหม่');
+  }
+
+  const headers = await window.PublicChat.authHeaders();
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      ...headers,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if(!response.ok || data.status === 'error'){
+    throw new Error(data.message || 'บันทึกการตั้งค่าโปรไฟล์ไม่สำเร็จ');
+  }
+
+  return data.user;
+}
+
+function applyUpdatedUser(user){
+  if(!user) return;
+  window.LaanCurrentUser = user;
+
+  if(user.user_profile_url){
+    profileAvatarBtn.src = user.user_profile_url;
+    document.querySelectorAll('.msg.own img.avatar, .online-member.self img').forEach(img => {
+      img.src = user.user_profile_url;
+    });
+  }
+
+  const userId = user.user_id || '';
+  if(userId){
+    document.querySelectorAll(`.user-profile-trigger[data-profile-id="${getCssEscaped(userId)}"]`).forEach(el => {
+      if(user.user_profile_url) el.dataset.profileAvatar = user.user_profile_url;
+      el.dataset.profileFacebook = user.social_media?.facebook || '';
+      el.dataset.profileInstagram = user.social_media?.instagram || '';
+      if(el.matches('img')) el.src = user.user_profile_url || el.src;
+    });
+  }
+
+  if(window.PublicChat && typeof window.PublicChat.setCurrentUser === 'function'){
+    window.PublicChat.setCurrentUser(user);
+  }
+
+  document.dispatchEvent(new CustomEvent('laan:user-ready', {
+    detail: { user }
+  }));
+}
+
+function setSelectedSettingsAvatar(src, option){
+  settingsSelectedAvatar = src || FALLBACK_PROFILE_AVATAR;
+  if(settingsAvatarPreview) settingsAvatarPreview.src = settingsSelectedAvatar;
+  settingsAvatarList?.querySelectorAll('.settings-avatar-option').forEach(item => {
+    item.classList.toggle('active', item === option || item.dataset.avatar === settingsSelectedAvatar);
+  });
+}
+
+function renderSettingsAvatarOptions(profileImages){
+  if(!settingsAvatarList) return;
+  settingsAvatarList.innerHTML = '';
+  const images = profileImages.length ? profileImages : [{
+    name: 'annonymous',
+    src: FALLBACK_PROFILE_AVATAR
+  }];
+  const activeAvatar = currentUser().user_profile_url || settingsSelectedAvatar || FALLBACK_PROFILE_AVATAR;
+
+  images.forEach((profileImage) => {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'settings-avatar-option';
+    option.dataset.avatar = profileImage.src;
+    option.setAttribute('aria-label', profileImage.name);
+
+    const img = document.createElement('img');
+    img.src = profileImage.src;
+    img.alt = profileImage.name;
+
+    option.appendChild(img);
+    option.addEventListener('click', () => {
+      setSelectedSettingsAvatar(profileImage.src, option);
+      setSettingsError('');
+    });
+
+    settingsAvatarList.appendChild(option);
+  });
+
+  setSelectedSettingsAvatar(activeAvatar);
+}
+
+async function loadSettingsProfileImages(){
+  if(profileImagesLoaded) return;
+
+  try {
+    const response = await fetch('/api/profile-images');
+    if(!response.ok) throw new Error('Unable to load profile images');
+    const profileImages = await response.json();
+    renderSettingsAvatarOptions(Array.isArray(profileImages) ? profileImages : []);
+    profileImagesLoaded = true;
+  } catch (error) {
+    console.error(error);
+    renderSettingsAvatarOptions([]);
+    profileImagesLoaded = true;
+  }
+}
+
+function syncSettingsProfileFields(){
+  settingsSelectedAvatar = currentUser().user_profile_url || FALLBACK_PROFILE_AVATAR;
+  if(settingsAvatarPreview) settingsAvatarPreview.src = settingsSelectedAvatar;
+  setSelectedSettingsAvatar(settingsSelectedAvatar);
+
+  const socialMedia = currentSocialMedia();
+  if(settingsFacebook) settingsFacebook.value = socialMedia.facebook;
+  if(settingsInstagram) settingsInstagram.value = socialMedia.instagram;
+  setSettingsError('');
+}
+
 function openSettings(){
   profileDropdown.classList.remove('open');
   themeSelect.value = currentTheme();
+  syncSettingsProfileFields();
   settingsOverlay.classList.add('open');
 }
 function closeSettings(){
   settingsOverlay.classList.remove('open');
+  setSettingsError('');
 }
 
 openSettingsBtn.addEventListener('click', openSettings);
@@ -47,18 +227,59 @@ settingsOverlay.addEventListener('click', (e) => {
   if(e.target === settingsOverlay) closeSettings();
 });
 
+changeProfileImageBtn?.addEventListener('click', async () => {
+  if(!settingsAvatarPicker) return;
+  settingsAvatarPicker.hidden = !settingsAvatarPicker.hidden;
+  if(!settingsAvatarPicker.hidden) await loadSettingsProfileImages();
+});
+
+editSocialMediaBtn?.addEventListener('click', () => {
+  if(!settingsSocialForm) return;
+  settingsSocialForm.hidden = !settingsSocialForm.hidden;
+  if(!settingsSocialForm.hidden) syncSettingsProfileFields();
+});
+
 saveSettingsBtn.addEventListener('click', async () => {
   const selectedTheme = themeSelect.value;
-  document.body.classList.toggle('theme-dark', selectedTheme === 'dark');
-  
-  // Save theme preference to IndexedDB
-  if (window.IDBStorage) {
-    try {
+  setSettingsError('');
+  setSaveLoading(true);
+
+  try {
+    document.body.classList.toggle('theme-dark', selectedTheme === 'dark');
+
+    // Save theme preference to IndexedDB
+    if (window.IDBStorage) {
       await window.IDBStorage.setItem('themestate', selectedTheme);
-    } catch (err) {
-      console.error('Failed to save theme to IndexedDB:', err);
     }
+
+    let updatedUser = null;
+    const user = currentUser();
+
+    if(settingsAvatarPicker && !settingsAvatarPicker.hidden && settingsSelectedAvatar && settingsSelectedAvatar !== user.user_profile_url){
+      updatedUser = await patchCurrentUser('/api/me/profile-image', {
+        user_profile_url: settingsSelectedAvatar
+      });
+      applyUpdatedUser(updatedUser);
+    }
+
+    if(settingsSocialForm && !settingsSocialForm.hidden){
+      const socialMedia = {
+        facebook: normalizeExternalUrl(settingsFacebook?.value, 'Facebook'),
+        instagram: normalizeExternalUrl(settingsInstagram?.value, 'Instagram')
+      };
+      const currentSocial = currentSocialMedia();
+
+      if(socialMedia.facebook !== currentSocial.facebook || socialMedia.instagram !== currentSocial.instagram){
+        updatedUser = await patchCurrentUser('/api/me/social-media', socialMedia);
+        applyUpdatedUser(updatedUser);
+      }
+    }
+
+    closeSettings();
+  } catch (err) {
+    console.error('Failed to save settings:', err);
+    setSettingsError(err.message || 'บันทึกการตั้งค่าไม่สำเร็จ');
+  } finally {
+    setSaveLoading(false);
   }
-  
-  closeSettings();
 });

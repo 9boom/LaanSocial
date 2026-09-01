@@ -71,6 +71,12 @@
     }[char]));
   }
 
+  function socialMediaAttrs(socialMedia){
+    const facebook = socialMedia && typeof socialMedia.facebook === 'string' ? socialMedia.facebook : '';
+    const instagram = socialMedia && typeof socialMedia.instagram === 'string' ? socialMedia.instagram : '';
+    return `data-profile-facebook="${escapeHtml(facebook)}" data-profile-instagram="${escapeHtml(instagram)}"`;
+  }
+
   function cssEscape(value){
     if(window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(value);
     return String(value || '').replace(/["\\]/g, '\\$&');
@@ -217,7 +223,7 @@
       <button class="msg-action public-reply-btn" data-reply-user="${escapeHtml(nick)}"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
     </div>`;
 
-    const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(message.user_owner_id || 'USR-00000')}" data-profile-date="${escapeHtml(message.user_created_at || '')}"`;
+    const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(message.user_owner_id || 'USR-00000')}" data-profile-date="${escapeHtml(message.user_created_at || '')}" ${socialMediaAttrs(message.social_media)}`;
 
     const meta = mine
       ? `<span class="time">${formatTime(message.created_at)}</span><span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span>`
@@ -317,7 +323,7 @@
       const nick = user.user_nick || '';
       const tag = userTag(user);
       const avatar = user.user_profile_url || FALLBACK_AVATAR;
-      const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(user.user_id || 'USR-00000')}" data-profile-date="${escapeHtml(user.created_at || '')}"`;
+      const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(user.user_id || 'USR-00000')}" data-profile-date="${escapeHtml(user.created_at || '')}" ${socialMediaAttrs(user.social_media)}`;
 
       return `<div class="online-member${mine ? ' self' : ''} user-profile-trigger" ${profileAttrs}>
         <img src="${escapeHtml(avatar)}" alt="">
@@ -567,7 +573,11 @@
             tag: ds.profileTag,
             avatar: ds.profileAvatar,
             profileId: ds.profileId,
-            created_at: ds.profileDate
+            created_at: ds.profileDate,
+            social_media: {
+              facebook: ds.profileFacebook || '',
+              instagram: ds.profileInstagram || ''
+            }
           });
         }
       }
@@ -583,7 +593,11 @@
             tag: ds.profileTag,
             avatar: ds.profileAvatar,
             profileId: ds.profileId,
-            created_at: ds.profileDate
+            created_at: ds.profileDate,
+            social_media: {
+              facebook: ds.profileFacebook || '',
+              instagram: ds.profileInstagram || ''
+            }
           });
         }
       }

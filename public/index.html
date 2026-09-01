@@ -123,6 +123,28 @@
           <option value="dark">มืด</option>
         </select>
       </label>
+      <fieldset class="profile-settings-group">
+        <legend>ตั้งค่าโปรไฟล์</legend>
+        <button type="button" class="setting-action-btn" id="changeProfileImageBtn">เปลี่ยนรูปโปรไฟล์</button>
+        <div class="settings-avatar-picker" id="settingsAvatarPicker" hidden>
+          <div class="settings-avatar-preview">
+            <img src="assets/sim_db/users_profile_image/annonymous.png" alt="รูปโปรไฟล์ที่เลือก" id="settingsAvatarPreview">
+          </div>
+          <div class="settings-avatar-list" id="settingsAvatarList"></div>
+        </div>
+        <button type="button" class="setting-action-btn" id="editSocialMediaBtn">เพิ่มช่องทางโซเชียลมีเดีย</button>
+        <div class="settings-social-form" id="settingsSocialForm" hidden>
+          <label class="settings-social-field" for="settingsFacebook">
+            <span>Facebook</span>
+            <input type="url" id="settingsFacebook" placeholder="https://facebook.com/..." autocomplete="off">
+          </label>
+          <label class="settings-social-field" for="settingsInstagram">
+            <span>Instagram</span>
+            <input type="url" id="settingsInstagram" placeholder="https://instagram.com/..." autocomplete="off">
+          </label>
+        </div>
+        <p class="settings-profile-error" id="settingsProfileError" aria-live="polite" hidden></p>
+      </fieldset>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn-secondary" id="cancelSettingsBtn">ยกเลิก</button>
@@ -222,6 +244,10 @@
         <p class="label">โปรไฟล์ไอดี</p>
         <p class="date" id="profileIdVal"></p>
       </div>
+    </div>
+    <div class="profile-social-card" id="profileSocialCard">
+      <p class="profile-social-empty" id="profileSocialEmpty">ไม่มีช่องทางโซเซียลมีเดีย</p>
+      <div class="profile-social-links" id="profileSocialLinks"></div>
     </div>
     <div class="profile-actions">
       <button type="button" class="profile-action-btn profile-report-btn" id="profileReportBtn">

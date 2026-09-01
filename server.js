@@ -79,6 +79,31 @@ function normalizePlainText(value, maxLength) {
   return value.replace(/\0/g, '').trim().slice(0, maxLength);
 }
 
+function normalizeSocialUrl(value) {
+  return normalizePlainText(value, 300);
+}
+
+function normalizeSubmittedSocialUrl(value) {
+  const raw = normalizeSocialUrl(value);
+  if (!raw) return '';
+
+  const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href.slice(0, 300);
+  } catch (error) {
+    return null;
+  }
+}
+
+function publicSocialMedia(socialMedia) {
+  return {
+    facebook: normalizeSocialUrl(socialMedia?.facebook),
+    instagram: normalizeSocialUrl(socialMedia?.instagram)
+  };
+}
+
 function normalizeAccessKey(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -89,6 +114,7 @@ function publicUser(user) {
     user_nick: user.user_nick,
     user_uniname: user.user_uniname,
     user_profile_url: user.user_profile_url,
+    social_media: publicSocialMedia(user.social_media),
     is_banned: Boolean(user.is_banned),
     readed_subroom: Array.isArray(user.readed_subroom) ? user.readed_subroom : [],
     readed_privateroom: Array.isArray(user.readed_privateroom) ? user.readed_privateroom : [],
@@ -223,9 +249,9 @@ async function resolveUserFromAccessKey(accessKey) {
   let user = await users.findOne({ access_hkey_lookup: lookup });
 
   if (!user) {
-    const legacyCandidates = await users
-      .find({ access_hkey_lookup: { $exists: false } })
-      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1 })
+      const legacyCandidates = await users
+        .find({ access_hkey_lookup: { $exists: false } })
+      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1 })
       .limit(100)
       .toArray();
 
@@ -419,6 +445,7 @@ function publicChatMessage(document, user) {
     user_nick: user?.user_nick || '',
     user_uniname: user?.user_uniname || '',
     user_profile_url: user?.user_profile_url || '',
+    social_media: publicSocialMedia(user?.social_media),
     user_created_at: user?.created_at || '',
     message: document.message,
     attachment_url: document.attachment_url || '',
@@ -437,7 +464,7 @@ async function getUsersByIds(userIds) {
   const users = await getUsersCollection();
   const rows = await users
     .find({ user_id: { $in: ids } })
-    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, created_at: 1 })
+    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, created_at: 1 })
     .toArray();
 
   return new Map(rows.map(user => [user.user_id, user]));
@@ -477,6 +504,7 @@ function getPresencePayload(subroomId) {
       user_nick: member.user_nick,
       user_uniname: member.user_uniname,
       user_profile_url: member.user_profile_url,
+      social_media: publicSocialMedia(member.social_media),
       created_at: member.created_at,
       last_seen_at: new Date(member.last_seen_at)
     }));
@@ -562,6 +590,7 @@ function trackPresence(ws, user, subroom) {
     user_nick: user.user_nick,
     user_uniname: user.user_uniname,
     user_profile_url: user.user_profile_url,
+    social_media: user.social_media,
     created_at: user.created_at,
     uniroom_id: subroom.uniroom_id,
     subroom_id: subroom.subroom_id,
@@ -776,6 +805,10 @@ app.post('/login', async (req, res) => {
         user_nick: nick,
         user_uniname: userUniname,
         user_profile_url: userProfileUrl,
+        social_media: {
+          facebook: '',
+          instagram: ''
+        },
         access_hkey: await hashAccessKey(accessKey),
         access_hkey_lookup: accessKeyLookup(accessKey),
         is_banned: false,
@@ -804,6 +837,67 @@ app.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Login API error:', error.code || error.message);
     return sendApiError(res, 500, 'server_error', 'ระบบเชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  }
+});
+
+app.patch('/api/me/profile-image', requireUser, async (req, res) => {
+  const userProfileUrl = typeof req.body.user_profile_url === 'string' ? req.body.user_profile_url.trim() : '';
+
+  try {
+    if (!(await isValidProfileImageUrl(userProfileUrl))) {
+      return sendApiError(res, 400, 'invalid_profile_image', 'รูปโปรไฟล์ไม่ถูกต้อง');
+    }
+
+    const users = await getUsersCollection();
+    await users.updateOne(
+      { user_id: req.user.user_id },
+      { $set: { user_profile_url: userProfileUrl } }
+    );
+
+    const updatedUser = {
+      ...req.user,
+      user_profile_url: userProfileUrl
+    };
+
+    return res.json({
+      status: 'success',
+      user: publicUser(updatedUser)
+    });
+  } catch (error) {
+    console.error('Update profile image API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'บันทึกรูปโปรไฟล์ไม่สำเร็จ');
+  }
+});
+
+app.patch('/api/me/social-media', requireUser, async (req, res) => {
+  const socialMedia = {
+    facebook: normalizeSubmittedSocialUrl(req.body.facebook),
+    instagram: normalizeSubmittedSocialUrl(req.body.instagram)
+  };
+
+  try {
+    if (socialMedia.facebook === null || socialMedia.instagram === null) {
+      return sendApiError(res, 400, 'invalid_social_media', 'ลิงก์โซเชียลมีเดียไม่ถูกต้อง');
+    }
+
+    const users = await getUsersCollection();
+    await users.updateOne(
+      { user_id: req.user.user_id },
+      { $set: { social_media: socialMedia } }
+    );
+
+    const updatedUser = {
+      ...req.user,
+      social_media: socialMedia
+    };
+
+    return res.json({
+      status: 'success',
+      user: publicUser(updatedUser)
+    });
+  } catch (error) {
+    console.error('Update social media API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'บันทึกช่องทางโซเชียลมีเดียไม่สำเร็จ');
   }
 });
 

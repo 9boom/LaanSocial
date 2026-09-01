@@ -8,6 +8,8 @@
   const profileNameEl     = document.getElementById('profileName');
   const profileJoinDateEl = document.getElementById('profileJoinDate');
   const profileIdValEl    = document.getElementById('profileIdVal');
+  const profileSocialEmpty= document.getElementById('profileSocialEmpty');
+  const profileSocialLinks= document.getElementById('profileSocialLinks');
   const profileReportBtn  = document.getElementById('profileReportBtn');
 
   let activeProfileUser = null;
@@ -21,6 +23,69 @@
       month: 'long',
       year: 'numeric'
     });
+  }
+
+  function normalizedExternalUrl(value){
+    const raw = typeof value === 'string' ? value.trim() : '';
+    if(!raw) return '';
+
+    const candidate = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    try {
+      const url = new URL(candidate);
+      if(url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+      return url.href;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function socialMediaFor(userData){
+    const socialMedia = userData.social_media || {};
+    return {
+      facebook: normalizedExternalUrl(socialMedia.facebook || userData.facebook),
+      instagram: normalizedExternalUrl(socialMedia.instagram || userData.instagram)
+    };
+  }
+
+  function renderSocialMedia(userData){
+    if(!profileSocialLinks || !profileSocialEmpty) return;
+
+    const socialMedia = socialMediaFor(userData);
+    const items = [
+      {
+        key: 'facebook',
+        label: 'Facebook',
+        icon: 'assets/symbols/facebook.png',
+        url: socialMedia.facebook
+      },
+      {
+        key: 'instagram',
+        label: 'Instagram',
+        icon: 'assets/symbols/instagram.svg',
+        url: socialMedia.instagram
+      }
+    ].filter(item => item.url);
+
+    profileSocialLinks.innerHTML = '';
+    items.forEach(item => {
+      const link = document.createElement('a');
+      link.className = `profile-social-link ${item.key}`;
+      link.href = item.url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      const icon = document.createElement('img');
+      icon.src = item.icon;
+      icon.alt = '';
+
+      const label = document.createElement('span');
+      label.textContent = item.label;
+
+      link.append(icon, label);
+      profileSocialLinks.appendChild(link);
+    });
+
+    profileSocialEmpty.hidden = Boolean(items.length);
   }
 
   function openProfileDrawer(userData){
@@ -41,6 +106,7 @@
     if(profileNameEl) profileNameEl.textContent = nick;
     if(profileJoinDateEl) profileJoinDateEl.textContent = joinDate;
     if(profileIdValEl) profileIdValEl.textContent = profileId;
+    renderSocialMedia(userData);
 
     if(profilePanel) profilePanel.classList.add('open');
     if(profileOverlay) profileOverlay.classList.add('open');
