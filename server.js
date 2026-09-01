@@ -436,7 +436,7 @@ async function getUsersByIds(userIds) {
   const users = await getUsersCollection();
   const rows = await users
     .find({ user_id: { $in: ids } })
-    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1 })
+    .project({ _id: 0, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, created_at: 1 })
     .toArray();
 
   return new Map(rows.map(user => [user.user_id, user]));
@@ -476,6 +476,7 @@ function getPresencePayload(subroomId) {
       user_nick: member.user_nick,
       user_uniname: member.user_uniname,
       user_profile_url: member.user_profile_url,
+      created_at: member.created_at,
       last_seen_at: new Date(member.last_seen_at)
     }));
 
