@@ -12,32 +12,15 @@
 
   let activeProfileUser = null;
 
-  async function openProfileDrawer(userData){
+  function openProfileDrawer(userData){
     if(!userData) return;
     activeProfileUser = userData;
 
     const nick = userData.nick || userData.name || userData.user_nick || 'ไม่ระบุชื่อ';
     const tag = userData.tag || userData.user_tag || '';
     const avatar = userData.avatar || userData.user_profile_url || 'assets/sim_db/users_profile_image/annonymous.png';
+    const joinDate = userData.joinDate || userData.created_at || 'มกราคม 2569';
     const profileId = userData.profileId || userData.user_id || 'USR-00000';
-    let joinDate = 'ไม่พบข้อมูล';
-
-    // Fetch user profile data from server to get accurate created_at
-    if (userData.user_id) {
-      try {
-        const response = await fetch(`/api/user/${encodeURIComponent(userData.user_id)}/profile`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'success' && data.user && data.user.created_at) {
-            joinDate = data.user.created_at;
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      }
-    } else if (userData.joinDate || userData.created_at) {
-      joinDate = userData.joinDate || userData.created_at;
-    }
 
     if(profileAvatarImg){
       profileAvatarImg.src = avatar;

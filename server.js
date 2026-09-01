@@ -804,41 +804,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/api/user/:user_id/profile', async (req, res) => {
-  const userId = typeof req.params.user_id === 'string' ? req.params.user_id.trim() : '';
-
-  if (!userId) {
-    return sendApiError(res, 400, 'invalid_user_id', 'ไม่ระบุรหัสผู้ใช้');
-  }
-
-  try {
-    const users = await getUsersCollection();
-    const user = await users.findOne(
-      { user_id: userId },
-      { projection: { user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, created_at: 1, is_banned: 1 } }
-    );
-
-    if (!user) {
-      return sendApiError(res, 404, 'user_not_found', 'ไม่พบข้อมูลผู้ใช้');
-    }
-
-    return res.json({
-      status: 'success',
-      user: {
-        user_id: user.user_id,
-        user_nick: user.user_nick,
-        user_uniname: user.user_uniname,
-        user_profile_url: user.user_profile_url,
-        created_at: user.created_at,
-        is_banned: Boolean(user.is_banned)
-      }
-    });
-  } catch (error) {
-    console.error('User profile API error:', error.message);
-    return sendApiError(res, 500, 'server_error', 'ระบบเชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
-  }
-});
-
 app.get('/api/universities', async (req, res) => {
   try {
     const files = await fs.promises.readdir(UNIVERSITY_LOGOS_DIR, { withFileTypes: true });
