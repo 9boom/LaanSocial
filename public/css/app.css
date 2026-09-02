@@ -387,6 +387,9 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
   border-radius:16px;
   padding:8px 12px;
 }
+.voting-pills[hidden]{
+  display:none;
+}
 .vote-stat{
   font-size:14px;
   font-weight:500;
@@ -414,6 +417,15 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
 }
 .vote-btn:hover{
   transform:scale(1.2);
+}
+.vote-btn:disabled{
+  cursor:not-allowed;
+  opacity:0.45;
+  transform:none;
+}
+.vote-btn.is-voted{
+  background:rgba(52,168,83,0.16);
+  border-radius:999px;
 }
 .vote-btn img{
   width:20px;

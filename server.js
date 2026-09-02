@@ -7,6 +7,7 @@ const { promisify } = require('util');
 const multer = require('multer');
 const { MongoClient } = require('mongodb');
 const { WebSocket, WebSocketServer } = require('ws');
+const { differenceInMilliseconds } = require('date-fns');
 
 try {
   process.loadEnvFile(path.join(__dirname, '.env'));
@@ -24,6 +25,7 @@ const DB_NAME = 'LaanDBDevelopment';
 const USERS_COLLECTION = 'users';
 const UNIVERSITIES_COLLECTION = 'universities';
 const SUBROOM_UNI_COLLECTION = 'subroom_uni';
+const SUBROOM_TEMP_VOTES_COLLECTION = 'subroom_temp_votes';
 const PUBLIC_CHAT_COLLECTION = 'public_chat';
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
 const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
@@ -47,12 +49,15 @@ const PRESENCE_TTL_MS = 2 * 60 * 1000;
 const JOINED_PING_MS = 60 * 1000;
 const SUBROOM_TYPES = ['official', 'community', 'temp'];
 const ALLOWED_EXPIRE_DAYS = new Set([1, 3, 7, 14, 30]);
+const SUBROOM_TEMP_VOTE_TOTAL = 15;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const scryptAsync = promisify(crypto.scrypt);
 
 let mongoClientPromise = null;
 let usersCollectionPromise = null;
 let publicChatCollectionPromise = null;
 let subroomUniCollectionPromise = null;
+let subroomTempVotesCollectionPromise = null;
 const pendingAttachments = new Map();
 const sockets = new Set();
 const presenceBySubroom = new Map();
@@ -124,6 +129,7 @@ function publicUser(user) {
     is_banned: Boolean(user.is_banned),
     readed_subroom: Array.isArray(user.readed_subroom) ? user.readed_subroom : [],
     readed_privateroom: Array.isArray(user.readed_privateroom) ? user.readed_privateroom : [],
+    subroom_voted: Array.isArray(user.subroom_voted) ? user.subroom_voted : [],
     created_at: user.created_at
   };
 }
@@ -202,6 +208,26 @@ async function getSubroomUniCollection() {
   return subroomUniCollectionPromise;
 }
 
+async function getSubroomTempVotesCollection() {
+  if (!subroomTempVotesCollectionPromise) {
+    subroomTempVotesCollectionPromise = (async () => {
+      const collection = await getDbCollection(SUBROOM_TEMP_VOTES_COLLECTION);
+
+      await Promise.all([
+        collection.createIndex({ subroom_id: 1 }, { unique: true }),
+        collection.createIndex({ expire_days: 1 })
+      ]);
+
+      return collection;
+    })().catch((error) => {
+      subroomTempVotesCollectionPromise = null;
+      throw error;
+    });
+  }
+
+  return subroomTempVotesCollectionPromise;
+}
+
 async function getPublicChatCollection() {
   if (!publicChatCollectionPromise) {
     publicChatCollectionPromise = (async () => {
@@ -257,7 +283,7 @@ async function resolveUserFromAccessKey(accessKey) {
   if (!user) {
     const legacyCandidates = await users
       .find({ access_hkey_lookup: { $exists: false } })
-      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1 })
+      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1, subroom_voted: 1 })
       .limit(100)
       .toArray();
 
@@ -330,6 +356,10 @@ function getPublicErrorMessage(error) {
   if (error.code === 'missing_access_hkey' || error.code === 'invalid_access_hkey') return 'กรุณาเข้าสู่ระบบใหม่';
   if (error.code === 'banned') return 'บัญชีนี้ถูกระงับการใช้งาน';
   if (error.code === 'invalid_subroom') return 'ไม่พบห้องนี้ในระบบ';
+  if (error.code === 'invalid_vote_subroom') return 'โหวตได้เฉพาะห้องชั่วคราวเท่านั้น';
+  if (error.code === 'already_voted') return 'คุณโหวตห้องนี้ไปแล้ว';
+  if (error.code === 'vote_expired') return 'ห้องนี้หมดเวลาโหวตแล้ว';
+  if (error.code === 'vote_closed') return 'ห้องนี้ปิดรับโหวตแล้ว';
   if (error.code === 'invalid_message') return 'ข้อความไม่ถูกต้อง';
   if (error.code === 'invalid_attachment') return 'ไฟล์แนบไม่ถูกต้อง';
   if (error.code === 'attachment_too_large') return `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
@@ -383,8 +413,65 @@ function publicSubroom(subroom) {
     subroom_type: subroom.subroom_type,
     expire_days: subroom.expire_days,
     created_at: subroom.created_at,
+    vote: subroom.vote || null,
     channel_count: getSubroomOnlineCount(subroom.subroom_id)
   };
+}
+
+function getRemainingDays(expireAt, now = new Date()) {
+  const expireDate = expireAt instanceof Date ? expireAt : new Date(expireAt);
+  if (Number.isNaN(expireDate.getTime())) return 0;
+
+  const remainingMs = differenceInMilliseconds(expireDate, now);
+  if (remainingMs <= 0) return 0;
+  return Math.ceil(remainingMs / DAY_MS);
+}
+
+function publicTempVote(voteDocument, user, now = new Date()) {
+  const votedRooms = Array.isArray(user?.subroom_voted) ? user.subroom_voted : [];
+  return {
+    votes_count: Number(voteDocument?.votes_count || 0),
+    vote_total: SUBROOM_TEMP_VOTE_TOTAL,
+    expires_in_days: getRemainingDays(voteDocument?.expire_days, now),
+    has_voted: votedRooms.includes(voteDocument?.subroom_id)
+  };
+}
+
+function findOneAndUpdateDocument(result) {
+  if (!result || typeof result !== 'object') return null;
+  if (Object.prototype.hasOwnProperty.call(result, 'value')) return result.value;
+  return result;
+}
+
+async function attachTempVoteData(subrooms, user) {
+  const tempIds = subrooms
+    .filter(subroom => subroom.subroom_type === 'temp')
+    .map(subroom => subroom.subroom_id);
+
+  if (!tempIds.length) return subrooms;
+
+  const votes = await getSubroomTempVotesCollection();
+  const voteDocuments = await votes
+    .find(
+      { subroom_id: { $in: tempIds } },
+      { projection: { _id: 0, subroom_id: 1, expire_days: 1, votes_count: 1 } }
+    )
+    .toArray();
+  const votesBySubroom = new Map(voteDocuments.map(vote => [vote.subroom_id, vote]));
+  const now = new Date();
+
+  return subrooms.map(subroom => {
+    if (subroom.subroom_type !== 'temp') return subroom;
+    const voteDocument = votesBySubroom.get(subroom.subroom_id) || {
+      subroom_id: subroom.subroom_id,
+      expire_days: subroom.expire_days,
+      votes_count: 0
+    };
+    return {
+      ...subroom,
+      vote: publicTempVote(voteDocument, user, now)
+    };
+  });
 }
 
 function groupedSubrooms(subrooms) {
@@ -820,6 +907,7 @@ app.post('/login', async (req, res) => {
         is_banned: false,
         readed_subroom: [],
         readed_privateroom: [],
+        subroom_voted: [],
         created_at: now
       };
 
@@ -1005,6 +1093,7 @@ app.get('/api/subrooms', requireUser, async (req, res) => {
       )
       .sort({ created_at: 1, subroom_name: 1 })
       .toArray();
+    const subroomsWithVotes = await attachTempVoteData(subrooms, req.user);
 
     return res.json({
       status: 'success',
@@ -1012,7 +1101,7 @@ app.get('/api/subrooms', requireUser, async (req, res) => {
         ...university,
         online_count: getUniversityOnlineCount(university.uniroom_id)
       },
-      subrooms: groupedSubrooms(subrooms)
+      subrooms: groupedSubrooms(subroomsWithVotes)
     });
   } catch (error) {
     console.error('Subroom list API error:', error.code || error.message);
@@ -1062,15 +1151,167 @@ app.post('/add-subroom', requireUser, async (req, res) => {
     };
 
     const subroomUni = await getSubroomUniCollection();
+    const subroomTempVotes = await getSubroomTempVotesCollection();
     await subroomUni.insertOne(subroom);
+
+    try {
+      await subroomTempVotes.insertOne({
+        subroom_id: subroom.subroom_id,
+        expire_days: expireAt,
+        votes_count: 0
+      });
+    } catch (error) {
+      await subroomUni.deleteOne({ subroom_id: subroom.subroom_id }).catch(() => {});
+      throw error;
+    }
 
     return res.status(201).json({
       status: 'success',
-      subroom: publicSubroom(subroom)
+      subroom: publicSubroom({
+        ...subroom,
+        vote: publicTempVote({
+          subroom_id: subroom.subroom_id,
+          expire_days: expireAt,
+          votes_count: 0
+        }, req.user)
+      })
     });
   } catch (error) {
     console.error('Add subroom API error:', error.code || error.message);
     return sendApiError(res, 500, 'server_error', 'ระบบเชื่อมต่อฐานข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  }
+});
+
+app.post('/api/subrooms/:subroomId/recommend', requireUser, async (req, res) => {
+  const subroomId = normalizePlainText(req.params.subroomId, 120);
+
+  if (!subroomId) {
+    return sendApiError(res, 400, 'invalid_subroom', getPublicErrorMessage({ code: 'invalid_subroom' }));
+  }
+
+  try {
+    const subroomUni = await getSubroomUniCollection();
+    const subroom = await subroomUni.findOne(
+      {
+        subroom_id: subroomId,
+        subroom_type: { $in: SUBROOM_TYPES }
+      },
+      {
+        projection: {
+          _id: 0,
+          uniroom_id: 1,
+          subroom_id: 1,
+          subroom_name: 1,
+          subroom_desc: 1,
+          subroom_type: 1,
+          expire_days: 1,
+          created_at: 1
+        }
+      }
+    );
+
+    if (!subroom) {
+      return sendApiError(res, 404, 'invalid_subroom', getPublicErrorMessage({ code: 'invalid_subroom' }));
+    }
+
+    if (subroom.subroom_type !== 'temp') {
+      return sendApiError(res, 400, 'invalid_vote_subroom', getPublicErrorMessage({ code: 'invalid_vote_subroom' }));
+    }
+
+    if (getRemainingDays(subroom.expire_days) <= 0) {
+      return sendApiError(res, 400, 'vote_expired', getPublicErrorMessage({ code: 'vote_expired' }));
+    }
+
+    const votes = await getSubroomTempVotesCollection();
+    await votes.updateOne(
+      { subroom_id: subroom.subroom_id },
+      {
+        $setOnInsert: {
+          subroom_id: subroom.subroom_id,
+          expire_days: subroom.expire_days,
+          votes_count: 0
+        }
+      },
+      { upsert: true }
+    );
+
+    const users = await getUsersCollection();
+    const userVoteUpdate = await users.updateOne(
+      {
+        user_id: req.user.user_id,
+        subroom_voted: { $ne: subroom.subroom_id }
+      },
+      {
+        $addToSet: { subroom_voted: subroom.subroom_id }
+      }
+    );
+
+    if (!userVoteUpdate.modifiedCount) {
+      return sendApiError(res, 409, 'already_voted', getPublicErrorMessage({ code: 'already_voted' }));
+    }
+
+    const updatedVote = await votes.findOneAndUpdate(
+      {
+        subroom_id: subroom.subroom_id,
+        votes_count: { $lt: SUBROOM_TEMP_VOTE_TOTAL }
+      },
+      {
+        $inc: { votes_count: 1 }
+      },
+      {
+        returnDocument: 'after',
+        projection: { _id: 0, subroom_id: 1, expire_days: 1, votes_count: 1 }
+      }
+    );
+
+    const updatedVoteDocument = findOneAndUpdateDocument(updatedVote);
+
+    if (!updatedVoteDocument) {
+      await users.updateOne(
+        { user_id: req.user.user_id },
+        { $pull: { subroom_voted: subroom.subroom_id } }
+      );
+      return sendApiError(res, 409, 'vote_closed', getPublicErrorMessage({ code: 'vote_closed' }));
+    }
+
+    const updatedUser = {
+      ...req.user,
+      subroom_voted: Array.from(new Set([
+        ...(Array.isArray(req.user.subroom_voted) ? req.user.subroom_voted : []),
+        subroom.subroom_id
+      ]))
+    };
+    let promoted = false;
+
+    if (Number(updatedVoteDocument.votes_count) === SUBROOM_TEMP_VOTE_TOTAL) {
+      const promoteResult = await subroomUni.updateOne(
+        {
+          subroom_id: subroom.subroom_id,
+          subroom_type: 'temp'
+        },
+        {
+          $set: { subroom_type: 'community' }
+        }
+      );
+      promoted = Boolean(promoteResult.modifiedCount);
+      if (promoted) {
+        await votes.deleteOne({ subroom_id: subroom.subroom_id });
+      }
+    }
+
+    return res.json({
+      status: 'success',
+      promoted,
+      subroom: publicSubroom({
+        ...subroom,
+        subroom_type: promoted ? 'community' : subroom.subroom_type,
+        vote: promoted ? null : publicTempVote(updatedVoteDocument, updatedUser)
+      }),
+      vote: promoted ? null : publicTempVote(updatedVoteDocument, updatedUser)
+    });
+  } catch (error) {
+    console.error('Recommend subroom API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'โหวตห้องไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
   }
 });
 

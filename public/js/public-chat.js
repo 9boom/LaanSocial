@@ -20,6 +20,11 @@
   const titleEl = document.getElementById('publicChatTitle');
   const countEl = document.getElementById('publicChatCount');
   const descEl = document.getElementById('publicChatDesc');
+  const votingPills = document.getElementById('votingPills');
+  const voteCountEl = document.getElementById('voteCount');
+  const voteTotalEl = document.getElementById('voteTotal');
+  const voteExpireEl = document.getElementById('voteExpire');
+  const recommendBtn = document.getElementById('recommendBtn');
   const onlineListEl = document.getElementById('onlineList');
   const onlineHeaderCountEl = document.querySelector('.online-panel-header h3 b');
   const uniOnlineEl = document.querySelector('.uni-card .online');
@@ -41,7 +46,8 @@
     currentUserId: '',
     currentUser: null,
     allOnlineUsers: [],
-    onlineSearchQuery: ''
+    onlineSearchQuery: '',
+    voteLoading: false
   };
 
   function canUseStorage(){
@@ -300,9 +306,46 @@
     messagesEl.scrollTop = messagesEl.scrollHeight - previousHeight;
   }
 
+  function formatVoteExpire(days){
+    const value = Number(days || 0);
+    if(value <= 0) return 'หมดเวลา';
+    return `อีก ${value} วัน`;
+  }
+
+  function setRecommendState(hasVoted, isLoading){
+    if(!recommendBtn) return;
+    recommendBtn.disabled = Boolean(hasVoted || isLoading);
+    recommendBtn.classList.toggle('is-voted', Boolean(hasVoted));
+    recommendBtn.classList.toggle('is-loading', Boolean(isLoading));
+    recommendBtn.setAttribute('aria-pressed', hasVoted ? 'true' : 'false');
+    recommendBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  }
+
+  function updateVotingPills(subroom){
+    if(!votingPills) return;
+
+    if(!subroom || subroom.subroom_type !== 'temp'){
+      votingPills.hidden = true;
+      setRecommendState(false, false);
+      return;
+    }
+
+    const vote = subroom.vote || {};
+    const votesCount = Number(vote.votes_count || 0);
+    const voteTotal = Number(vote.vote_total || 15);
+    const hasVoted = Boolean(vote.has_voted);
+
+    votingPills.hidden = false;
+    if(voteCountEl) voteCountEl.textContent = String(votesCount);
+    if(voteTotalEl) voteTotalEl.textContent = String(voteTotal);
+    if(voteExpireEl) voteExpireEl.textContent = formatVoteExpire(vote.expires_in_days);
+    setRecommendState(hasVoted, state.voteLoading);
+  }
+
   function updateHeader(subroom){
     if(titleEl) titleEl.innerHTML = `${escapeHtml(formatSubroomName(subroom?.subroom_name || 'เลือกห้อง'))} <span class="dot">•</span> <span class="count" id="publicChatCount">${Number(subroom?.channel_count || 0)} คน</span>`;
     if(descEl) descEl.textContent = subroom?.subroom_desc || '';
+    updateVotingPills(subroom);
   }
 
   function updateChannelCount(subroomId, count){
@@ -471,7 +514,12 @@
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
       if(data.subroom) {
-        state.activeSubroom = { ...state.activeSubroom, ...data.subroom };
+        const currentVote = state.activeSubroom?.vote || null;
+        state.activeSubroom = {
+          ...state.activeSubroom,
+          ...data.subroom,
+          vote: data.subroom.vote || currentVote
+        };
         updateHeader(state.activeSubroom);
       }
     } catch (error) {
@@ -540,6 +588,61 @@
       console.error(error);
       setMessageState(error.message || 'ส่งข้อความไม่สำเร็จ', 'chat-state error');
       renderMessages();
+    }
+  }
+
+  async function handleRecommendClick(){
+    if(!state.activeSubroom || state.activeSubroom.subroom_type !== 'temp' || state.voteLoading) return;
+
+    state.voteLoading = true;
+    updateVotingPills(state.activeSubroom);
+
+    try {
+      const headers = await authHeaders();
+      const response = await fetch(`/api/subrooms/${encodeURIComponent(state.activeSubroom.subroom_id)}/recommend`, {
+        method: 'POST',
+        headers
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if(!response.ok || data.status === 'error'){
+        throw new Error(data.message || 'โหวตห้องไม่สำเร็จ');
+      }
+
+      if(data.subroom && state.activeSubroom?.subroom_id === data.subroom.subroom_id){
+        state.activeSubroom = {
+          ...state.activeSubroom,
+          ...data.subroom
+        };
+      } else if(data.vote && state.activeSubroom){
+        state.activeSubroom = {
+          ...state.activeSubroom,
+          vote: data.vote
+        };
+      }
+
+      if(state.currentUser){
+        const voted = Array.isArray(state.currentUser.subroom_voted) ? state.currentUser.subroom_voted : [];
+        state.currentUser = {
+          ...state.currentUser,
+          subroom_voted: Array.from(new Set([...voted, state.activeSubroom.subroom_id]))
+        };
+        window.LaanCurrentUser = state.currentUser;
+      }
+
+      if(data.promoted){
+        updateVotingPills(null);
+        if(typeof window.reloadActiveSubrooms === 'function') await window.reloadActiveSubrooms();
+        return;
+      }
+
+      updateVotingPills(state.activeSubroom);
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || 'โหวตห้องไม่สำเร็จ');
+    } finally {
+      state.voteLoading = false;
+      updateVotingPills(state.activeSubroom);
     }
   }
 
@@ -684,6 +787,7 @@
       }, { passive: true });
     })();
 
+    recommendBtn?.addEventListener('click', handleRecommendClick);
     attachBtn?.addEventListener('click', () => attachmentInput?.click());
     attachmentInput?.addEventListener('change', () => {
       const selectedFile = attachmentInput.files?.[0] || null;
