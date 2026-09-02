@@ -242,7 +242,10 @@
     <form class="composer" id="composerForm">
       <button type="button" class="file-btn" id="publicAttachBtn">ไฟล์</button>
       <input type="file" id="publicAttachmentInput" hidden accept="image/png,image/jpeg,image/webp,image/gif,application/pdf">
-      <div class="composer-input" id="publicComposerInput" contenteditable="true" role="textbox" aria-label="พิมพ์ข้อความ" data-placeholder="พิมข้อความ..."></div>
+      <div class="composer-field">
+        <div class="composer-input" id="publicComposerInput" contenteditable="true" role="textbox" aria-label="พิมพ์ข้อความ" data-placeholder="พิมข้อความ..."></div>
+        <p class="composer-error" id="publicAttachmentError" aria-live="polite" hidden></p>
+      </div>
       <button type="submit" class="send-btn">ส่ง</button>
     </form>
   </main>

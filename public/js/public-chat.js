@@ -5,6 +5,9 @@
   const PAGE_SIZE = 10;
   const JOINED_PING_MS = 60 * 1000;
   const TYPING_IDLE_MS = 1400;
+  const MAX_ATTACHMENT_SIZE_MB = 5;
+  const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
+  const ATTACHMENT_TOO_LARGE_MESSAGE = `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
   const FALLBACK_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
 
   const messagesEl = document.getElementById('publicMessages');
@@ -12,6 +15,7 @@
   const composerInput = document.getElementById('publicComposerInput');
   const attachBtn = document.getElementById('publicAttachBtn');
   const attachmentInput = document.getElementById('publicAttachmentInput');
+  const attachmentError = document.getElementById('publicAttachmentError');
   const typingBar = document.getElementById('publicTypingBar');
   const titleEl = document.getElementById('publicChatTitle');
   const countEl = document.getElementById('publicChatCount');
@@ -188,6 +192,32 @@
   function setMessageState(message, className){
     if(!messagesEl) return;
     messagesEl.innerHTML = `<p class="${className}">${escapeHtml(message)}</p>`;
+  }
+
+  function setAttachmentError(message){
+    if(!attachmentError) return;
+    attachmentError.textContent = message || '';
+    attachmentError.hidden = !message;
+  }
+
+  function clearSelectedAttachment(message){
+    state.selectedAttachment = null;
+    if(attachmentInput) attachmentInput.value = '';
+    if(attachBtn){
+      attachBtn.textContent = 'ไฟล์';
+      attachBtn.title = '';
+    }
+    setAttachmentError(message);
+  }
+
+  function validateAttachmentFile(file){
+    if(!file) return true;
+    if(file.size <= MAX_ATTACHMENT_SIZE){
+      setAttachmentError('');
+      return true;
+    }
+    clearSelectedAttachment(ATTACHMENT_TOO_LARGE_MESSAGE);
+    return false;
   }
 
   function attachmentPreviewHtml(url){
@@ -473,6 +503,7 @@
 
   async function uploadAttachment(){
     if(!state.selectedAttachment || !state.activeSubroom) return '';
+    if(!validateAttachmentFile(state.selectedAttachment)) return '';
     const headers = await authHeaders();
     const formData = new FormData();
     formData.append('subroom_id', state.activeSubroom.subroom_id);
@@ -492,6 +523,7 @@
     if(!state.activeSubroom) return;
     const text = getPlainComposerText(true);
     if(!text && !state.selectedAttachment) return;
+    if(state.selectedAttachment && !validateAttachmentFile(state.selectedAttachment)) return;
     try {
       let attachmentUrl = '';
       if(state.selectedAttachment) attachmentUrl = await uploadAttachment();
@@ -502,9 +534,7 @@
       });
       await sendProtectedWs('stop_typing', { subroom_id: state.activeSubroom.subroom_id });
       state.isTyping = false;
-      state.selectedAttachment = null;
-      if(attachmentInput) attachmentInput.value = '';
-      if(attachBtn) attachBtn.textContent = 'ไฟล์';
+      clearSelectedAttachment();
       setComposerPlainText('');
     } catch (error) {
       console.error(error);
@@ -656,8 +686,14 @@
 
     attachBtn?.addEventListener('click', () => attachmentInput?.click());
     attachmentInput?.addEventListener('change', () => {
-      state.selectedAttachment = attachmentInput.files?.[0] || null;
-      attachBtn.textContent = state.selectedAttachment ? state.selectedAttachment.name.slice(0, 18) : 'ไฟล์';
+      const selectedFile = attachmentInput.files?.[0] || null;
+      if(!validateAttachmentFile(selectedFile)) return;
+      state.selectedAttachment = selectedFile;
+      setAttachmentError('');
+      if(attachBtn){
+        attachBtn.textContent = state.selectedAttachment ? state.selectedAttachment.name.slice(0, 18) : 'ไฟล์';
+        attachBtn.title = state.selectedAttachment ? state.selectedAttachment.name : '';
+      }
     });
   }
 

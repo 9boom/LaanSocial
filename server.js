@@ -41,7 +41,8 @@ const PROFILE_IMAGE_URL_PREFIX = 'assets/sim_db/users_profile_image/';
 const CHAT_ATTACHMENT_URL_PREFIX = 'assets/sim_db/users_chat_attachment/';
 const MAX_MESSAGE_LENGTH = 2000;
 const MESSAGE_PAGE_SIZE = 10;
-const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024;
+const MAX_ATTACHMENT_SIZE_MB = 5;
+const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
 const PRESENCE_TTL_MS = 2 * 60 * 1000;
 const JOINED_PING_MS = 60 * 1000;
 const SUBROOM_TYPES = ['official', 'community', 'temp'];
@@ -331,7 +332,7 @@ function getPublicErrorMessage(error) {
   if (error.code === 'invalid_subroom') return 'ไม่พบห้องนี้ในระบบ';
   if (error.code === 'invalid_message') return 'ข้อความไม่ถูกต้อง';
   if (error.code === 'invalid_attachment') return 'ไฟล์แนบไม่ถูกต้อง';
-  if (error.code === 'attachment_too_large') return 'ไฟล์แนบมีขนาดใหญ่เกินไป';
+  if (error.code === 'attachment_too_large') return `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
   return 'ระบบทำงานไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
 }
 
@@ -1134,6 +1135,10 @@ app.post('/api/public-chat/attachments', requireUser, createUploadMiddleware, as
 
     if (!req.file || !req.file.buffer || !req.file.size) {
       return sendApiError(res, 400, 'invalid_attachment', getPublicErrorMessage({ code: 'invalid_attachment' }));
+    }
+
+    if (req.file.size > MAX_ATTACHMENT_SIZE) {
+      return sendApiError(res, 413, 'attachment_too_large', getPublicErrorMessage({ code: 'attachment_too_large' }));
     }
 
     const ext = getSafeAttachmentExtension(req.file);
