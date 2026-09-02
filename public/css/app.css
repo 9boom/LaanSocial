@@ -42,6 +42,9 @@ body.theme-dark .channel:hover{background:#242932;}
 body.theme-dark .chat-header{border-bottom-color:#2b303a;}
 body.theme-dark .members-pill{background:#262b33;}
 body.theme-dark .members-pill span{color:var(--text);}
+body.theme-dark .voting-pills{background:#262b33;}
+body.theme-dark .vote-stat{color:var(--text);border-right-color:rgba(255,255,255,0.1);}
+body.theme-dark .vote-expire{color:var(--text);border-right-color:rgba(255,255,255,0.1);}
 body.theme-dark .typing-bar{background:#171a20;border-top-color:#2b303a;color:#c7cbd1;}
 body.theme-dark .typing-bar b{color:#f2f2f2;}
 body.theme-dark .msg-meta{color:#c7cbd1;}
@@ -59,6 +62,7 @@ body.theme-dark .channel-sidebar{border-right-color:#2b303a;}
 body.theme-dark .uni-card h2{color:#c7cbd1;}
 body.theme-dark .msg-action img,
 body.theme-dark .tool-btn img,
+body.theme-dark .vote-btn img,
 body.theme-dark .members-pill img{filter:invert(.85) brightness(1.4);}
 body.theme-dark .icon-btn{background:#262b33;border-color:#3a4048;}
 body.theme-dark .icon-btn:hover{background:#2c323b;}
@@ -374,6 +378,47 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
 .chat-header .title-block h2 .count{font-size:16px;font-weight:600;color:var(--green);}
 .chat-header .title-block p{
   margin:2px 0 0;font-size:15px;font-weight:500;color:var(--muted);
+}
+.voting-pills{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#d7d7d7;
+  border-radius:16px;
+  padding:8px 12px;
+}
+.vote-stat{
+  font-size:14px;
+  font-weight:500;
+  color:#333;
+  padding:0 6px;
+  border-right:1px solid rgba(0,0,0,0.1);
+}
+.vote-expire{
+  font-size:14px;
+  font-weight:500;
+  color:#333;
+  padding:0 8px;
+  border-right:1px solid rgba(0,0,0,0.1);
+}
+.vote-btn{
+  background:none;
+  border:none;
+  padding:4px 6px;
+  cursor:pointer;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform 0.2s;
+}
+.vote-btn:hover{
+  transform:scale(1.2);
+}
+.vote-btn img{
+  width:20px;
+  height:20px;
+  object-fit:contain;
 }
 .members-pill{
   margin-left:auto;
@@ -1930,6 +1975,11 @@ body.theme-dark .adduni-field input::placeholder{color:#7d838b;}
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
   .private-title-prefix{display:none;}
+  .voting-pills{gap:6px;padding:6px 8px;}
+  .vote-stat{font-size:12px;padding:0 4px;}
+  .vote-expire{font-size:12px;padding:0 4px;}
+  .vote-btn{font-size:16px;padding:3px 4px;}
+  .vote-btn img{width:18px;height:18px;}
   .members-pill{margin-left:0;flex:0 0 auto;padding:7px;gap:0;}
   .members-pill span{display:none;}
 
