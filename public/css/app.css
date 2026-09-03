@@ -552,6 +552,12 @@ body.theme-dark .private-history-name{color:#c7cbd1;}
   padding:0;
   font-family:inherit;
 }
+.msg-action:disabled,
+.msg-action.reported{
+  opacity:0.5;
+  cursor:not-allowed;
+  pointer-events:none;
+}
 .msg-action img{width:18px;height:18px;flex:0 0 auto;}
 .msg-text{margin:4px 0 0;font-size:17px;font-weight:400;line-height:1.4;}
 .reply-prefix{font-weight:700;color:#9333ea;}
@@ -1342,6 +1348,12 @@ body.theme-dark .profile-panel-close:hover{
 }
 .profile-report-btn:hover{
   background:#fef2f2;
+}
+.profile-report-btn:disabled,
+.profile-report-btn.reported{
+  opacity:0.5;
+  cursor:not-allowed;
+  pointer-events:none;
 }
 body.theme-dark .profile-report-btn{
   background:#231a1b;

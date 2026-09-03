@@ -194,35 +194,80 @@ const reportOverlay    = document.getElementById('reportOverlay');
 const reportFormView   = document.getElementById('reportFormView');
 const reportSuccessView= document.getElementById('reportSuccessView');
 const reportForm       = document.getElementById('reportForm');
+const reportTitle      = document.getElementById('reportTitle');
 const reportTargetName = document.getElementById('reportTargetName');
 const reportOptions    = document.getElementById('reportOptions');
 const reportOtherText  = document.getElementById('reportOtherText');
 const reportCancelBtn  = document.getElementById('reportCancelBtn');
 const reportOkBtn      = document.getElementById('reportOkBtn');
+const reportSubmitBtn  = reportForm?.querySelector('button[type="submit"]');
+
+let currentReportContext = null;
 
 // Clears report choices and returns the report modal to its form view.
 function resetReportForm(){
   reportForm.reset();
   reportOptions.classList.remove('invalid');
+  if(reportSubmitBtn){
+    reportSubmitBtn.disabled = false;
+    reportSubmitBtn.textContent = 'รายงาน';
+  }
   reportFormView.style.display = '';
   reportSuccessView.style.display = 'none';
 }
 
-// Opens the report modal with the selected user's tag/name as context.
-function openReportModal(tag, name){
+// Opens the report modal with context: { target_type, chat_id, target_user_id, tag, name } or (tag, name)
+function openReportModal(contextOrTag, maybeName){
   resetReportForm();
-  reportTargetName.textContent = `${tag} ${name}`.trim();
+
+  if(typeof contextOrTag === 'object' && contextOrTag !== null){
+    currentReportContext = {
+      target_type: contextOrTag.target_type || 'chat',
+      chat_id: contextOrTag.chat_id || '',
+      target_user_id: contextOrTag.target_user_id || '',
+      tag: contextOrTag.tag || '',
+      name: contextOrTag.name || ''
+    };
+  } else {
+    currentReportContext = {
+      target_type: 'chat',
+      chat_id: '',
+      target_user_id: '',
+      tag: contextOrTag || '',
+      name: maybeName || ''
+    };
+  }
+
+  if(reportTitle){
+    reportTitle.textContent = currentReportContext.target_type === 'profile'
+      ? 'รายงานผู้ใช้งานที่ไม่เหมาะสม'
+      : 'รายงานเนื้อหาการสนทนาที่ไม่เหมาะสม';
+  }
+
+  const displayName = `${currentReportContext.tag} ${currentReportContext.name}`.trim();
+  reportTargetName.textContent = displayName || 'ผู้ใช้งาน';
   reportOverlay.classList.add('open');
 }
+
 function closeReportModal(){
   reportOverlay.classList.remove('open');
+  currentReportContext = null;
 }
+
+window.openReportModal = openReportModal;
+window.closeReportModal = closeReportModal;
 
 // event delegation: works for both static messages and dynamically-rendered private chat messages
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.report-trigger');
-  if(!btn) return;
-  openReportModal(btn.dataset.reportTag || '', btn.dataset.reportName || '');
+  if(!btn || btn.disabled || btn.classList.contains('reported')) return;
+  openReportModal({
+    target_type: btn.dataset.reportType || 'chat',
+    chat_id: btn.dataset.reportChatId || '',
+    target_user_id: btn.dataset.reportUserId || '',
+    tag: btn.dataset.reportTag || '',
+    name: btn.dataset.reportName || ''
+  });
 });
 
 reportCancelBtn.addEventListener('click', closeReportModal);
@@ -234,7 +279,21 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape' && reportOverlay.classList.contains('open')) closeReportModal();
 });
 
-reportForm.addEventListener('submit', function(e){
+async function getAuthHeaders() {
+  if(window.PublicChat && typeof window.PublicChat.authHeaders === 'function'){
+    return await window.PublicChat.authHeaders();
+  }
+  if(window.IDBStorage){
+    const currentUserId = await window.IDBStorage.getItem('current_loggedin');
+    if(currentUserId){
+      const accessKey = await window.IDBStorage.getItem(`access_key_${currentUserId}`);
+      if(accessKey) return { 'X-Access-HKey': accessKey };
+    }
+  }
+  return {};
+}
+
+reportForm.addEventListener('submit', async function(e){
   e.preventDefault();
   const selected = reportForm.querySelector('input[name="reportReason"]:checked');
   if(!selected){
@@ -242,8 +301,89 @@ reportForm.addEventListener('submit', function(e){
     return;
   }
   reportOptions.classList.remove('invalid');
-  reportFormView.style.display = 'none';
-  reportSuccessView.style.display = '';
+
+  if(!currentReportContext){
+    closeReportModal();
+    return;
+  }
+
+  const reasonType = selected.value;
+  const otherReason = reportOtherText ? reportOtherText.value.trim() : '';
+
+  try {
+    if(reportSubmitBtn){
+      reportSubmitBtn.disabled = true;
+      reportSubmitBtn.textContent = 'กำลังส่งรายงาน...';
+    }
+
+    const headers = await getAuthHeaders();
+    headers['Content-Type'] = 'application/json';
+
+    const payload = {
+      target_type: currentReportContext.target_type,
+      chat_id: currentReportContext.chat_id,
+      target_user_id: currentReportContext.target_user_id,
+      reason_type: reasonType,
+      other_reason: otherReason
+    };
+
+    const response = await fetch('/api/reports', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      if(response.status === 409 || data?.code === 'already_reported'){
+        if(currentReportContext.target_type === 'chat' && currentReportContext.chat_id){
+          if(window.LaanCurrentUser){
+            const list = Array.isArray(window.LaanCurrentUser.reported_chat) ? window.LaanCurrentUser.reported_chat : [];
+            if(!list.includes(currentReportContext.chat_id)) list.push(currentReportContext.chat_id);
+            window.LaanCurrentUser.reported_chat = list;
+          }
+        } else if(currentReportContext.target_type === 'profile' && currentReportContext.target_user_id){
+          if(window.LaanCurrentUser){
+            const list = Array.isArray(window.LaanCurrentUser.reported_profile) ? window.LaanCurrentUser.reported_profile : [];
+            if(!list.includes(currentReportContext.target_user_id)) list.push(currentReportContext.target_user_id);
+            window.LaanCurrentUser.reported_profile = list;
+          }
+        }
+        if(window.PublicChat && typeof window.PublicChat.renderMessages === 'function'){
+          window.PublicChat.renderMessages();
+        }
+        alert('คุณได้รายงานเนื้อหานี้ไปแล้ว');
+        closeReportModal();
+        return;
+      }
+      throw new Error(data?.message || 'ส่งรายงานไม่สำเร็จ');
+    }
+
+    // Success: update current user state
+    if(window.LaanCurrentUser){
+      if(Array.isArray(data.reported_chat)){
+        window.LaanCurrentUser.reported_chat = data.reported_chat;
+      }
+      if(Array.isArray(data.reported_profile)){
+        window.LaanCurrentUser.reported_profile = data.reported_profile;
+      }
+    }
+
+    if(window.PublicChat && typeof window.PublicChat.renderMessages === 'function'){
+      window.PublicChat.renderMessages();
+    }
+
+    reportFormView.style.display = 'none';
+    reportSuccessView.style.display = '';
+  } catch (error) {
+    console.error('Report submission error:', error);
+    alert(error.message || 'ส่งรายงานไม่สำเร็จ');
+    if(reportSubmitBtn){
+      reportSubmitBtn.disabled = false;
+      reportSubmitBtn.textContent = 'รายงาน';
+    }
+  }
 });
 
 /* ---------- ROOM INFO MODAL ---------- */

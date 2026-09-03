@@ -295,8 +295,16 @@
     const nick = message.user_nick || 'This account has been deleted';
     const tag = userTag(message);
     const avatar = message.user_profile_url || FALLBACK_AVATAR;
+    const reportedChats = Array.isArray(state.currentUser?.reported_chat)
+      ? state.currentUser.reported_chat
+      : (Array.isArray(window.LaanCurrentUser?.reported_chat) ? window.LaanCurrentUser.reported_chat : []);
+    const isReported = Boolean(message.chat_id && reportedChats.includes(message.chat_id));
+    const reportBtn = isReported
+      ? `<button class="msg-action report-trigger reported" disabled data-report-type="chat" data-report-chat-id="${escapeHtml(message.chat_id)}" data-report-user-id="${escapeHtml(message.user_owner_id || '')}" data-report-tag="${escapeHtml(tag)}" data-report-name="${escapeHtml(nick)}" title="คุณได้รายงานข้อความนี้ไปแล้ว"><img src="assets/symbols/report.svg" alt="">รายงานแล้ว</button>`
+      : `<button class="msg-action report-trigger" data-report-type="chat" data-report-chat-id="${escapeHtml(message.chat_id)}" data-report-user-id="${escapeHtml(message.user_owner_id || '')}" data-report-tag="${escapeHtml(tag)}" data-report-name="${escapeHtml(nick)}"><img src="assets/symbols/report.svg" alt="">รายงาน</button>`;
+
     const actions = mine ? '' : `<div class="msg-actions">
-      <button class="msg-action report-trigger" data-report-tag="${escapeHtml(tag)}" data-report-name="${escapeHtml(nick)}"><img src="assets/symbols/report.svg" alt="">รายงาน</button>
+      ${reportBtn}
       <button class="msg-action public-reply-btn" data-reply-user="${escapeHtml(nick)}"><img src="assets/symbols/reply.svg" alt="">ตอบกลับ</button>
     </div>`;
 
@@ -937,6 +945,7 @@
     applyPresence,
     updateUniversityOnline,
     formatTime,
+    renderMessages,
     get activeSubroom(){
       return state.activeSubroom;
     }

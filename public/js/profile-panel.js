@@ -108,6 +108,33 @@
     if(profileIdValEl) profileIdValEl.textContent = profileId;
     renderSocialMedia(userData);
 
+    const currentUserId = window.LaanCurrentUser?.user_id || '';
+    const reportedProfiles = Array.isArray(window.LaanCurrentUser?.reported_profile)
+      ? window.LaanCurrentUser.reported_profile
+      : [];
+    const isSelf = Boolean(profileId && currentUserId && profileId === currentUserId);
+    const isReported = Boolean(profileId && reportedProfiles.includes(profileId));
+
+    if(profileReportBtn){
+      if(isSelf){
+        profileReportBtn.style.display = 'none';
+      } else {
+        profileReportBtn.style.display = '';
+        const btnSpan = profileReportBtn.querySelector('span');
+        if(isReported){
+          profileReportBtn.disabled = true;
+          profileReportBtn.classList.add('reported');
+          profileReportBtn.title = 'คุณได้รายงานผู้ใช้นี้ไปแล้ว';
+          if(btnSpan) btnSpan.textContent = 'รายงานแล้ว';
+        } else {
+          profileReportBtn.disabled = false;
+          profileReportBtn.classList.remove('reported');
+          profileReportBtn.title = 'รายงานผู้ใช้';
+          if(btnSpan) btnSpan.textContent = 'รายงานผู้ใช้';
+        }
+      }
+    }
+
     if(profilePanel) profilePanel.classList.add('open');
     if(profileOverlay) profileOverlay.classList.add('open');
     if(profilePanel) profilePanel.setAttribute('aria-hidden', 'false');
@@ -128,15 +155,16 @@
     if(!activeProfileUser) return;
     const nick = activeProfileUser.nick || activeProfileUser.name || activeProfileUser.user_nick || '';
     const tag = activeProfileUser.tag || activeProfileUser.user_tag || '';
+    const targetUserId = activeProfileUser.profileId || activeProfileUser.user_id || '';
     closeProfileDrawer();
 
     if(typeof window.openReportModal === 'function'){
-      window.openReportModal(tag, nick);
-    } else {
-      const reportOverlay = document.getElementById('reportOverlay');
-      const reportTargetName = document.getElementById('reportTargetName');
-      if(reportTargetName) reportTargetName.textContent = `${tag} ${nick}`.trim();
-      if(reportOverlay) reportOverlay.classList.add('open');
+      window.openReportModal({
+        target_type: 'profile',
+        target_user_id: targetUserId,
+        tag,
+        name: nick
+      });
     }
   });
 

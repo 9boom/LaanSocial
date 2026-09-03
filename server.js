@@ -27,6 +27,7 @@ const UNIVERSITIES_COLLECTION = 'universities';
 const SUBROOM_UNI_COLLECTION = 'subroom_uni';
 const SUBROOM_TEMP_VOTES_COLLECTION = 'subroom_temp_votes';
 const PUBLIC_CHAT_COLLECTION = 'public_chat';
+const IN_CHAT_REPORT_COLLECTION = 'in_chat_report';
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
 const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
 const CHAT_ATTACHMENT_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_chat_attachment');
@@ -125,6 +126,7 @@ let usersCollectionPromise = null;
 let publicChatCollectionPromise = null;
 let subroomUniCollectionPromise = null;
 let subroomTempVotesCollectionPromise = null;
+let inChatReportCollectionPromise = null;
 const pendingAttachments = new Map();
 const sockets = new Set();
 const presenceBySubroom = new Map();
@@ -278,6 +280,8 @@ function publicUser(user) {
     readed_subroom: Array.isArray(user.readed_subroom) ? user.readed_subroom : [],
     readed_privateroom: Array.isArray(user.readed_privateroom) ? user.readed_privateroom : [],
     subroom_voted: Array.isArray(user.subroom_voted) ? user.subroom_voted : [],
+    reported_chat: Array.isArray(user.reported_chat) ? user.reported_chat : [],
+    reported_profile: Array.isArray(user.reported_profile) ? user.reported_profile : [],
     created_at: user.created_at
   };
 }
@@ -396,6 +400,35 @@ async function getPublicChatCollection() {
   return publicChatCollectionPromise;
 }
 
+async function getInChatReportCollection() {
+  if (!inChatReportCollectionPromise) {
+    inChatReportCollectionPromise = (async () => {
+      const collection = await getDbCollection(IN_CHAT_REPORT_COLLECTION);
+
+      await Promise.all([
+        collection.createIndex({ report_id: 1 }, { unique: true }),
+        collection.createIndex({ reporter_user_id: 1 }),
+        collection.createIndex({ created_at: -1 })
+      ]);
+
+      return collection;
+    })().catch((error) => {
+      inChatReportCollectionPromise = null;
+      throw error;
+    });
+  }
+
+  return inChatReportCollectionPromise;
+}
+
+function sanitizeUserForReport(user) {
+  if (!user || typeof user !== 'object') return null;
+  const clone = { ...user };
+  delete clone.access_hkey;
+  delete clone.access_hkey_lookup;
+  return clone;
+}
+
 function generateAccessKey() {
   return crypto.randomUUID();
 }
@@ -435,7 +468,7 @@ async function resolveUserFromAccessKey(accessKey) {
   if (!user) {
     const legacyCandidates = await users
       .find({ access_hkey_lookup: { $exists: false } })
-      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1, subroom_voted: 1 })
+      .project({ access_hkey: 1, user_id: 1, user_nick: 1, user_uniname: 1, user_profile_url: 1, social_media: 1, is_banned: 1, created_at: 1, readed_subroom: 1, readed_privateroom: 1, subroom_voted: 1, reported_chat: 1, reported_profile: 1 })
       .limit(100)
       .toArray();
 
@@ -1230,6 +1263,8 @@ app.post('/login', async (req, res) => {
         readed_subroom: [],
         readed_privateroom: [],
         subroom_voted: [],
+        reported_chat: [],
+        reported_profile: [],
         created_at: now
       };
 
@@ -1813,6 +1848,140 @@ app.post('/api/public-chat/attachments', requireUser, createUploadMiddleware, as
   } catch (error) {
     console.error('Upload public chat attachment error:', error.code || error.message);
     return sendApiError(res, error.statusCode || 500, error.code || 'server_error', getPublicErrorMessage(error));
+  }
+});
+
+app.post('/api/reports', requireUser, async (req, res) => {
+  const targetType = normalizePlainText(req.body.target_type, 20);
+  const rawReasonType = normalizePlainText(req.body.reason_type, 100);
+  const otherReason = normalizePlainText(req.body.other_reason, 200);
+
+  if (targetType !== 'chat' && targetType !== 'profile') {
+    return sendApiError(res, 400, 'invalid_target_type', 'ประเภทการรายงานไม่ถูกต้อง');
+  }
+
+  if (!rawReasonType) {
+    return sendApiError(res, 400, 'missing_reason', 'กรุณาระบุเหตุผลการรายงาน');
+  }
+
+  let resolvedReasonType = rawReasonType;
+  if (rawReasonType === 'อื่นๆ') {
+    resolvedReasonType = otherReason ? `อื่นๆ: ${otherReason}` : 'อื่นๆ';
+  }
+
+  try {
+    const reportsCollection = await getInChatReportCollection();
+    const usersCollection = await getUsersCollection();
+
+    const userReportedChat = Array.isArray(req.user.reported_chat) ? req.user.reported_chat : [];
+    const userReportedProfile = Array.isArray(req.user.reported_profile) ? req.user.reported_profile : [];
+
+    if (targetType === 'chat') {
+      const chatId = normalizePlainText(req.body.chat_id, 100);
+      if (!chatId) {
+        return sendApiError(res, 400, 'missing_chat_id', 'กรุณาระบุข้อความที่ต้องการรายงาน');
+      }
+
+      if (userReportedChat.includes(chatId)) {
+        return sendApiError(res, 409, 'already_reported', 'คุณได้รายงานข้อความนี้ไปแล้ว');
+      }
+
+      const publicChat = await getPublicChatCollection();
+      const chatDoc = await publicChat.findOne({ chat_id: chatId });
+      if (!chatDoc) {
+        return sendApiError(res, 404, 'chat_not_found', 'ไม่พบข้อความที่ต้องการรายงาน');
+      }
+
+      if (chatDoc.user_owner_id === req.user.user_id) {
+        return sendApiError(res, 400, 'cannot_report_self', 'ไม่สามารถรายงานข้อความของตนเองได้');
+      }
+
+      const targetUser = await usersCollection.findOne({ user_id: chatDoc.user_owner_id });
+      if (!targetUser) {
+        return sendApiError(res, 404, 'user_not_found', 'ไม่พบผู้ใช้ที่ต้องการรายงาน');
+      }
+
+      const reportId = `rep_${crypto.randomUUID()}`;
+      const reportDoc = {
+        report_id: reportId,
+        reporter_user_id: req.user.user_id,
+        target_type: 'chat',
+        chat_id: chatDoc.chat_id,
+        subroom_id: chatDoc.subroom_id || null,
+        user_information: sanitizeUserForReport(targetUser),
+        report_reasoning: {
+          type: resolvedReasonType,
+          message: chatDoc.message || ''
+        },
+        created_at: new Date()
+      };
+
+      await reportsCollection.insertOne(reportDoc);
+      await usersCollection.updateOne(
+        { user_id: req.user.user_id },
+        { $addToSet: { reported_chat: chatDoc.chat_id } }
+      );
+
+      const updatedReportedChat = Array.from(new Set([...userReportedChat, chatDoc.chat_id]));
+
+      return res.status(201).json({
+        status: 'success',
+        report_id: reportId,
+        reported_chat: updatedReportedChat,
+        reported_profile: userReportedProfile
+      });
+    }
+
+    // targetType === 'profile'
+    const targetUserId = normalizePlainText(req.body.target_user_id, 100);
+    if (!targetUserId) {
+      return sendApiError(res, 400, 'missing_target_user_id', 'กรุณาระบุผู้ใช้ที่ต้องการรายงาน');
+    }
+
+    if (targetUserId === req.user.user_id) {
+      return sendApiError(res, 400, 'cannot_report_self', 'ไม่สามารถรายงานตนเองได้');
+    }
+
+    if (userReportedProfile.includes(targetUserId)) {
+      return sendApiError(res, 409, 'already_reported', 'คุณได้รายงานผู้ใช้นี้ไปแล้ว');
+    }
+
+    const targetUser = await usersCollection.findOne({ user_id: targetUserId });
+    if (!targetUser) {
+      return sendApiError(res, 404, 'user_not_found', 'ไม่พบผู้ใช้ที่ต้องการรายงาน');
+    }
+
+    const reportId = `rep_${crypto.randomUUID()}`;
+    const reportDoc = {
+      report_id: reportId,
+      reporter_user_id: req.user.user_id,
+      target_type: 'profile',
+      chat_id: null,
+      subroom_id: null,
+      user_information: sanitizeUserForReport(targetUser),
+      report_reasoning: {
+        type: resolvedReasonType
+      },
+      created_at: new Date()
+    };
+
+    await reportsCollection.insertOne(reportDoc);
+    await usersCollection.updateOne(
+      { user_id: req.user.user_id },
+      { $addToSet: { reported_profile: targetUserId } }
+    );
+
+    const updatedReportedProfile = Array.from(new Set([...userReportedProfile, targetUserId]));
+
+    return res.status(201).json({
+      status: 'success',
+      report_id: reportId,
+      reported_chat: userReportedChat,
+      reported_profile: updatedReportedProfile
+    });
+  } catch (error) {
+    console.error('Report API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'ส่งรายงานไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
   }
 });
 
