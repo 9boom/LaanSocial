@@ -42,6 +42,7 @@ const ATTACHMENT_MIME_TYPES = new Set([
 const PROFILE_IMAGE_URL_PREFIX = 'assets/sim_db/users_profile_image/';
 const CHAT_ATTACHMENT_URL_PREFIX = 'assets/sim_db/users_chat_attachment/';
 const MAX_MESSAGE_LENGTH = 200;
+const MAX_SUBROOM_CHAT_MESSAGES = 200;
 const MESSAGE_PAGE_SIZE = 10;
 const MAX_ATTACHMENT_SIZE_MB = 5;
 const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
@@ -895,6 +896,57 @@ async function handleWsAuth(ws, contentObj) {
   });
 }
 
+async function deleteAttachmentFile(attachmentUrl) {
+  if (!attachmentUrl || typeof attachmentUrl !== 'string') return;
+  if (!attachmentUrl.startsWith(CHAT_ATTACHMENT_URL_PREFIX)) return;
+
+  const fileName = attachmentUrl.slice(CHAT_ATTACHMENT_URL_PREFIX.length);
+  if (!fileName || fileName.includes('..') || fileName.includes('/') || fileName.includes('\\')) return;
+
+  const targetPath = path.join(CHAT_ATTACHMENT_DIR, fileName);
+  const resolvedTargetPath = path.resolve(targetPath);
+  const resolvedDir = path.resolve(CHAT_ATTACHMENT_DIR);
+
+  if (!resolvedTargetPath.startsWith(resolvedDir + path.sep)) return;
+
+  try {
+    await fs.promises.unlink(resolvedTargetPath);
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.warn('Failed to delete pruned attachment file:', resolvedTargetPath, err.message);
+    }
+  }
+}
+
+async function pruneOldSubroomMessages(subroomId) {
+  if (!subroomId) return;
+
+  try {
+    const publicChat = await getPublicChatCollection();
+    const excessMessages = await publicChat
+      .find({ subroom_id: subroomId }, { projection: { _id: 1, attachment_url: 1 } })
+      .sort({ created_at: -1 })
+      .skip(MAX_SUBROOM_CHAT_MESSAGES)
+      .toArray();
+
+    if (!excessMessages || excessMessages.length === 0) {
+      return;
+    }
+
+    const excessIds = excessMessages.map(msg => msg._id);
+
+    await Promise.allSettled(
+      excessMessages
+        .filter(msg => Boolean(msg.attachment_url))
+        .map(msg => deleteAttachmentFile(msg.attachment_url))
+    );
+
+    await publicChat.deleteMany({ _id: { $in: excessIds } });
+  } catch (error) {
+    console.error('Error pruning old subroom messages for subroom:', subroomId, error.message);
+  }
+}
+
 async function saveAndBroadcastMessage(ws, contentObj) {
   if (!ws.authenticated || !ws.userId) {
     const error = new Error('Unauthorized.');
@@ -929,6 +981,10 @@ async function saveAndBroadcastMessage(ws, contentObj) {
   };
   safeSend(ws, payload);
   broadcastToSubroom(subroom.subroom_id, payload, ws);
+
+  pruneOldSubroomMessages(subroom.subroom_id).catch(err => {
+    console.error('Background message pruning error:', err.message);
+  });
 }
 
 async function handleJoinedPing(ws, contentObj) {
@@ -1578,6 +1634,81 @@ app.post('/api/subrooms/:subroomId/recommend', requireUser, async (req, res) => 
   } catch (error) {
     console.error('Recommend subroom API error:', error.code || error.message);
     return sendApiError(res, 500, 'server_error', 'โหวตห้องไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  }
+});
+
+app.post('/api/cleanup-expire-room', async (req, res) => {
+  try {
+    const now = new Date();
+    const subroomUni = await getSubroomUniCollection();
+    const expiredSubrooms = await subroomUni
+      .find(
+        {
+          subroom_type: 'temp',
+          expire_days: { $lte: now }
+        },
+        {
+          projection: {
+            _id: 0,
+            subroom_id: 1,
+            subroom_name: 1,
+            uniroom_id: 1,
+            expire_days: 1
+          }
+        }
+      )
+      .toArray();
+
+    if (!expiredSubrooms.length) {
+      return res.json({
+        status: 'success',
+        message: 'No expired subrooms found',
+        deleted_count: 0,
+        deleted_subrooms: [],
+        timestamp: now.toISOString()
+      });
+    }
+
+    const expiredIds = expiredSubrooms.map(room => room.subroom_id);
+
+    const subroomTempVotes = await getSubroomTempVotesCollection();
+    const publicChat = await getPublicChatCollection();
+    const users = await getUsersCollection();
+
+    await Promise.all([
+      subroomUni.deleteMany({ subroom_id: { $in: expiredIds } }),
+      subroomTempVotes.deleteMany({ subroom_id: { $in: expiredIds } }),
+      publicChat.deleteMany({ subroom_id: { $in: expiredIds } }),
+      users.updateMany(
+        {
+          $or: [
+            { readed_subroom: { $in: expiredIds } },
+            { subroom_voted: { $in: expiredIds } }
+          ]
+        },
+        {
+          $pull: {
+            readed_subroom: { $in: expiredIds },
+            subroom_voted: { $in: expiredIds }
+          }
+        }
+      )
+    ]);
+
+    for (const id of expiredIds) {
+      presenceBySubroom.delete(id);
+    }
+
+    return res.json({
+      status: 'success',
+      message: 'Cleanup completed successfully',
+      deleted_count: expiredSubrooms.length,
+      deleted_subrooms: expiredSubrooms,
+      timestamp: now.toISOString()
+    });
+  } catch (error) {
+    console.error('Cleanup expire room API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'การลบห้องที่หมดอายุเกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
   }
 });
 

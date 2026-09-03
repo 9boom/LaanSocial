@@ -130,6 +130,17 @@ async function loadSubroomsForUniversity(uniroomName, preferredSubroomId){
     return;
   }
 
+  // Check if user is logged in before attempting to call authenticated API
+  if(window.PublicChat && typeof window.PublicChat.getAccessHKey === 'function'){
+    const accessKey = await window.PublicChat.getAccessHKey();
+    if(!accessKey){
+      Object.keys(SUBROOM_GROUPS).forEach(type => {
+        setSubroomGroupMessage(type, 'กรุณาเข้าสู่ระบบเพื่อดูห้องย่อย', 'channel-state');
+      });
+      return;
+    }
+  }
+
   const requestId = ++activeSubroomRequest;
   setAllSubroomGroupsLoading();
 
@@ -339,3 +350,18 @@ window.reloadActiveSubrooms = function(preferredSubroomId){
   const targetId = preferredSubroomId || window.PublicChat?.activeSubroom?.subroom_id;
   return loadSubroomsForUniversity(activeUniversityName, targetId);
 };
+
+document.addEventListener('laan:user-ready', (event) => {
+  const user = event.detail?.user;
+  if(user?.user_uniname){
+    const targetBtn = Array.from(document.querySelectorAll('.uni-icon')).find(
+      btn => btn.dataset.name === user.user_uniname
+    );
+    if(targetBtn){
+      document.querySelectorAll('.uni-icon').forEach(el => {
+        el.classList.toggle('active', el === targetBtn);
+      });
+      activeUniversityName = user.user_uniname;
+    }
+  }
+});
