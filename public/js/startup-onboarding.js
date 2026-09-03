@@ -75,20 +75,16 @@
     return error && error.message ? error.message : fallback;
   }
 
-  function createFrontendUuid(){
-    if(window.crypto && typeof window.crypto.randomUUID === 'function'){
-      return window.crypto.randomUUID();
+  async function fetchGeneratedAccessKey(){
+    const response = await fetch('/api/auth/access-hkey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.status === 'error' || !data.access_hkey){
+      throw new Error(data.message || 'ไม่สามารถสร้างรหัสเข้าสู่ระบบได้');
     }
-
-    if(window.crypto && typeof window.crypto.getRandomValues === 'function'){
-      const bytes = window.crypto.getRandomValues(new Uint8Array(16));
-      bytes[6] = (bytes[6] & 0x0f) | 0x40;
-      bytes[8] = (bytes[8] & 0x3f) | 0x80;
-      const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-    }
-
-    throw new Error('ไม่สามารถสร้างรหัสเข้าสู่ระบบได้');
+    return data.access_hkey;
   }
 
   async function postLogin(payload){
@@ -341,12 +337,12 @@
       return;
     }
 
-    const nickname = reservedNick || nicknameInput.value.trim();
-    const accessKey = createFrontendUuid();
-
     setButtonLoading(connectBtn, true);
 
     try {
+      const nickname = reservedNick || nicknameInput.value.trim();
+      const accessKey = await fetchGeneratedAccessKey();
+
       const data = await postLogin({
         action: 'create',
         nick: nickname,

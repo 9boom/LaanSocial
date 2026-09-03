@@ -248,6 +248,10 @@ async function getPublicChatCollection() {
   return publicChatCollectionPromise;
 }
 
+function generateAccessKey() {
+  return crypto.randomUUID();
+}
+
 async function hashAccessKey(accessKey) {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = await scryptAsync(String(accessKey), salt, 64);
@@ -825,6 +829,16 @@ app.get('/api/info', (req, res) => {
   });
 });
 
+app.all('/api/auth/access-hkey', (req, res) => {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return sendApiError(res, 405, 'method_not_allowed', 'Method Not Allowed');
+  }
+  return res.json({
+    status: 'success',
+    access_hkey: generateAccessKey()
+  });
+});
+
 app.post('/login', async (req, res) => {
   const action = typeof req.body.action === 'string' ? req.body.action : '';
 
@@ -1326,6 +1340,8 @@ app.post('/api/public-chat/messages', requireUser, async (req, res) => {
       return sendApiError(res, 404, 'invalid_subroom', getPublicErrorMessage({ code: 'invalid_subroom' }));
     }
 
+    const [subroomWithVote] = await attachTempVoteData([subroom], req.user);
+
     const query = { subroom_id: subroom.subroom_id };
     if (before && !Number.isNaN(before.getTime())) {
       query.created_at = { $lt: before };
@@ -1355,7 +1371,7 @@ app.post('/api/public-chat/messages', requireUser, async (req, res) => {
 
     return res.json({
       status: 'success',
-      subroom: publicSubroom(subroom),
+      subroom: publicSubroom(subroomWithVote),
       messages: orderedMessages,
       has_more: messages.length === limit
     });

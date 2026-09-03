@@ -38,6 +38,8 @@ function setAllSubroomGroupsLoading(){
   });
 }
 
+const subroomCache = new Map();
+
 function formatSubroomName(name){
   const value = typeof name === 'string' ? name.trim() : '';
   if(!value) return '#ไม่ระบุชื่อห้อง';
@@ -76,14 +78,16 @@ function renderSubroomChannel(subroom){
   channel.appendChild(descSpan);
   channel.addEventListener('click', () => {
     if(window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
-      window.PublicChat.openSubroom(subroom);
+      const latestSubroom = subroomCache.get(subroom.subroom_id) || subroom;
+      window.PublicChat.openSubroom(latestSubroom);
     }
   });
 
   return channel;
 }
 
-function renderSubroomGroups(subroomsByType){
+function renderSubroomGroups(subroomsByType, preferredSubroomId){
+  subroomCache.clear();
   const firstSubroom = [];
 
   Object.keys(SUBROOM_GROUPS).forEach(type => {
@@ -100,18 +104,22 @@ function renderSubroomGroups(subroomsByType){
 
     const fragment = document.createDocumentFragment();
     subrooms.forEach(subroom => {
+      if(subroom && subroom.subroom_id){
+        subroomCache.set(subroom.subroom_id, subroom);
+      }
       if(!firstSubroom.length) firstSubroom.push(subroom);
       fragment.appendChild(renderSubroomChannel(subroom));
     });
     group.appendChild(fragment);
   });
 
-  if(firstSubroom[0] && window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
-    window.PublicChat.openSubroom(firstSubroom[0]);
+  const targetSubroom = (preferredSubroomId && subroomCache.get(preferredSubroomId)) || firstSubroom[0];
+  if(targetSubroom && window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
+    window.PublicChat.openSubroom(targetSubroom);
   }
 }
 
-async function loadSubroomsForUniversity(uniroomName){
+async function loadSubroomsForUniversity(uniroomName, preferredSubroomId){
   activeUniversityName = typeof uniroomName === 'string' ? uniroomName.trim() : '';
   updateRailUniversity(activeUniversityName || 'มหาวิทยาลัย');
 
@@ -141,7 +149,7 @@ async function loadSubroomsForUniversity(uniroomName){
     if(window.PublicChat && typeof window.PublicChat.updateUniversityOnline === 'function'){
       window.PublicChat.updateUniversityOnline(activeUniversity?.online_count || 0);
     }
-    renderSubroomGroups(data.subrooms || {});
+    renderSubroomGroups(data.subrooms || {}, preferredSubroomId);
   } catch (error) {
     console.error(error);
     if(requestId !== activeSubroomRequest) return;
@@ -315,6 +323,19 @@ window.getActiveUniversity = function(){
   return activeUniversity;
 };
 
-window.reloadActiveSubrooms = function(){
-  return loadSubroomsForUniversity(activeUniversityName);
+window.updateCachedSubroom = function(subroomId, updates){
+  if(!subroomId) return null;
+  const current = subroomCache.get(subroomId) || {};
+  const updated = { ...current, ...updates };
+  subroomCache.set(subroomId, updated);
+  return updated;
+};
+
+window.getCachedSubroom = function(subroomId){
+  return subroomCache.get(subroomId) || null;
+};
+
+window.reloadActiveSubrooms = function(preferredSubroomId){
+  const targetId = preferredSubroomId || window.PublicChat?.activeSubroom?.subroom_id;
+  return loadSubroomsForUniversity(activeUniversityName, targetId);
 };

@@ -9,6 +9,7 @@
   const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
   const ATTACHMENT_TOO_LARGE_MESSAGE = `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
   const FALLBACK_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   const messagesEl = document.getElementById('publicMessages');
   const composerForm = document.getElementById('composerForm');
@@ -98,10 +99,16 @@
     return value.startsWith('#') ? value : `#${value}`;
   }
 
-  function formatTime(value){
+  function formatTime(value, now = Date.now()){
+    if(!value) return '';
     const date = new Date(value);
     if(Number.isNaN(date.getTime())) return '';
-    return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    const diffMs = now - date.getTime();
+    if(diffMs < MS_PER_DAY){
+      return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    }
+    const days = Math.floor(diffMs / MS_PER_DAY);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
 
   function userTag(user){
@@ -261,9 +268,13 @@
 
     const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(message.user_owner_id || 'USR-00000')}" data-profile-date="${escapeHtml(message.user_created_at || '')}" ${socialMediaAttrs(message.social_media)}`;
 
+    const timeFormatted = formatTime(message.created_at);
+    const dateObj = new Date(message.created_at);
+    const timeTitle = !Number.isNaN(dateObj.getTime()) ? ` title="${escapeHtml(dateObj.toLocaleString())}"` : '';
+
     const meta = mine
-      ? `<span class="time">${formatTime(message.created_at)}</span><span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span>`
-      : `<span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span><span class="time">${formatTime(message.created_at)}</span>${actions}`;
+      ? `<span class="time"${timeTitle}>${timeFormatted}</span><span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span>`
+      : `<span class="tag user-profile-trigger" ${profileAttrs}>${escapeHtml(tag)}</span><span class="user-profile-trigger" ${profileAttrs}>${escapeHtml(nick)}</span><span class="time"${timeTitle}>${timeFormatted}</span>${actions}`;
 
     return `<div class="msg${mine ? ' own' : ''}" data-chat-id="${escapeHtml(message.chat_id)}">
       <img class="avatar user-profile-trigger" ${profileAttrs} src="${escapeHtml(avatar)}" alt="${escapeHtml(nick)}">
@@ -520,6 +531,9 @@
           ...data.subroom,
           vote: data.subroom.vote || currentVote
         };
+        if(typeof window.updateCachedSubroom === 'function'){
+          window.updateCachedSubroom(state.activeSubroom.subroom_id, state.activeSubroom);
+        }
         updateHeader(state.activeSubroom);
       }
     } catch (error) {
@@ -531,16 +545,18 @@
   }
 
   async function openSubroom(subroom){
-    state.activeSubroom = subroom;
+    const cached = typeof window.getCachedSubroom === 'function' ? window.getCachedSubroom(subroom?.subroom_id) : null;
+    const resolvedSubroom = cached ? { ...subroom, ...cached } : subroom;
+    state.activeSubroom = resolvedSubroom;
     state.messages = [];
     state.messageIds = new Set();
     state.hasMore = true;
     state.typingUsers.clear();
     setTypingBar();
-    updateHeader(subroom);
+    updateHeader(resolvedSubroom);
     setMessageState('กำลังโหลด...', 'chat-state');
     document.querySelectorAll('.channel').forEach(el => {
-      el.classList.toggle('active', el.dataset.subroomId === subroom.subroom_id);
+      el.classList.toggle('active', el.dataset.subroomId === resolvedSubroom?.subroom_id);
     });
     if(typeof setMobileView === 'function') setMobileView('chat');
     await loadHistory();
@@ -621,6 +637,10 @@
         };
       }
 
+      if(typeof window.updateCachedSubroom === 'function' && state.activeSubroom?.subroom_id){
+        window.updateCachedSubroom(state.activeSubroom.subroom_id, state.activeSubroom);
+      }
+
       if(state.currentUser){
         const voted = Array.isArray(state.currentUser.subroom_voted) ? state.currentUser.subroom_voted : [];
         state.currentUser = {
@@ -632,7 +652,7 @@
 
       if(data.promoted){
         updateVotingPills(null);
-        if(typeof window.reloadActiveSubrooms === 'function') await window.reloadActiveSubrooms();
+        if(typeof window.reloadActiveSubrooms === 'function') await window.reloadActiveSubrooms(state.activeSubroom?.subroom_id);
         return;
       }
 
@@ -852,6 +872,7 @@
     refreshIdentity,
     applyPresence,
     updateUniversityOnline,
+    formatTime,
     get activeSubroom(){
       return state.activeSubroom;
     }
