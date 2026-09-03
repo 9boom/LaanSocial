@@ -8,13 +8,36 @@ const adduniSuccessView = document.getElementById('adduniSuccessView');
 const adduniForm      = document.getElementById('adduniForm');
 const adduniNameField = document.getElementById('adduniNameField');
 const adduniName      = document.getElementById('adduniName');
+const adduniShort     = document.getElementById('adduniShort');
+const adduniProvince  = document.getElementById('adduniProvince');
+const adduniUrl       = document.getElementById('adduniUrl');
 const adduniCancelBtn = document.getElementById('adduniCancelBtn');
 const adduniOkBtn     = document.getElementById('adduniOkBtn');
+const adduniSubmitBtn = adduniForm?.querySelector('button[type="submit"]');
+
+const adduniError = document.createElement('p');
+adduniError.className = 'adduni-error';
+adduniError.setAttribute('aria-live', 'polite');
+adduniError.hidden = true;
+adduniForm?.querySelector('.adduni-actions')?.insertAdjacentElement('beforebegin', adduniError);
+
+function setAdduniError(message) {
+  adduniError.textContent = message || '';
+  adduniError.hidden = !message;
+}
+function setAdduniLoading(isLoading) {
+  if (!adduniSubmitBtn) return;
+  if (!adduniSubmitBtn.dataset.idleText) adduniSubmitBtn.dataset.idleText = adduniSubmitBtn.textContent;
+  adduniSubmitBtn.disabled = isLoading;
+  adduniSubmitBtn.textContent = isLoading ? 'กำลังส่ง...' : adduniSubmitBtn.dataset.idleText;
+}
 
 // Restores the add-university modal to its input state before every open.
 function resetAdduniForm(){
   adduniForm.reset();
   adduniNameField.classList.remove('invalid');
+  setAdduniError('');
+  setAdduniLoading(false);
   adduniFormView.style.display = '';
   adduniSuccessView.style.display = 'none';
 }
@@ -38,7 +61,7 @@ document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape' && adduniOverlay.classList.contains('open')) closeAddUniModal();
 });
 
-adduniForm.addEventListener('submit', function(e){
+adduniForm.addEventListener('submit', async function(e){
   e.preventDefault();
   if(!adduniName.value.trim()){
     adduniNameField.classList.add('invalid');
@@ -46,9 +69,34 @@ adduniForm.addEventListener('submit', function(e){
     return;
   }
   adduniNameField.classList.remove('invalid');
-  adduniFormView.style.display = 'none';
-  adduniSuccessView.style.display = '';
+  setAdduniError('');
+
+  try {
+    setAdduniLoading(true);
+    const response = await fetch('/api/universities/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        university_name:       adduniName.value.trim(),
+        university_short_name: adduniShort ? adduniShort.value.trim() : '',
+        province:              adduniProvince ? adduniProvince.value.trim() : '',
+        website_url:           adduniUrl ? adduniUrl.value.trim() : ''
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.message || 'ส่งคำขอไม่สำเร็จ');
+    }
+    adduniFormView.style.display = 'none';
+    adduniSuccessView.style.display = '';
+  } catch (error) {
+    console.error('Add university request error:', error);
+    setAdduniError(error.message || 'ส่งคำขอไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+  } finally {
+    setAdduniLoading(false);
+  }
 });
+
 
 /* ---------- ADD TEMPORARY ROOM MODAL ---------- */
 const openAddTempRoomBtn = document.getElementById('openAddTempRoomBtn');

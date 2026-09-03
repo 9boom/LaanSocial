@@ -28,6 +28,7 @@ const SUBROOM_UNI_COLLECTION = 'subroom_uni';
 const SUBROOM_TEMP_VOTES_COLLECTION = 'subroom_temp_votes';
 const PUBLIC_CHAT_COLLECTION = 'public_chat';
 const IN_CHAT_REPORT_COLLECTION = 'in_chat_report';
+const UNIVERSITIES_REQUEST_COLLECTION = 'universities_request';
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
 const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
 const CHAT_ATTACHMENT_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_chat_attachment');
@@ -419,6 +420,12 @@ async function getInChatReportCollection() {
   }
 
   return inChatReportCollectionPromise;
+}
+
+async function getUniversitiesRequestCollection() {
+  const collection = await getDbCollection(UNIVERSITIES_REQUEST_COLLECTION);
+  await collection.createIndex({ created_at: -1 });
+  return collection;
 }
 
 function sanitizeUserForReport(user) {
@@ -1848,6 +1855,32 @@ app.post('/api/public-chat/attachments', requireUser, createUploadMiddleware, as
   } catch (error) {
     console.error('Upload public chat attachment error:', error.code || error.message);
     return sendApiError(res, error.statusCode || 500, error.code || 'server_error', getPublicErrorMessage(error));
+  }
+});
+
+app.post('/api/universities/request', async (req, res) => {
+  const universityName      = normalizePlainText(req.body.university_name, 200);
+  const universityShortName = normalizePlainText(req.body.university_short_name, 50);
+  const province            = normalizePlainText(req.body.province, 100);
+  const websiteUrl          = normalizePlainText(req.body.website_url, 500);
+
+  if (!universityName) {
+    return sendApiError(res, 400, 'missing_university_name', 'กรุณากรอกชื่อมหาวิทยาลัย');
+  }
+
+  try {
+    const collection = await getUniversitiesRequestCollection();
+    await collection.insertOne({
+      university_name: universityName,
+      university_short_name: universityShortName,
+      province,
+      website_url: websiteUrl,
+      created_at: new Date()
+    });
+    return res.status(201).json({ status: 'success' });
+  } catch (error) {
+    console.error('Universities request API error:', error.code || error.message);
+    return sendApiError(res, 500, 'server_error', 'ส่งคำขอไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
   }
 });
 
