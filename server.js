@@ -161,6 +161,27 @@ function apiRateLimitMiddleware(req, res, next) {
 app.use(express.json({ limit: '256kb' }));
 app.use(apiRateLimitMiddleware);
 
+// Security headers — applied to every response
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob:",
+      "media-src 'self' blob:",
+      "connect-src 'self' wss: ws:",
+      "frame-ancestors 'none'"
+    ].join('; ')
+  );
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   extensions: ['html']
 }));
@@ -1691,8 +1712,11 @@ app.get('/api/profile-images', async (req, res) => {
 });
 
 app.use((req, res) => {
-  res.status(404).send('<h1>404 - Page not found</h1>');
+  res.status(404)
+    .setHeader('Content-Type', 'text/html; charset=utf-8')
+    .send('<h1>404 - Page not found</h1>');
 });
+
 
 const wss = new WebSocketServer({ noServer: true });
 

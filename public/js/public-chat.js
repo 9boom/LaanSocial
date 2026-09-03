@@ -206,7 +206,18 @@
     const hasPrefix = /^([^:\n]{1,60})\s:\s/.test(text);
     if(!hasPrefix && !forceEnd) return;
 
-    composerInput.innerHTML = highlightedMessageHtml(text);
+    // Use DOM API instead of innerHTML to avoid XSS anti-pattern on contenteditable
+    const match = text.match(/^([^:\n]{1,60})\s:\s(.*)$/s);
+    composerInput.textContent = '';
+    if(match){
+      const prefix = document.createElement('span');
+      prefix.className = 'reply-prefix';
+      prefix.textContent = match[1];
+      composerInput.appendChild(prefix);
+      composerInput.appendChild(document.createTextNode(` : ${match[2]}`));
+    } else {
+      composerInput.textContent = text;
+    }
     if(document.activeElement !== composerInput){
       composerInput.focus();
     }
