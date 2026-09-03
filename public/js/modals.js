@@ -180,7 +180,7 @@ function closeNotifModal(){
   notifOverlay.classList.remove('open');
 }
 
-notifBellBtn.addEventListener('click', openNotifModal);
+if (notifBellBtn) notifBellBtn.addEventListener('click', openNotifModal);
 notifAllowBtn.addEventListener('click', closeNotifModal);
 notifOverlay.addEventListener('click', (e) => {
   if(e.target === notifOverlay) closeNotifModal();
@@ -245,3 +245,31 @@ reportForm.addEventListener('submit', function(e){
   reportFormView.style.display = 'none';
   reportSuccessView.style.display = '';
 });
+
+/* ---------- ROOM INFO MODAL ---------- */
+const infoBtn          = document.getElementById('infoBtn');
+const roomInfoOverlay  = document.getElementById('roomInfoOverlay');
+const closeRoomInfoBtn = document.getElementById('closeRoomInfoBtn');
+const roomInfoOkBtn    = document.getElementById('roomInfoOkBtn');
+
+function openRoomInfoModal(){
+  if(roomInfoOverlay) roomInfoOverlay.classList.add('open');
+}
+function closeRoomInfoModal(){
+  if(roomInfoOverlay) roomInfoOverlay.classList.remove('open');
+}
+
+if(infoBtn) infoBtn.addEventListener('click', openRoomInfoModal);
+if(closeRoomInfoBtn) closeRoomInfoBtn.addEventListener('click', closeRoomInfoModal);
+if(roomInfoOkBtn) roomInfoOkBtn.addEventListener('click', closeRoomInfoModal);
+if(roomInfoOverlay){
+  roomInfoOverlay.addEventListener('click', (e) => {
+    if(e.target === roomInfoOverlay) closeRoomInfoModal();
+  });
+}
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && roomInfoOverlay && roomInfoOverlay.classList.contains('open')){
+    closeRoomInfoModal();
+  }
+});
+

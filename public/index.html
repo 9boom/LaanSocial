@@ -90,9 +90,6 @@
     </div>
   </div>
   <div class="profile">
-    <button type="button" class="icon-btn" id="topNotifBtn" aria-label="การแจ้งเตือน">
-      🔔<span class="badge-dot"></span>
-    </button>
     <span class="profile-uni">จุฬาลงกรณ์มหาวิทยาลัย [จฬ]</span>
     <div class="profile-nick"><span>ชื่อเล่น</span><b>มะม่วงเบา</b></div>
     <div class="profile-menu-wrap">
@@ -180,6 +177,21 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="roomInfoOverlay">
+  <div class="modal-box room-info-box" role="dialog" aria-modal="true" aria-labelledby="roomInfoTitle">
+    <div class="modal-header">
+      <h3 id="roomInfoTitle">ข้อมูลห้องชั่วคราว</h3>
+      <button type="button" class="modal-close" id="closeRoomInfoBtn" aria-label="ปิด">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="room-info-text">ห้องนี้ คือห้องชั่วคราวที่ถูกสร้างขึ้น และเมื่อหมดอายุเวลาตามที่กำหนดก็จะถูกลบรวมถึงข้อมูลการสนทนาทั้งหมด เพื่อให้ห้องนี้เปลี่ยนจาก ชุมชนชั่วคราว เป็นชุมชนถาวร โดยที่ห้องจะไม่มีวันหมดอายุอีก ให้กดปุ่ม <span class="inline-recommend-pill" aria-label="ปุ่มแนะนำ"><img src="assets/symbols/recommend.svg" alt="แนะนำ"></span> เพื่อโหวตให้ครบ 15 คน</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-primary" id="roomInfoOkBtn">เข้าใจแล้ว</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="overlay"></div>
 
 <div class="layout">
@@ -198,7 +210,6 @@
       <div class="uni-card-row">
         <p class="online">กำลังอยู่ 75 คน</p>
         <div class="sidebar-tools">
-          <button class="tool-btn" id="notifBellBtn" aria-label="การแจ้งเตือน">🔔</button>
           <button class="tool-btn" id="openAddTempRoomBtn" aria-label="เพิ่มห้อง">+</button>
         </div>
       </div>

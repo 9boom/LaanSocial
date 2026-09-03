@@ -1023,6 +1023,40 @@ body.theme-dark .danger-settings-group{
   color:#fff;
 }
 
+/* ---------- ROOM INFO MODAL ---------- */
+.room-info-box{
+  width:min(480px,100%);
+}
+.room-info-text{
+  margin:0;
+  color:var(--text-soft);
+  font-size:15px;
+  line-height:1.75;
+}
+.inline-recommend-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  vertical-align:middle;
+  width:28px;
+  height:28px;
+  background:#d7d7d7;
+  border-radius:6px;
+  margin:0 4px;
+}
+.inline-recommend-pill img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
+body.theme-dark .inline-recommend-pill{
+  background:#262b33;
+}
+body.theme-dark .inline-recommend-pill img{
+  filter:invert(.85) brightness(1.4);
+}
+
 /* ---------- ONLINE MEMBERS SLIDE PANEL ---------- */
 .online-overlay{
   display:none;
