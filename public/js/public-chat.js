@@ -5,6 +5,7 @@
   const PAGE_SIZE = 10;
   const JOINED_PING_MS = 60 * 1000;
   const TYPING_IDLE_MS = 1400;
+  const MAX_MESSAGE_LENGTH = 200;
   const MAX_ATTACHMENT_SIZE_MB = 5;
   const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
   const ATTACHMENT_TOO_LARGE_MESSAGE = `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
@@ -14,6 +15,7 @@
   const messagesEl = document.getElementById('publicMessages');
   const composerForm = document.getElementById('composerForm');
   const composerInput = document.getElementById('publicComposerInput');
+  const sendBtn = composerForm?.querySelector('.send-btn');
   const attachBtn = document.getElementById('publicAttachBtn');
   const attachmentInput = document.getElementById('publicAttachmentInput');
   const attachmentError = document.getElementById('publicAttachmentError');
@@ -124,14 +126,33 @@
     return trim ? text.trim() : text;
   }
 
+  function validateComposerTextLength(){
+    const text = getPlainComposerText(false);
+    const length = text.length;
+    if(length > MAX_MESSAGE_LENGTH){
+      setAttachmentError(`ข้อความมีความยาวเกิน ${MAX_MESSAGE_LENGTH} ตัวอักษร (ปัจจุบัน ${length} ตัวอักษร)`);
+      if(sendBtn) sendBtn.disabled = true;
+      composerInput?.classList.add('invalid');
+      return false;
+    }
+    if(!state.selectedAttachment || validateAttachmentFile(state.selectedAttachment)){
+      setAttachmentError('');
+    }
+    if(sendBtn) sendBtn.disabled = false;
+    composerInput?.classList.remove('invalid');
+    return true;
+  }
+
   function setComposerPlainText(text){
     if(!composerInput) return;
     if(!text){
       composerInput.innerHTML = '';
+      validateComposerTextLength();
       return;
     }
     composerInput.textContent = text;
     highlightComposerPrefix(true);
+    validateComposerTextLength();
   }
 
   function getCaretOffset(element){
@@ -492,6 +513,8 @@
         if(content.code === 'permission_denied' || content.code === 'banned'){
           state.authFailed = true;
           setMessageState(content.message || 'กรุณาเข้าสู่ระบบใหม่', 'chat-state error');
+        } else if(content.code === 'rate_limit_exceeded'){
+          setMessageState(content.message || 'คุณส่งข้อความถี่เกินไป กรุณารอสักครู่', 'chat-state error');
         }
       }
     });
@@ -611,6 +634,7 @@
 
   async function submitMessage(event){
     if(event && typeof event.preventDefault === 'function') event.preventDefault();
+    if(!validateComposerTextLength()) return;
     if(!state.activeSubroom) return;
     const text = getPlainComposerText(true);
     if(!text && !state.selectedAttachment) return;
@@ -694,19 +718,20 @@
   }
 
   async function handleTypingInput(){
+    const isValidLength = validateComposerTextLength();
     if(!state.activeSubroom) return;
     const hasText = Boolean(getPlainComposerText(true));
     window.clearTimeout(state.typingTimer);
-    if(hasText && !state.isTyping){
+    if(hasText && !state.isTyping && isValidLength){
       state.isTyping = true;
       await sendProtectedWs('start_typing', { subroom_id: state.activeSubroom.subroom_id }).catch(() => {});
     }
-    if(!hasText && state.isTyping){
+    if((!hasText || !isValidLength) && state.isTyping){
       state.isTyping = false;
       await sendProtectedWs('stop_typing', { subroom_id: state.activeSubroom.subroom_id }).catch(() => {});
       return;
     }
-    if(hasText){
+    if(hasText && isValidLength){
       state.typingTimer = window.setTimeout(async () => {
         state.isTyping = false;
         await sendProtectedWs('stop_typing', { subroom_id: state.activeSubroom.subroom_id }).catch(() => {});
@@ -718,6 +743,7 @@
     event.preventDefault();
     const text = (event.clipboardData || window.clipboardData).getData('text/plain');
     document.execCommand('insertText', false, text);
+    validateComposerTextLength();
   }
 
   function handleReplyClick(event){

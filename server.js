@@ -41,18 +41,83 @@ const ATTACHMENT_MIME_TYPES = new Set([
 ]);
 const PROFILE_IMAGE_URL_PREFIX = 'assets/sim_db/users_profile_image/';
 const CHAT_ATTACHMENT_URL_PREFIX = 'assets/sim_db/users_chat_attachment/';
-const MAX_MESSAGE_LENGTH = 2000;
+const MAX_MESSAGE_LENGTH = 200;
 const MESSAGE_PAGE_SIZE = 10;
 const MAX_ATTACHMENT_SIZE_MB = 5;
 const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
 const PRESENCE_TTL_MS = 2 * 60 * 1000;
 const JOINED_PING_MS = 60 * 1000;
 const WS_AUTH_TIMEOUT_MS = 10 * 1000;
+const API_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const API_RATE_LIMIT_MAX = 60;
+const WS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const WS_RATE_LIMIT_MAX = 30;
 const SUBROOM_TYPES = ['official', 'community', 'temp'];
 const ALLOWED_EXPIRE_DAYS = new Set([1, 3, 7, 14, 30]);
 const SUBROOM_TEMP_VOTE_TOTAL = 15;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const scryptAsync = promisify(crypto.scrypt);
+
+class MemoryRateLimiter {
+  constructor({ windowMs, max }) {
+    this.windowMs = windowMs;
+    this.max = max;
+    this.hits = new Map();
+  }
+
+  check(key) {
+    const now = Date.now();
+    const record = this.hits.get(key);
+
+    if (!record || now >= record.resetTime) {
+      const resetTime = now + this.windowMs;
+      this.hits.set(key, { count: 1, resetTime });
+      return {
+        allowed: true,
+        remaining: this.max - 1,
+        resetTime,
+        retryAfter: 0
+      };
+    }
+
+    if (record.count < this.max) {
+      record.count += 1;
+      return {
+        allowed: true,
+        remaining: this.max - record.count,
+        resetTime: record.resetTime,
+        retryAfter: 0
+      };
+    }
+
+    const retryAfter = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime: record.resetTime,
+      retryAfter
+    };
+  }
+
+  cleanup() {
+    const now = Date.now();
+    for (const [key, record] of this.hits) {
+      if (now >= record.resetTime) {
+        this.hits.delete(key);
+      }
+    }
+  }
+}
+
+const apiLimiter = new MemoryRateLimiter({
+  windowMs: API_RATE_LIMIT_WINDOW_MS,
+  max: API_RATE_LIMIT_MAX
+});
+
+const wsLimiter = new MemoryRateLimiter({
+  windowMs: WS_RATE_LIMIT_WINDOW_MS,
+  max: WS_RATE_LIMIT_MAX
+});
 
 let mongoClientPromise = null;
 let usersCollectionPromise = null;
@@ -63,7 +128,38 @@ const pendingAttachments = new Map();
 const sockets = new Set();
 const presenceBySubroom = new Map();
 
+function getClientIp(req) {
+  const forwarded = req.headers ? (req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']) : null;
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || req.ip || '127.0.0.1';
+}
+
+function apiRateLimitMiddleware(req, res, next) {
+  if (!req.path.startsWith('/api/') && req.path !== '/login' && req.path !== '/add-subroom') {
+    return next();
+  }
+
+  const ip = getClientIp(req);
+  const accessKey = getAccessKeyFromRequest(req);
+  const key = accessKey ? `api:key:${accessKeyLookup(accessKey)}:${ip}` : `api:ip:${ip}`;
+  const result = apiLimiter.check(key);
+
+  res.setHeader('RateLimit-Limit', API_RATE_LIMIT_MAX);
+  res.setHeader('RateLimit-Remaining', Math.max(0, result.remaining));
+  res.setHeader('RateLimit-Reset', Math.ceil(result.resetTime / 1000));
+
+  if (!result.allowed) {
+    res.setHeader('Retry-After', result.retryAfter);
+    return sendApiError(res, 429, 'rate_limit_exceeded', 'คุณทำรายการถี่เกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง');
+  }
+
+  next();
+}
+
 app.use(express.json({ limit: '256kb' }));
+app.use(apiRateLimitMiddleware);
 
 app.use(express.static(path.join(__dirname, 'public'), {
   extensions: ['html']
@@ -79,6 +175,35 @@ const attachmentUpload = multer({
 
 function normalizeNick(nick) {
   return typeof nick === 'string' ? nick.trim() : '';
+}
+
+function validateNick(nick) {
+  const value = normalizeNick(nick);
+  if (!value) {
+    const error = new Error('กรุณากรอกชื่อเล่นหรือนามแฝง');
+    error.statusCode = 400;
+    error.code = 'invalid_nick';
+    throw error;
+  }
+  if (value.length < 5 || value.length > 25) {
+    const error = new Error('ชื่อต้องมีความยาว 5-25 ตัวอักษร');
+    error.statusCode = 400;
+    error.code = 'invalid_nick_length';
+    throw error;
+  }
+  if (!/^[a-zA-Z0-9\u0E00-\u0E7F ]+$/.test(value)) {
+    const error = new Error('ชื่อต้องประกอบด้วยตัวอักษรไทย อังกฤษ หรือตัวเลขเท่านั้น');
+    error.statusCode = 400;
+    error.code = 'invalid_nick_chars';
+    throw error;
+  }
+  if (/^[\d ]+$/.test(value)) {
+    const error = new Error('ชื่อไม่สามารถเป็นตัวเลขล้วนได้');
+    error.statusCode = 400;
+    error.code = 'invalid_nick_digits_only';
+    throw error;
+  }
+  return value;
 }
 
 function normalizePlainText(value, maxLength) {
@@ -394,9 +519,14 @@ function getPublicErrorMessage(error) {
   if (error.code === 'already_voted') return 'คุณโหวตห้องนี้ไปแล้ว';
   if (error.code === 'vote_expired') return 'ห้องนี้หมดเวลาโหวตแล้ว';
   if (error.code === 'vote_closed') return 'ห้องนี้ปิดรับโหวตแล้ว';
-  if (error.code === 'invalid_message') return 'ข้อความไม่ถูกต้อง';
+  if (error.code === 'invalid_nick') return 'กรุณากรอกชื่อเล่นหรือนามแฝง';
+  if (error.code === 'invalid_nick_length') return 'ชื่อต้องมีความยาว 5-25 ตัวอักษร';
+  if (error.code === 'invalid_nick_chars') return 'ชื่อต้องประกอบด้วยตัวอักษรไทย อังกฤษ หรือตัวเลขเท่านั้น';
+  if (error.code === 'invalid_nick_digits_only') return 'ชื่อไม่สามารถเป็นตัวเลขล้วนได้';
+  if (error.code === 'invalid_message') return 'ข้อความไม่ถูกต้อง หรือยาวเกิน 200 ตัวอักษร';
   if (error.code === 'invalid_attachment') return 'ไฟล์แนบไม่ถูกต้อง';
   if (error.code === 'attachment_too_large') return `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
+  if (error.code === 'rate_limit_exceeded') return 'คุณทำรายการถี่เกินไป กรุณารอสักครู่แล้วลองใหม่อีกครั้ง';
   return 'ระบบทำงานไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
 }
 
@@ -844,6 +974,20 @@ async function handleWsMessage(ws, raw) {
   const event = typeof payload.event === 'string' ? payload.event : '';
   const contentObj = payload.content_obj && typeof payload.content_obj === 'object' ? payload.content_obj : {};
 
+  const ip = ws.clientIp || '127.0.0.1';
+  const wsKey = ws.userId ? `ws:user:${ws.userId}:${ip}` : `ws:ip:${ip}`;
+  const rateLimitResult = wsLimiter.check(wsKey);
+  if (!rateLimitResult.allowed) {
+    safeSend(ws, {
+      event: 'error',
+      content_obj: {
+        code: 'rate_limit_exceeded',
+        message: 'คุณส่งข้อความหรือทำรายการถี่เกินไป กรุณารอสักครู่'
+      }
+    });
+    return;
+  }
+
   if (event === 'auth') return handleWsAuth(ws, contentObj);
 
   if (!ws.authenticated) {
@@ -925,8 +1069,12 @@ app.post('/login', async (req, res) => {
     const users = await getUsersCollection();
 
     if (action === 'check') {
-      const nick = normalizeNick(req.body.nick);
-      if (!nick) return sendApiError(res, 400, 'invalid_nick', 'กรุณากรอกชื่อเล่นหรือนามแฝง');
+      let nick;
+      try {
+        nick = validateNick(req.body.nick);
+      } catch (err) {
+        return sendApiError(res, err.statusCode || 400, err.code || 'invalid_nick', getPublicErrorMessage(err));
+      }
 
       const user = await users.findOne(
         { user_nick: nick },
@@ -973,12 +1121,16 @@ app.post('/login', async (req, res) => {
     }
 
     if (action === 'create') {
-      const nick = normalizeNick(req.body.nick);
+      let nick;
+      try {
+        nick = validateNick(req.body.nick);
+      } catch (err) {
+        return sendApiError(res, err.statusCode || 400, err.code || 'invalid_nick', getPublicErrorMessage(err));
+      }
       const userUniname = typeof req.body.user_uniname === 'string' ? req.body.user_uniname.trim() : '';
       const userProfileUrl = typeof req.body.user_profile_url === 'string' ? req.body.user_profile_url.trim() : '';
       const accessKey = normalizeAccessKey(req.body.access_hkey);
 
-      if (!nick) return sendApiError(res, 400, 'invalid_nick', 'กรุณากรอกชื่อเล่นหรือนามแฝง');
       if (!userUniname) return sendApiError(res, 400, 'invalid_university', 'กรุณาเลือกมหาวิทยาลัย');
       if (!accessKey) return sendApiError(res, 400, 'invalid_access_key', 'ไม่สามารถสร้างรหัสเข้าสู่ระบบได้');
       if (!(await isValidProfileImageUrl(userProfileUrl))) {
@@ -1544,8 +1696,9 @@ app.use((req, res) => {
 
 const wss = new WebSocketServer({ noServer: true });
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   sockets.add(ws);
+  ws.clientIp = req ? getClientIp(req) : '127.0.0.1';
   ws.authenticated = false;
   ws.authTimer = setTimeout(() => {
     if (!ws.authenticated) {
@@ -1590,6 +1743,10 @@ server.on('upgrade', (req, socket, head) => {
 });
 
 setInterval(cleanupPresence, JOINED_PING_MS).unref();
+setInterval(() => {
+  apiLimiter.cleanup();
+  wsLimiter.cleanup();
+}, 60 * 1000).unref();
 setInterval(() => {
   const cutoff = Date.now() - 10 * 60 * 1000;
   for (const [attachmentUrl, attachment] of pendingAttachments) {

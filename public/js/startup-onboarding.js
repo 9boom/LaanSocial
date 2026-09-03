@@ -254,14 +254,22 @@
       console.warn('Auto-login failed:', error);
       return false;
     }
+  function getNicknameValidationError(nick){
+    const value = typeof nick === 'string' ? nick.trim() : '';
+    if(!value) return 'กรุณากรอกชื่อเล่นหรือนามแฝง';
+    if(value.length < 5 || value.length > 25) return 'ชื่อต้องมีความยาว 5-25 ตัวอักษร';
+    if(!/^[a-zA-Z0-9\u0E00-\u0E7F ]+$/.test(value)) return 'ชื่อต้องประกอบด้วยตัวอักษรไทย อังกฤษ หรือตัวเลขเท่านั้น';
+    if(/^[\d ]+$/.test(value)) return 'ชื่อไม่สามารถเป็นตัวเลขล้วนได้';
+    return '';
   }
 
   async function handleNext(){
     const nickname = nicknameInput.value.trim();
     clearConnectError();
 
-    if(!nickname){
-      setFieldError(nameField, nameError, 'กรุณากรอกชื่อเล่นหรือนามแฝง');
+    const validationError = getNicknameValidationError(nickname);
+    if(validationError){
+      setFieldError(nameField, nameError, validationError);
       nicknameInput.focus();
       return;
     }
@@ -384,7 +392,17 @@
   nextBtn.addEventListener('click', handleNext);
   nicknameInput.addEventListener('input', () => {
     reservedNick = '';
-    clearNameError();
+    const value = nicknameInput.value.trim();
+    if(!value){
+      clearNameError();
+      return;
+    }
+    const err = getNicknameValidationError(value);
+    if(err && nameField.classList.contains('invalid')){
+      setFieldError(nameField, nameError, err);
+    } else if(!err){
+      clearNameError();
+    }
   });
   nicknameInput.addEventListener('keydown', (e) => {
     if(e.key === 'Enter'){ e.preventDefault(); nextBtn.click(); }

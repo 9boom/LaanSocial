@@ -26,7 +26,7 @@
 
     <div class="startup-field" id="startupNameField">
       <label for="startupNickname">ชื่อเล่น หรือ นามแฝง</label>
-      <input type="text" id="startupNickname" placeholder="ทรงอย่างแบดแซดอย่างบอย" autocomplete="off" maxlength="40">
+      <input type="text" id="startupNickname" placeholder="ทรงอย่างแบดแซดอย่างบอย" autocomplete="off" maxlength="25">
     </div>
 
     <button type="button" class="startup-btn" id="startupNextBtn">ถัดไป</button>
@@ -142,11 +142,11 @@
         <div class="settings-social-form" id="settingsSocialForm" hidden>
           <label class="settings-social-field" for="settingsFacebook">
             <span>Facebook</span>
-            <input type="url" id="settingsFacebook" placeholder="https://facebook.com/..." autocomplete="off">
+            <input type="url" id="settingsFacebook" placeholder="https://facebook.com/..." autocomplete="off" maxlength="300">
           </label>
           <label class="settings-social-field" for="settingsInstagram">
             <span>Instagram</span>
-            <input type="url" id="settingsInstagram" placeholder="https://instagram.com/..." autocomplete="off">
+            <input type="url" id="settingsInstagram" placeholder="https://instagram.com/..." autocomplete="off" maxlength="300">
           </label>
         </div>
         <p class="settings-profile-error" id="settingsProfileError" aria-live="polite" hidden></p>
@@ -309,7 +309,7 @@
   </div>
   <div class="online-panel-search">
     <img src="assets/symbols/search.svg" alt="">
-    <input type="text" placeholder="ค้นหาสมาชิก...">
+    <input type="text" placeholder="ค้นหาสมาชิก..." maxlength="50">
   </div>
   <div class="online-list" id="onlineList"></div>
 </aside>
@@ -328,21 +328,21 @@
         <div class="adduni-body">
           <div class="adduni-field" id="adduniNameField">
             <label for="adduniName">ชื่อมหาวิทยาลัย (ภาษาไทย)</label>
-            <input type="text" id="adduniName" placeholder="เช่น มหาวิทยาลัยเชียงใหม่" autocomplete="off">
+            <input type="text" id="adduniName" placeholder="เช่น มหาวิทยาลัยเชียงใหม่" autocomplete="off" maxlength="100">
           </div>
           <div class="adduni-row">
             <div class="adduni-field narrow">
               <label for="adduniShort">ชื่อย่อมหาวิทยาลัย (ภาษาไทย)</label>
-              <input type="text" id="adduniShort" placeholder="มช" autocomplete="off">
+              <input type="text" id="adduniShort" placeholder="มช" autocomplete="off" maxlength="20">
             </div>
             <div class="adduni-field">
               <label for="adduniProvince">จังหวัดที่ตั้งมหาวิทยาลัย (เฉพาะ จังหวัด)</label>
-              <input type="text" id="adduniProvince" placeholder="เชียงใหม่" autocomplete="off">
+              <input type="text" id="adduniProvince" placeholder="เชียงใหม่" autocomplete="off" maxlength="50">
             </div>
           </div>
           <div class="adduni-field">
             <label for="adduniUrl">เว็บไซต์มหาวิทยาลัย (ส่งแบบ https:// หรือ http:// หรือ www นำหน้าเท่านั้น)</label>
-            <input type="text" id="adduniUrl" placeholder="https://www.example.ac.th" autocomplete="off">
+            <input type="text" id="adduniUrl" placeholder="https://www.example.ac.th" autocomplete="off" maxlength="300">
           </div>
         </div>
         <div class="adduni-actions">
@@ -386,7 +386,7 @@
         </div>
         <div class="adduni-field">
           <label for="addtemproomDesc">คำอธิบาย</label>
-          <input type="text" id="addtemproomDesc" placeholder="อธิบายสั้นๆ ว่าห้องนี้คุยเรื่องอะไร" autocomplete="off">
+          <input type="text" id="addtemproomDesc" placeholder="อธิบายสั้นๆ ว่าห้องนี้คุยเรื่องอะไร" autocomplete="off" maxlength="160">
         </div>
         <div class="adduni-field">
           <label for="addtemproomAge">อายุห้อง</label>
@@ -469,7 +469,7 @@
             <div class="report-option">
               <input type="radio" name="reportReason" id="reportReason6" value="อื่นๆ">
               <label for="reportReason6">อื่นๆ</label>
-              <input type="text" id="reportOtherText" class="report-other-input" placeholder="โปรดอธิบายเหตุผลอย่างละเอียด">
+              <input type="text" id="reportOtherText" class="report-other-input" placeholder="โปรดอธิบายเหตุผลอย่างละเอียด" maxlength="300">
             </div>
           </div>
         </div>
