@@ -48,7 +48,9 @@
     currentUser: null,
     allOnlineUsers: [],
     onlineSearchQuery: '',
-    voteLoading: false
+    voteLoading: false,
+    wsAuthenticated: false,
+    authFailed: false
   };
 
   function canUseStorage(){
@@ -434,19 +436,32 @@
   async function sendProtectedWs(event, contentObj){
     const accessKey = await getAccessHKey();
     if(!accessKey) throw new Error('กรุณาเข้าสู่ระบบใหม่');
-    return sendWs(event, {
-      ...contentObj,
-      access_hkey: accessKey
-    });
+    if(!state.ws || state.ws.readyState !== WebSocket.OPEN || !state.wsAuthenticated){
+      connectWebSocket();
+      throw new Error('ระบบกำลังเชื่อมต่อแชท กรุณาลองใหม่อีกครั้ง');
+    }
+    return sendWs(event, contentObj);
   }
 
   function connectWebSocket(){
+    if(state.authFailed) return;
     if(state.ws && (state.ws.readyState === WebSocket.OPEN || state.ws.readyState === WebSocket.CONNECTING)) return;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     state.ws = new WebSocket(`${protocol}//${window.location.host}/ws/public-chat`);
 
-    state.ws.addEventListener('open', () => {
-      pingPresence();
+    state.ws.addEventListener('open', async () => {
+      try {
+        const accessKey = await getAccessHKey();
+        if(!accessKey){
+          state.authFailed = true;
+          setMessageState('กรุณาเข้าสู่ระบบใหม่', 'chat-state error');
+          state.ws.close();
+          return;
+        }
+        sendWs('auth', { access_hkey: accessKey });
+      } catch (error) {
+        console.warn(error);
+      }
     });
 
     state.ws.addEventListener('message', (event) => {
@@ -457,6 +472,11 @@
         return;
       }
       const content = payload.content_obj || {};
+      if(payload.event === 'auth_success'){
+        state.wsAuthenticated = true;
+        state.authFailed = false;
+        pingPresence();
+      }
       if(payload.event === 'message') appendMessage(content);
       if(payload.event === 'presence') applyPresence(content);
       if(payload.event === 'start_typing' && content.user_id !== state.currentUserId){
@@ -469,16 +489,23 @@
       }
       if(payload.event === 'error'){
         console.warn(content.message || 'WebSocket error');
+        if(content.code === 'permission_denied' || content.code === 'banned'){
+          state.authFailed = true;
+          setMessageState(content.message || 'กรุณาเข้าสู่ระบบใหม่', 'chat-state error');
+        }
       }
     });
 
     state.ws.addEventListener('close', () => {
-      window.setTimeout(connectWebSocket, 1800);
+      state.wsAuthenticated = false;
+      if(!state.authFailed){
+        window.setTimeout(connectWebSocket, 1800);
+      }
     });
   }
 
   async function pingPresence(){
-    if(!state.activeSubroom) return;
+    if(!state.activeSubroom || !state.wsAuthenticated) return;
     try {
       await sendProtectedWs('joined_ping', { subroom_id: state.activeSubroom.subroom_id });
     } catch (error) {

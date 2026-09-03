@@ -47,6 +47,7 @@ const MAX_ATTACHMENT_SIZE_MB = 5;
 const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
 const PRESENCE_TTL_MS = 2 * 60 * 1000;
 const JOINED_PING_MS = 60 * 1000;
+const WS_AUTH_TIMEOUT_MS = 10 * 1000;
 const SUBROOM_TYPES = ['official', 'community', 'temp'];
 const ALLOWED_EXPIRE_DAYS = new Set([1, 3, 7, 14, 30]);
 const SUBROOM_TEMP_VOTE_TOTAL = 15;
@@ -275,8 +276,8 @@ async function resolveUserFromAccessKey(accessKey) {
   const normalizedAccessKey = normalizeAccessKey(accessKey);
   if (!normalizedAccessKey) {
     const error = new Error('Missing access key.');
-    error.statusCode = 401;
-    error.code = 'missing_access_hkey';
+    error.statusCode = 403;
+    error.code = 'permission_denied';
     throw error;
   }
 
@@ -306,7 +307,36 @@ async function resolveUserFromAccessKey(accessKey) {
   if (!user || !(await verifyAccessKey(normalizedAccessKey, user.access_hkey))) {
     const error = new Error('Invalid access key.');
     error.statusCode = 403;
-    error.code = 'invalid_access_hkey';
+    error.code = 'permission_denied';
+    throw error;
+  }
+
+  if (user.is_banned) {
+    const error = new Error('User is banned.');
+    error.statusCode = 403;
+    error.code = 'banned';
+    throw error;
+  }
+
+  return user;
+}
+
+async function resolveUserFromUserId(userId) {
+  const normalizedUserId = typeof userId === 'string' ? userId.trim() : '';
+  if (!normalizedUserId) {
+    const error = new Error('Missing user ID.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
+    throw error;
+  }
+
+  const users = await getUsersCollection();
+  const user = await users.findOne({ user_id: normalizedUserId });
+
+  if (!user) {
+    const error = new Error('User not found.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
     throw error;
   }
 
@@ -357,7 +387,7 @@ function sendApiError(res, statusCode, code, message) {
 }
 
 function getPublicErrorMessage(error) {
-  if (error.code === 'missing_access_hkey' || error.code === 'invalid_access_hkey') return 'กรุณาเข้าสู่ระบบใหม่';
+  if (error.code === 'missing_access_hkey' || error.code === 'invalid_access_hkey' || error.code === 'permission_denied') return 'กรุณาเข้าสู่ระบบใหม่';
   if (error.code === 'banned') return 'บัญชีนี้ถูกระงับการใช้งาน';
   if (error.code === 'invalid_subroom') return 'ไม่พบห้องนี้ในระบบ';
   if (error.code === 'invalid_vote_subroom') return 'โหวตได้เฉพาะห้องชั่วคราวเท่านั้น';
@@ -695,8 +725,34 @@ function trackPresence(ws, user, subroom) {
   });
 }
 
+async function handleWsAuth(ws, contentObj) {
+  const accessKey = contentObj?.access_hkey;
+  const user = await resolveUserFromAccessKey(accessKey);
+  ws.authenticated = true;
+  ws.userId = user.user_id;
+  if (ws.authTimer) {
+    clearTimeout(ws.authTimer);
+    ws.authTimer = null;
+  }
+
+  safeSend(ws, {
+    event: 'auth_success',
+    content_obj: {
+      user_id: user.user_id,
+      user_nick: user.user_nick
+    }
+  });
+}
+
 async function saveAndBroadcastMessage(ws, contentObj) {
-  const user = await resolveUserFromAccessKey(contentObj.access_hkey);
+  if (!ws.authenticated || !ws.userId) {
+    const error = new Error('Unauthorized.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
+    throw error;
+  }
+
+  const user = await resolveUserFromUserId(ws.userId);
   const subroom = await getValidSubroom(contentObj.subroom_id);
   if (!subroom) {
     const error = new Error('Invalid subroom.');
@@ -725,7 +781,14 @@ async function saveAndBroadcastMessage(ws, contentObj) {
 }
 
 async function handleJoinedPing(ws, contentObj) {
-  const user = await resolveUserFromAccessKey(contentObj.access_hkey);
+  if (!ws.authenticated || !ws.userId) {
+    const error = new Error('Unauthorized.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
+    throw error;
+  }
+
+  const user = await resolveUserFromUserId(ws.userId);
   const subroom = await getValidSubroom(contentObj.subroom_id);
   if (!subroom) {
     const error = new Error('Invalid subroom.');
@@ -739,7 +802,14 @@ async function handleJoinedPing(ws, contentObj) {
 }
 
 async function handleTypingEvent(ws, event, contentObj) {
-  const user = await resolveUserFromAccessKey(contentObj.access_hkey);
+  if (!ws.authenticated || !ws.userId) {
+    const error = new Error('Unauthorized.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
+    throw error;
+  }
+
+  const user = await resolveUserFromUserId(ws.userId);
   const subroom = await getValidSubroom(contentObj.subroom_id);
   if (!subroom) {
     const error = new Error('Invalid subroom.');
@@ -773,6 +843,15 @@ async function handleWsMessage(ws, raw) {
 
   const event = typeof payload.event === 'string' ? payload.event : '';
   const contentObj = payload.content_obj && typeof payload.content_obj === 'object' ? payload.content_obj : {};
+
+  if (event === 'auth') return handleWsAuth(ws, contentObj);
+
+  if (!ws.authenticated) {
+    const error = new Error('Unauthorized.');
+    error.statusCode = 403;
+    error.code = 'permission_denied';
+    throw error;
+  }
 
   if (event === 'message') return saveAndBroadcastMessage(ws, contentObj);
   if (event === 'joined_ping') return handleJoinedPing(ws, contentObj);
@@ -822,7 +901,7 @@ function createUploadMiddleware(req, res, next) {
   });
 }
 
-app.get('/api/info', (req, res) => {
+app.get('/api/info', requireUser, (req, res) => {
   res.json({
     status: 'success',
     message: 'Connected'
@@ -1467,16 +1546,32 @@ const wss = new WebSocketServer({ noServer: true });
 
 wss.on('connection', (ws) => {
   sockets.add(ws);
+  ws.authenticated = false;
+  ws.authTimer = setTimeout(() => {
+    if (!ws.authenticated) {
+      const error = new Error('Authentication timeout.');
+      error.code = 'permission_denied';
+      handleWsError(ws, error);
+      ws.close(4001, 'Authentication timeout');
+    }
+  }, WS_AUTH_TIMEOUT_MS);
 
   ws.on('message', async (raw) => {
     try {
       await handleWsMessage(ws, raw);
     } catch (error) {
       handleWsError(ws, error);
+      if (error.code === 'permission_denied' || error.code === 'banned' || error.code === 'invalid_access_hkey') {
+        ws.close(4001, error.message || 'Authentication failed');
+      }
     }
   });
 
   ws.on('close', () => {
+    if (ws.authTimer) {
+      clearTimeout(ws.authTimer);
+      ws.authTimer = null;
+    }
     sockets.delete(ws);
     removeSocketPresence(ws);
   });
