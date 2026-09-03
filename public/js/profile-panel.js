@@ -114,6 +114,9 @@
   }
 
   function closeProfileDrawer(){
+    if(document.activeElement && profilePanel && profilePanel.contains(document.activeElement)){
+      document.activeElement.blur();
+    }
     if(profilePanel) profilePanel.classList.remove('open');
     if(profileOverlay) profileOverlay.classList.remove('open');
     if(profilePanel) profilePanel.setAttribute('aria-hidden', 'true');

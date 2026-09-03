@@ -15,6 +15,9 @@ function openOnlinePanel(){
   }
 }
 function closeOnlinePanel(){
+  if(document.activeElement && onlinePanel && onlinePanel.contains(document.activeElement)){
+    document.activeElement.blur();
+  }
   onlinePanel.classList.remove('open');
   onlineOverlay.classList.remove('open');
   onlinePanel.setAttribute('aria-hidden', 'true');
