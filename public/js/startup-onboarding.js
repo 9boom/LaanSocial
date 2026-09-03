@@ -254,6 +254,8 @@
       console.warn('Auto-login failed:', error);
       return false;
     }
+  }
+
   function getNicknameValidationError(nick){
     const value = typeof nick === 'string' ? nick.trim() : '';
     if(!value) return 'กรุณากรอกชื่อเล่นหรือนามแฝง';
