@@ -17,52 +17,109 @@ try {
   }
 }
 
+function getEnv(key, defaultValue = '') {
+  const value = process.env[key];
+  return value !== undefined && value !== '' ? value : defaultValue;
+}
+
+function getEnvInt(key, defaultValue) {
+  const value = process.env[key];
+  if (value === undefined || value.trim() === '') return defaultValue;
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? defaultValue : parsed;
+}
+
+function getEnvFloat(key, defaultValue) {
+  const value = process.env[key];
+  if (value === undefined || value.trim() === '') return defaultValue;
+  const parsed = parseFloat(value);
+  return Number.isNaN(parsed) ? defaultValue : parsed;
+}
+
+function getEnvPath(key, defaultRelativePath) {
+  const value = process.env[key];
+  if (!value || value.trim() === '') {
+    return path.isAbsolute(defaultRelativePath)
+      ? defaultRelativePath
+      : path.join(__dirname, defaultRelativePath);
+  }
+  return path.isAbsolute(value.trim())
+    ? value.trim()
+    : path.join(__dirname, value.trim());
+}
+
+function getEnvSet(key, defaultSet) {
+  const value = process.env[key];
+  if (!value || value.trim() === '') return defaultSet;
+  return new Set(value.split(',').map((item) => item.trim()).filter(Boolean));
+}
+
+function getEnvIntSet(key, defaultSet) {
+  const value = process.env[key];
+  if (!value || value.trim() === '') return defaultSet;
+  const numbers = value
+    .split(',')
+    .map((item) => parseInt(item.trim(), 10))
+    .filter((n) => !Number.isNaN(n));
+  return new Set(numbers);
+}
+
+function getEnvArray(key, defaultArray) {
+  const value = process.env[key];
+  if (!value || value.trim() === '') return defaultArray;
+  return value.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 80;
-const MONGODB_URI = process.env.MONGODB_URI;
-const DB_NAME = 'LaanDBDevelopment';
-const USERS_COLLECTION = 'users';
-const UNIVERSITIES_COLLECTION = 'universities';
-const SUBROOM_UNI_COLLECTION = 'subroom_uni';
-const SUBROOM_TEMP_VOTES_COLLECTION = 'subroom_temp_votes';
-const PUBLIC_CHAT_COLLECTION = 'public_chat';
-const IN_CHAT_REPORT_COLLECTION = 'in_chat_report';
-const UNIVERSITIES_REQUEST_COLLECTION = 'universities_request';
-const LOGS_COLLECTION = 'LOGS';
-const LOG_RETENTION_DAYS = 90;
+const PORT = getEnvInt('PORT', 80);
+const MONGODB_URI = getEnv('MONGODB_URI', process.env.MONGODB_URI);
+const DB_NAME = getEnv('DB_NAME', 'LaanDBDevelopment');
+const USERS_COLLECTION = getEnv('USERS_COLLECTION', 'users');
+const UNIVERSITIES_COLLECTION = getEnv('UNIVERSITIES_COLLECTION', 'universities');
+const SUBROOM_UNI_COLLECTION = getEnv('SUBROOM_UNI_COLLECTION', 'subroom_uni');
+const SUBROOM_TEMP_VOTES_COLLECTION = getEnv('SUBROOM_TEMP_VOTES_COLLECTION', 'subroom_temp_votes');
+const PUBLIC_CHAT_COLLECTION = getEnv('PUBLIC_CHAT_COLLECTION', 'public_chat');
+const IN_CHAT_REPORT_COLLECTION = getEnv('IN_CHAT_REPORT_COLLECTION', 'in_chat_report');
+const UNIVERSITIES_REQUEST_COLLECTION = getEnv('UNIVERSITIES_REQUEST_COLLECTION', 'universities_request');
+const LOGS_COLLECTION = getEnv('LOGS_COLLECTION', 'LOGS');
+const LOG_RETENTION_DAYS = getEnvInt('LOG_RETENTION_DAYS', 90);
 const LOG_RETENTION_MS = LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-const LOG_QUEUE_BATCH_SIZE = 50;
-const LOG_QUEUE_FLUSH_INTERVAL_MS = 3000;
-const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
-const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
-const CHAT_ATTACHMENT_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_chat_attachment');
-const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg']);
-const ATTACHMENT_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.pdf']);
-const ATTACHMENT_MIME_TYPES = new Set([
+const LOG_QUEUE_BATCH_SIZE = getEnvInt('LOG_QUEUE_BATCH_SIZE', 50);
+const LOG_QUEUE_FLUSH_INTERVAL_MS = getEnvInt('LOG_QUEUE_FLUSH_INTERVAL_MS', 3000);
+const UNIVERSITY_LOGOS_DIR = getEnvPath('UNIVERSITY_LOGOS_DIR', path.join('public', 'assets', 'sim_db', 'universities_logos'));
+const USER_PROFILE_IMAGES_DIR = getEnvPath('USER_PROFILE_IMAGES_DIR', path.join('public', 'assets', 'sim_db', 'users_profile_image'));
+const CHAT_ATTACHMENT_DIR = getEnvPath('CHAT_ATTACHMENT_DIR', path.join('public', 'assets', 'sim_db', 'users_chat_attachment'));
+const IMAGE_EXTENSIONS = getEnvSet('IMAGE_EXTENSIONS', new Set(['.png', '.jpg', '.jpeg', '.webp', '.svg']));
+const ATTACHMENT_EXTENSIONS = getEnvSet('ATTACHMENT_EXTENSIONS', new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.pdf']));
+const ATTACHMENT_MIME_TYPES = getEnvSet('ATTACHMENT_MIME_TYPES', new Set([
   'image/png',
   'image/jpeg',
   'image/webp',
   'image/gif',
   'application/pdf'
-]);
-const PROFILE_IMAGE_URL_PREFIX = 'assets/sim_db/users_profile_image/';
-const CHAT_ATTACHMENT_URL_PREFIX = 'assets/sim_db/users_chat_attachment/';
-const MAX_MESSAGE_LENGTH = 200;
-const MAX_SUBROOM_CHAT_MESSAGES = 200;
-const MESSAGE_PAGE_SIZE = 10;
-const MAX_ATTACHMENT_SIZE_MB = 5;
-const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
-const PRESENCE_TTL_MS = 2 * 60 * 1000;
-const JOINED_PING_MS = 60 * 1000;
-const WS_AUTH_TIMEOUT_MS = 10 * 1000;
-const API_RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const API_RATE_LIMIT_MAX = 60;
-const WS_RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const WS_RATE_LIMIT_MAX = 30;
-const SUBROOM_TYPES = ['official', 'community', 'temp'];
-const ALLOWED_EXPIRE_DAYS = new Set([1, 3, 7, 14, 30]);
-const SUBROOM_TEMP_VOTE_TOTAL = 15;
+]));
+const PROFILE_IMAGE_URL_PREFIX = getEnv('PROFILE_IMAGE_URL_PREFIX', 'assets/sim_db/users_profile_image/');
+const CHAT_ATTACHMENT_URL_PREFIX = getEnv('CHAT_ATTACHMENT_URL_PREFIX', 'assets/sim_db/users_chat_attachment/');
+const MAX_MESSAGE_LENGTH = getEnvInt('MAX_MESSAGE_LENGTH', 200);
+const MAX_SUBROOM_CHAT_MESSAGES = getEnvInt('MAX_SUBROOM_CHAT_MESSAGES', 200);
+const MESSAGE_PAGE_SIZE = getEnvInt('MESSAGE_PAGE_SIZE', 10);
+const MAX_ATTACHMENT_SIZE_MB = getEnvFloat('MAX_ATTACHMENT_SIZE_MB', 5);
+const MAX_ATTACHMENT_SIZE = Math.round(MAX_ATTACHMENT_SIZE_MB * 1024 * 1024);
+const BODY_PARSER_LIMIT = getEnv('BODY_PARSER_LIMIT', '256kb');
+const PENDING_ATTACHMENT_TTL_MS = getEnvInt('PENDING_ATTACHMENT_TTL_MS', 10 * 60 * 1000);
+const PENDING_ATTACHMENT_CLEANUP_INTERVAL_MS = getEnvInt('PENDING_ATTACHMENT_CLEANUP_INTERVAL_MS', 60 * 1000);
+const PRESENCE_TTL_MS = getEnvInt('PRESENCE_TTL_MS', 2 * 60 * 1000);
+const JOINED_PING_MS = getEnvInt('JOINED_PING_MS', 60 * 1000);
+const WS_AUTH_TIMEOUT_MS = getEnvInt('WS_AUTH_TIMEOUT_MS', 10 * 1000);
+const API_RATE_LIMIT_WINDOW_MS = getEnvInt('API_RATE_LIMIT_WINDOW_MS', 60 * 1000);
+const API_RATE_LIMIT_MAX = getEnvInt('API_RATE_LIMIT_MAX', 60);
+const WS_RATE_LIMIT_WINDOW_MS = getEnvInt('WS_RATE_LIMIT_WINDOW_MS', 60 * 1000);
+const WS_RATE_LIMIT_MAX = getEnvInt('WS_RATE_LIMIT_MAX', 30);
+const RATE_LIMITER_CLEANUP_INTERVAL_MS = getEnvInt('RATE_LIMITER_CLEANUP_INTERVAL_MS', 60 * 1000);
+const SUBROOM_TYPES = getEnvArray('SUBROOM_TYPES', ['official', 'community', 'temp']);
+const ALLOWED_EXPIRE_DAYS = getEnvIntSet('ALLOWED_EXPIRE_DAYS', new Set([1, 3, 7, 14, 30]));
+const SUBROOM_TEMP_VOTE_TOTAL = getEnvInt('SUBROOM_TEMP_VOTE_TOTAL', 15);
 const DAY_MS = 24 * 60 * 60 * 1000;
 const scryptAsync = promisify(crypto.scrypt);
 
@@ -168,7 +225,7 @@ function apiRateLimitMiddleware(req, res, next) {
   next();
 }
 
-app.use(express.json({ limit: '256kb' }));
+app.use(express.json({ limit: BODY_PARSER_LIMIT }));
 app.use(apiRateLimitMiddleware);
 
 // Security headers — applied to every response
@@ -2301,15 +2358,15 @@ setInterval(cleanupPresence, JOINED_PING_MS).unref();
 setInterval(() => {
   apiLimiter.cleanup();
   wsLimiter.cleanup();
-}, 60 * 1000).unref();
+}, RATE_LIMITER_CLEANUP_INTERVAL_MS).unref();
 setInterval(() => {
-  const cutoff = Date.now() - 10 * 60 * 1000;
+  const cutoff = Date.now() - PENDING_ATTACHMENT_TTL_MS;
   for (const [attachmentUrl, attachment] of pendingAttachments) {
     if (attachment.used || attachment.created_at < cutoff) {
       pendingAttachments.delete(attachmentUrl);
     }
   }
-}, 60 * 1000).unref();
+}, PENDING_ATTACHMENT_CLEANUP_INTERVAL_MS).unref();
 
 server.listen(PORT, () => {
   console.log(`Server is running at http://<all-interfaces>:${PORT}`);
