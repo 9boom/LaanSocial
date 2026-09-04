@@ -29,6 +29,11 @@ const SUBROOM_TEMP_VOTES_COLLECTION = 'subroom_temp_votes';
 const PUBLIC_CHAT_COLLECTION = 'public_chat';
 const IN_CHAT_REPORT_COLLECTION = 'in_chat_report';
 const UNIVERSITIES_REQUEST_COLLECTION = 'universities_request';
+const LOGS_COLLECTION = 'LOGS';
+const LOG_RETENTION_DAYS = 90;
+const LOG_RETENTION_MS = LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+const LOG_QUEUE_BATCH_SIZE = 50;
+const LOG_QUEUE_FLUSH_INTERVAL_MS = 3000;
 const UNIVERSITY_LOGOS_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'universities_logos');
 const USER_PROFILE_IMAGES_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_profile_image');
 const CHAT_ATTACHMENT_DIR = path.join(__dirname, 'public', 'assets', 'sim_db', 'users_chat_attachment');
@@ -128,6 +133,7 @@ let publicChatCollectionPromise = null;
 let subroomUniCollectionPromise = null;
 let subroomTempVotesCollectionPromise = null;
 let inChatReportCollectionPromise = null;
+let logsCollectionPromise = null;
 const pendingAttachments = new Map();
 const sockets = new Set();
 const presenceBySubroom = new Map();
@@ -426,6 +432,162 @@ async function getUniversitiesRequestCollection() {
   const collection = await getDbCollection(UNIVERSITIES_REQUEST_COLLECTION);
   await collection.createIndex({ created_at: -1 });
   return collection;
+}
+
+async function getLogsCollection() {
+  if (!logsCollectionPromise) {
+    logsCollectionPromise = (async () => {
+      const collection = await getDbCollection(LOGS_COLLECTION);
+
+      await Promise.all([
+        collection.createIndex({ timestamp: 1 }),
+        collection.createIndex({ user_id: 1 }),
+        collection.createIndex({ action: 1 })
+      ]);
+
+      return collection;
+    })().catch((error) => {
+      logsCollectionPromise = null;
+      throw error;
+    });
+  }
+
+  return logsCollectionPromise;
+}
+
+function getUserAgent(req) {
+  return (req && req.headers ? (req.headers['user-agent'] || '') : '').trim();
+}
+
+function parseUserDevice(userAgent) {
+  if (!userAgent || typeof userAgent !== 'string') return 'Unknown';
+  const ua = userAgent.toLowerCase();
+
+  // Tablets
+  if (/ipad|tablet|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk/i.test(ua)) {
+    if (/ipad/i.test(ua)) return 'Tablet (iOS)';
+    if (/android/i.test(ua)) return 'Tablet (Android)';
+    return 'Tablet';
+  }
+
+  // Mobile
+  if (/mobi|iphone|ipod|android|blackberry|opera mini|iemobile|wpdesktop|windows phone/i.test(ua)) {
+    if (/iphone|ipod/i.test(ua)) return 'Mobile (iOS)';
+    if (/android/i.test(ua)) return 'Mobile (Android)';
+    if (/windows phone/i.test(ua)) return 'Mobile (Windows)';
+    return 'Mobile';
+  }
+
+  // Desktop
+  if (/windows/i.test(ua)) return 'Desktop (Windows)';
+  if (/macintosh|mac os x/i.test(ua)) return 'Desktop (macOS)';
+  if (/cros/i.test(ua)) return 'Desktop (Chrome OS)';
+  if (/linux/i.test(ua)) return 'Desktop (Linux)';
+
+  // Bots / Crawlers
+  if (/bot|crawler|spider|slurp|facebookexternalhit|curl|wget/i.test(ua)) return 'Bot';
+
+  return 'Desktop (Other)';
+}
+
+class LogQueue {
+  constructor({ batchSize = LOG_QUEUE_BATCH_SIZE, flushIntervalMs = LOG_QUEUE_FLUSH_INTERVAL_MS } = {}) {
+    this.buffer = [];
+    this.batchSize = batchSize;
+    this.flushIntervalMs = flushIntervalMs;
+    this.timer = null;
+    this.isFlushing = false;
+    this.lastCleanup = 0;
+    this.startTimer();
+  }
+
+  startTimer() {
+    if (!this.timer) {
+      this.timer = setInterval(() => {
+        this.flush().catch((err) => {
+          console.error('[LogQueue] Timer flush error:', err.message);
+        });
+      }, this.flushIntervalMs);
+      this.timer.unref();
+    }
+  }
+
+  enqueue(logRecord) {
+    if (!logRecord || typeof logRecord !== 'object') return;
+    this.buffer.push(logRecord);
+
+    if (this.buffer.length >= this.batchSize) {
+      this.flush().catch((err) => {
+        console.error('[LogQueue] Batch size flush error:', err.message);
+      });
+    }
+  }
+
+  async flush() {
+    if (this.isFlushing || this.buffer.length === 0) return;
+    this.isFlushing = true;
+
+    const itemsToWrite = this.buffer.splice(0, this.buffer.length);
+
+    try {
+      const logsCollection = await getLogsCollection();
+      await logsCollection.insertMany(itemsToWrite, { ordered: false });
+
+      this.triggerRetentionCleanup(logsCollection);
+    } catch (err) {
+      console.error('[LogQueue] Failed to write logs to MongoDB:', err.message);
+      if (this.buffer.length < 5000) {
+        this.buffer.unshift(...itemsToWrite);
+      }
+    } finally {
+      this.isFlushing = false;
+    }
+  }
+
+  triggerRetentionCleanup(logsCollection) {
+    const now = Date.now();
+    if (now - this.lastCleanup < 60 * 1000) return;
+    this.lastCleanup = now;
+
+    (async () => {
+      try {
+        const cutoffDate = new Date(Date.now() - LOG_RETENTION_MS);
+        const result = await logsCollection.deleteMany({ timestamp: { $lt: cutoffDate } });
+        if (result && result.deletedCount > 0) {
+          console.log(`[LogQueue] Cleaned up ${result.deletedCount} expired log documents older than 90 days.`);
+        }
+      } catch (err) {
+        console.error('[LogQueue] Retention cleanup error:', err.message);
+      }
+    })();
+  }
+
+  async shutdown() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    await this.flush();
+  }
+}
+
+const logQueue = new LogQueue();
+
+function logTraffic({ timestamp = new Date(), req, ws, userId, action }) {
+  const ipAddress = req ? getClientIp(req) : (ws?.clientIp || '127.0.0.1');
+  const userAgent = req ? getUserAgent(req) : (ws?.userAgent || '');
+  const userDevice = parseUserDevice(userAgent);
+
+  const record = {
+    timestamp: timestamp instanceof Date ? timestamp : new Date(timestamp),
+    ip_address: ipAddress,
+    user_agent: userAgent,
+    user_device: userDevice,
+    user_id: String(userId || ''),
+    action: String(action || '')
+  };
+
+  logQueue.enqueue(record);
 }
 
 function sanitizeUserForReport(user) {
@@ -1015,6 +1177,13 @@ async function saveAndBroadcastMessage(ws, contentObj) {
     pendingAttachments.set(attachment.attachmentUrl, attachment.pending);
   }
 
+  logTraffic({
+    timestamp: document.created_at,
+    ws,
+    userId: user.user_id,
+    action: 'chating'
+  });
+
   const payload = {
     event: 'message',
     content_obj: publicChatMessage(document, user)
@@ -1231,6 +1400,13 @@ app.post('/login', async (req, res) => {
         { $set: { access_hkey_lookup: accessKeyLookup(accessKey) } }
       );
 
+      logTraffic({
+        timestamp: new Date(),
+        req,
+        userId: user.user_id,
+        action: 'loggedin'
+      });
+
       return res.json({
         status: 'success',
         user: publicUser(user)
@@ -1284,6 +1460,13 @@ app.post('/login', async (req, res) => {
 
         throw error;
       }
+
+      logTraffic({
+        timestamp: now,
+        req,
+        userId: user.user_id,
+        action: 'bind'
+      });
 
       return res.status(201).json({
         status: 'success',
@@ -1373,6 +1556,13 @@ app.delete('/api/me', requireUser, async (req, res) => {
     if (!result.deletedCount) {
       return sendApiError(res, 404, 'user_not_found', 'ไม่พบบัญชีนี้ในระบบ');
     }
+
+    logTraffic({
+      timestamp: new Date(),
+      req,
+      userId,
+      action: 'delete_acc'
+    });
 
     return res.json({
       status: 'success',
@@ -1528,6 +1718,13 @@ app.post('/add-subroom', requireUser, async (req, res) => {
       await subroomUni.deleteOne({ subroom_id: subroom.subroom_id }).catch(() => {});
       throw error;
     }
+
+    logTraffic({
+      timestamp: createdAt,
+      req,
+      userId: req.user.user_id,
+      action: 'add_subroom'
+    });
 
     return res.status(201).json({
       status: 'success',
@@ -2056,6 +2253,7 @@ const wss = new WebSocketServer({ noServer: true });
 wss.on('connection', (ws, req) => {
   sockets.add(ws);
   ws.clientIp = req ? getClientIp(req) : '127.0.0.1';
+  ws.userAgent = req?.headers ? (req.headers['user-agent'] || '') : '';
   ws.authenticated = false;
   ws.authTimer = setTimeout(() => {
     if (!ws.authenticated) {
@@ -2116,3 +2314,16 @@ setInterval(() => {
 server.listen(PORT, () => {
   console.log(`Server is running at http://<all-interfaces>:${PORT}`);
 });
+
+const gracefulShutdown = async (signal) => {
+  console.log(`Received ${signal}, flushing logs and closing server...`);
+  try {
+    await logQueue.shutdown();
+  } catch (err) {
+    console.error('Error during logQueue shutdown:', err.message);
+  }
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
