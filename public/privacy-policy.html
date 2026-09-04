@@ -10,40 +10,68 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f1ebdf;--panel:#ffffff;--border:#ced3db;--accent:#ff8000;--accent-soft:#fff4da;--text:#1a1a1a;--muted:#616161;--muted-2:#888888;}
-  *,*::before,*::after{box-sizing:border-box;}
-  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.8;}
-  .back-btn{display:inline-flex;align-items:center;gap:6px;position:fixed;top:20px;left:20px;z-index:50;background:var(--panel);border:1.5px solid var(--border);border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--text);text-decoration:none;transition:background 0.15s,border-color 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-  .back-btn:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
-  .page-wrap{max-width:720px;margin:0 auto;padding:80px 24px 64px;}
-  .page-logo{display:flex;align-items:center;gap:14px;margin-bottom:36px;}
-  .page-logo img{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 auto;}
-  .page-logo-text h1{margin:0;font-size:20px;font-weight:800;color:var(--text);}
-  .page-logo-text p{margin:2px 0 0;font-size:12px;font-weight:300;color:var(--muted);}
-  .page-title{font-size:28px;font-weight:800;color:var(--accent);margin:0 0 6px;line-height:1.3;}
-  .page-subtitle{font-size:14px;font-weight:300;color:var(--muted-2);margin:0 0 36px;}
-  hr{border:none;border-top:1.5px solid var(--border);margin:32px 0;}
-  .section{margin-bottom:40px;}
-  .section-heading{font-size:18px;font-weight:700;color:var(--text);margin:0 0 12px;padding-left:12px;border-left:4px solid var(--accent);line-height:1.4;}
-  .section p{font-size:15px;font-weight:400;color:var(--text);margin:0 0 10px;}
-  .section ul{margin:8px 0 12px 0;padding-left:20px;list-style:disc;}
-  .section ul li{font-size:15px;font-weight:400;color:var(--text);margin-bottom:6px;}
-  .data-table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;margin:16px 0;font-size:14px;border:1.5px solid var(--border);}
-  .data-table th{background:var(--accent);color:#fff;font-weight:700;padding:10px 16px;text-align:left;}
-  .data-table td{background:var(--panel);padding:10px 16px;border-top:1px solid var(--border);vertical-align:top;line-height:1.6;}
-  .data-table tr:nth-child(even) td{background:#fafafa;}
-  .info-box{background:var(--accent-soft);border:1.5px solid #ffd48a;border-radius:12px;padding:16px 20px;margin:16px 0;font-size:14px;font-weight:500;color:#5a3800;line-height:1.7;}
-  .page-footer{margin-top:56px;padding-top:24px;border-top:1.5px solid var(--border);text-align:center;}
-  .page-footer p{font-size:12px;font-weight:300;color:var(--muted-2);margin:0 0 6px;}
-  .page-footer .footer-links{font-size:13px;font-weight:400;color:var(--muted);}
-  .page-footer .footer-links a{color:var(--accent);text-decoration:none;}
-  .page-footer .footer-links a:hover{text-decoration:underline;}
-  @media(max-width:600px){.page-wrap{padding:80px 16px 56px;}.page-title{font-size:22px;}.back-btn{top:14px;left:14px;}.data-table th,.data-table td{padding:8px 10px;font-size:13px;}}
+  :root {
+    --bg: #f1ebdf;
+    --panel: #ffffff;
+    --border: #ced3db;
+    --accent: #ff8000;
+    --accent-soft: #fff4da;
+    --text: #1a1a1a;
+    --muted: #616161;
+    --muted-2: #888888;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; min-height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px; line-height: 1.8;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    position: fixed; top: 20px; left: 20px; z-index: 50;
+    background: var(--panel); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .back-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .page-wrap { max-width: 720px; margin: 0 auto; padding: 80px 24px 64px; }
+  .page-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 36px; }
+  .page-logo img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+  .page-logo-text h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--text); }
+  .page-logo-text p { margin: 2px 0 0; font-size: 12px; font-weight: 300; color: var(--muted); }
+  .page-title { font-size: 28px; font-weight: 800; color: var(--accent); margin: 0 0 6px; line-height: 1.3; }
+  .page-subtitle { font-size: 14px; font-weight: 300; color: var(--muted-2); margin: 0 0 36px; }
+  hr { border: none; border-top: 1.5px solid var(--border); margin: 32px 0; }
+  .section { margin-bottom: 32px; }
+  .section h3 {
+    font-size: 17px; font-weight: 700; color: var(--text);
+    margin: 0 0 10px; line-height: 1.5;
+  }
+  .section p { font-size: 15px; font-weight: 400; color: var(--text); margin: 0 0 10px; }
+  .section ul, .section ol { margin: 6px 0 12px 0; padding-left: 22px; }
+  .section li { font-size: 15px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .page-footer { margin-top: 56px; padding-top: 24px; border-top: 1.5px solid var(--border); text-align: center; }
+  .page-footer p { font-size: 12px; font-weight: 300; color: var(--muted-2); margin: 0 0 6px; }
+  .page-footer .footer-links { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .page-footer .footer-links a { color: var(--accent); text-decoration: none; }
+  .page-footer .footer-links a:hover { text-decoration: underline; }
+  @media (max-width: 600px) {
+    .page-wrap { padding: 80px 16px 56px; }
+    .page-title { font-size: 22px; }
+    .back-btn { top: 14px; left: 14px; }
+  }
 </style>
 </head>
 <body>
+
 <a class="back-btn" href="index.html">← กลับ</a>
+
 <div class="page-wrap">
+
   <div class="page-logo">
     <img src="assets/icons/logo.png" alt="โลโก้ลานมหาวิทยาลัย">
     <div class="page-logo-text">
@@ -51,98 +79,129 @@
       <p>ศูนย์กลางแชททุกมหาวิทยาลัยออนไลน์ รวมในที่เดียว</p>
     </div>
   </div>
+
   <h2 class="page-title">นโยบายความเป็นส่วนตัว</h2>
   <p class="page-subtitle">อัปเดตล่าสุด: กันยายน 2569</p>
   <hr>
+
   <div class="section">
-    <h3 class="section-heading">1. บทนำ</h3>
-    <p>ลาน มหาวิทยาลัย ("แพลตฟอร์ม") ให้ความสำคัญกับความเป็นส่วนตัวของผู้ใช้งานทุกคน นโยบายฉบับนี้อธิบายว่าเราเก็บรวบรวมข้อมูลอะไร ใช้ข้อมูลเพื่ออะไร และปกป้องข้อมูลของคุณอย่างไร</p>
-    <p>การใช้งานแพลตฟอร์มถือว่าคุณยินยอมให้เราดำเนินการกับข้อมูลตามที่ระบุในนโยบายฉบับนี้</p>
+    <h3>1. บทนำและเจตนารมณ์การคุ้มครองความเป็นส่วนตัว</h3>
+    <p><strong>ลาน มหาวิทยาลัย</strong> ("แพลตฟอร์ม") ให้ความสำคัญสูงสุดต่อสิทธิความเป็นส่วนตัวและความปลอดภัยของข้อมูลผู้ใช้งาน นโยบายความเป็นส่วนตัวฉบับนี้จัดทำขึ้นเพื่อชี้แจงอย่างโปร่งใสถึงประเภทข้อมูลที่ระบบจัดเก็บ วัตถุประสงค์ในการประมวลผล ระยะเวลาการเก็บรักษา ตลอดจนมาตรการรักษาความปลอดภัยของข้อมูล</p>
+    <p>แพลตฟอร์มถูกออกแบบขึ้นโดยยึดหลักความเป็นส่วนตัวและการไม่เปิดเผยตัวตน (Pseudonymity) โดยไม่มีการบังคับให้ผู้ใช้กรอกชื่อ-นามสกุลจริง หมายเลขบัตรประจำตัวประชาชน อีเมล หมายเลขโทรศัพท์ หรือข้อมูลส่วนบุคคลที่มีความอ่อนไหว</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">2. ข้อมูลที่เราเก็บรวบรวม</h3>
-    <p>แพลตฟอร์มของเราออกแบบมาให้ใช้งานแบบนิรนามเป็นหลัก ข้อมูลที่เราเก็บมีดังนี้:</p>
-    <table class="data-table">
-      <thead>
-        <tr><th>ประเภทข้อมูล</th><th>รายละเอียด</th><th>บังคับหรือไม่</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><strong>ชื่อเล่น / นามแฝง</strong></td><td>ชื่อที่คุณเลือกแสดงในชุมชน ไม่ใช่ชื่อจริง</td><td>บังคับ</td></tr>
-        <tr><td><strong>มหาวิทยาลัย</strong></td><td>สถาบันการศึกษาที่คุณเลือก</td><td>บังคับ</td></tr>
-        <tr><td><strong>รูปโปรไฟล์</strong></td><td>ภาพสัญลักษณ์ที่เลือกจากชุดรูปภาพของแพลตฟอร์ม ไม่ใช่รูปถ่ายจริง</td><td>บังคับ</td></tr>
-        <tr><td><strong>ลิงก์โซเชียลมีเดีย</strong></td><td>Facebook / Instagram URL ที่คุณกรอกในการตั้งค่าโปรไฟล์</td><td>ไม่บังคับ</td></tr>
-        <tr><td><strong>ข้อความในห้องสนทนา</strong></td><td>ข้อความและไฟล์ที่คุณส่งในห้องสนทนาสาธารณะ</td><td>—</td></tr>
-        <tr><td><strong>ข้อมูลทางเทคนิค</strong></td><td>ข้อมูลที่เบราว์เซอร์ส่งโดยอัตโนมัติ เช่น ประเภทเบราว์เซอร์ และการตั้งค่าธีม</td><td>อัตโนมัติ</td></tr>
-      </tbody>
-    </table>
-    <div class="info-box">🔒 เราไม่เก็บรวบรวมชื่อจริง หมายเลขบัตรประชาชน อีเมล เบอร์โทรศัพท์ หรือข้อมูลสุขภาพของคุณ</div>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">3. วัตถุประสงค์ในการใช้ข้อมูล</h3>
-    <p>เราใช้ข้อมูลที่เก็บรวบรวมเพื่อ:</p>
+    <h3>2. ข้อมูลที่ระบบเก็บรวบรวม</h3>
+    <p>ข้อมูลที่แพลตฟอร์มมีการบันทึกและประมวลผลเพื่อการให้บริการ ประกอบด้วย:</p>
     <ul>
-      <li>แสดงโปรไฟล์และตัวตนของคุณในห้องสนทนาชุมชน</li>
-      <li>ให้บริการระบบแชทสาธารณะแบบเรียลไทม์</li>
-      <li>ตรวจสอบและจัดการรายงานเนื้อหาที่ไม่เหมาะสม</li>
-      <li>ปรับปรุงประสิทธิภาพและประสบการณ์การใช้งาน</li>
-      <li>ปกป้องความปลอดภัยของชุมชนและป้องกันการละเมิดกฎระเบียบ</li>
+      <li><strong>ชื่อเล่นหรือนามแฝง (Nickname):</strong> ชื่อที่ผู้ใช้งานกำหนดขึ้นเองเพื่อใช้แสดงตนในการสนทนา (จำเป็นสำหรับการสร้างโปรไฟล์)</li>
+      <li><strong>สถาบันการศึกษา (University):</strong> มหาวิทยาลัยที่ผู้ใช้งานเลือกเพื่อเข้าร่วมห้องสนทนาประจำสถาบัน (จำเป็น)</li>
+      <li><strong>รูปภาพโปรไฟล์ (Profile Image):</strong> รูปภาพอวาตาร์ที่เลือกจากชุดภาพที่ระบบจัดเตรียมไว้ (จำเป็น)</li>
+      <li><strong>ลิงก์โซเชียลมีเดียส่วนบุคคล (Social Media Links):</strong> บัญชี Facebook หรือ Instagram ที่ผู้ใช้งานเลือกกรอกในการตั้งค่าโปรไฟล์โดยสมัครใจ เพื่อให้เพื่อนสมาชิกสามารถคลิกต่อไปยังช่องทางติดต่อภายนอกได้ (ไม่บังคับ)</li>
+      <li><strong>ข้อความและไฟล์แนบในการสนทนา (Messages & Attachments):</strong> ข้อความ รูปภาพ และไฟล์เอกสารที่ส่งในห้องสนทนาสาธารณะ</li>
+      <li><strong>ข้อมูลการตั้งค่าบนอุปกรณ์ (Client Storage):</strong> ข้อมูลการตั้งค่าระบบและธีมการแสดงผลที่จัดเก็บบนอุปกรณ์ของผู้ใช้ผ่านเทคโนโลยี IndexedDB และ LocalStorage เพื่อให้สามารถใช้งานได้อย่างต่อเนื่องและรวดเร็ว</li>
     </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">4. การเปิดเผยข้อมูลต่อบุคคลที่สาม</h3>
-    <p>เราไม่ขาย ให้เช่า หรือโอนข้อมูลส่วนตัวของคุณให้แก่บุคคลภายนอกเพื่อวัตถุประสงค์ทางการตลาด</p>
-    <p>เราอาจเปิดเผยข้อมูลในกรณีต่อไปนี้เท่านั้น:</p>
+    <h3>3. การบันทึกและเก็บรักษาข้อมูลจราจรทางคอมพิวเตอร์เป็นเวลา 90 วัน</h3>
+    <p>เพื่อให้เป็นไปตามข้อกำหนดของ <strong>พระราชบัญญัติว่าด้วยการกระทำความผิดเกี่ยวกับคอมพิวเตอร์ พ.ศ. 2550 และที่แก้ไขเพิ่มเติม (ฉบับที่ 2) พ.ศ. 2560</strong> ผู้ให้บริการในฐานะผู้ให้บริการระบบคอมพิวเตอร์มีหน้าที่ตามกฎหมายที่จะต้องบันทึกและเก็บรักษาข้อมูลจราจรทางคอมพิวเตอร์ (Computer Traffic Logs) ไว้อย่างครบถ้วนเป็นระยะเวลาไม่น้อยกว่า <strong>90 วัน</strong></p>
+    <p><strong>รายละเอียดของข้อมูลจราจรทางคอมพิวเตอร์ที่ระบบบันทึก:</strong></p>
     <ul>
-      <li>เมื่อมีคำสั่งจากหน่วยงานบังคับใช้กฎหมายหรือคำสั่งศาลที่ชอบด้วยกฎหมาย</li>
-      <li>เมื่อจำเป็นต้องปกป้องสิทธิ์ ความปลอดภัย หรือทรัพย์สินของผู้ให้บริการหรือผู้ใช้</li>
-      <li>ในกรณีที่มีการควบรวมกิจการหรือโอนสินทรัพย์ โดยจะแจ้งให้ทราบล่วงหน้า</li>
+      <li><strong>วันและเวลาที่ทำรายการ (Timestamp):</strong> บันทึกเวลาที่เกิดกิจกรรมตามเวลามาตรฐานของเซิร์ฟเวอร์</li>
+      <li><strong>หมายเลขที่อยู่ไอพี (IP Address):</strong> หมายเลขไอพีของผู้ใช้งานที่เชื่อมต่อเข้ามายังระบบ</li>
+      <li><strong>ข้อมูลซอฟต์แวร์เบราว์เซอร์ (User Agent):</strong> ข้อมูลเกี่ยวกับประเภทและเวอร์ชันของโปรแกรมท่องเว็บ</li>
+      <li><strong>ข้อมูลอุปกรณ์ของผู้ใช้ (User Device):</strong> ประเภทอุปกรณ์และระบบปฏิบัติการที่ใช้เข้าถึง</li>
+      <li><strong>รหัสประจำตัวผู้ใช้งาน (User ID):</strong> รหัสระบุตัวตนของผู้ใช้ในระบบ</li>
+      <li><strong>ประวัติกิจกรรมสำคัญ (Action Logs):</strong> ได้แก่ การลงทะเบียนผูกบัญชีครั้งแรก (bind), การเข้าสู่ระบบอัตโนมัติ (loggedin), เวลาที่ส่งข้อความสนทนาในแต่ละห้อง (chating ซึ่งมีเวลาตรงกับบันทึกในห้องสนทนาเพื่อการตรวจสอบย้อนหลัง), การสร้างห้องสนทนาย่อยหรือห้องชั่วคราว (add_subroom), และการขอลบบัญชีผู้ใช้ (delete_acc)</li>
     </ul>
-    <p>ข้อมูลโปรไฟล์ของคุณ (ชื่อเล่น มหาวิทยาลัย รูปโปรไฟล์ และลิงก์โซเชียลมีเดียที่คุณเลือกแสดง) จะปรากฏแก่ผู้ใช้คนอื่นในชุมชนซึ่งเป็นส่วนหนึ่งของลักษณะบริการสาธารณะ</p>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">5. การจัดเก็บและรักษาความปลอดภัยข้อมูล</h3>
-    <p>ข้อมูลบางส่วนถูกจัดเก็บบนอุปกรณ์ของคุณโดยตรงผ่าน IndexedDB ของเบราว์เซอร์ เช่น การตั้งค่าธีม ข้อมูลที่เกี่ยวข้องกับการสนทนาถูกประมวลผลผ่านเซิร์ฟเวอร์ของแพลตฟอร์ม</p>
-    <p>เราใช้มาตรการรักษาความปลอดภัยที่เหมาะสมเพื่อป้องกันการเข้าถึงโดยไม่ได้รับอนุญาต อย่างไรก็ตามไม่มีระบบใดที่ปลอดภัยสมบูรณ์แบบ 100%</p>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">6. ระยะเวลาการเก็บรักษาข้อมูล</h3>
+    <p><strong>เหตุผลและความจำเป็นในการเก็บรักษา:</strong></p>
     <ul>
-      <li><strong>ข้อความในห้องชั่วคราว:</strong> ถูกลบโดยอัตโนมัติเมื่อห้องสนทนาหมดอายุ</li>
-      <li><strong>ข้อความในห้องถาวร:</strong> เก็บรักษาตลอดอายุการใช้งานของห้อง</li>
-      <li><strong>ข้อมูลโปรไฟล์:</strong> เก็บรักษาจนกว่าคุณจะลบบัญชี</li>
-      <li><strong>บัญชีที่ถูกลบ:</strong> ข้อมูลโปรไฟล์จะถูกลบออกจากระบบตามคำขอ</li>
+      <li>เพื่อปฏิบัติตามหน้าที่ที่กฎหมายแห่งราชอาณาจักรไทยกำหนดไว้อย่างเคร่งครัด</li>
+      <li>เพื่อรักษาความมั่นคงปลอดภัยของระบบ ป้องกัน และระงับเหตุการณ์การโจมตีทางไซเบอร์ หรือพฤติกรรมที่เป็นภัยคุกคามต่อผู้ใช้งานส่วนรวม</li>
+      <li>เพื่อใช้เป็นพยานหลักฐานในการตรวจสอบข้อเท็จจริง และส่งมอบข้อมูลให้แก่พนักงานเจ้าหน้าที่หรือหน่วยงานบังคับใช้กฎหมายตามกระบวนการยุติธรรมเมื่อมีหมายเรียกหรือคำสั่งศาล</li>
     </ul>
+    <p><strong>การลบทำลายข้อมูลอัตโนมัติ:</strong> ข้อมูลจราจรทางคอมพิวเตอร์ทั้งหมดจะถูกจัดเก็บในฐานข้อมูลที่มีระบบความปลอดภัยสูง และระบบจะดำเนินการตรวจสอบและลบทำลายข้อมูลที่มีอายุเกินกว่า 90 วันโดยอัตโนมัติอย่างต่อเนื่อง</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">7. สิทธิ์ของผู้ใช้งาน</h3>
-    <p>คุณมีสิทธิ์ดังต่อไปนี้เกี่ยวกับข้อมูลของคุณ:</p>
+    <h3>4. การใช้งานเป็นทางผ่านและการจำกัดความรับผิดชอบต่อบริการบุคคลที่สาม</h3>
+    <p><strong>ลาน มหาวิทยาลัย</strong> ทำหน้าที่เป็นเพียงสื่อกลางและทางผ่าน (Transit / Pass-through Service) สำหรับการพบปะและติดต่อสื่อสารระหว่างนักศึกษาเท่านั้น</p>
     <ul>
-      <li><strong>สิทธิ์ในการเข้าถึง:</strong> ดูข้อมูลโปรไฟล์ที่เก็บอยู่ได้ผ่านการตั้งค่า</li>
-      <li><strong>สิทธิ์ในการแก้ไข:</strong> เปลี่ยนแปลงชื่อเล่น รูปโปรไฟล์ และลิงก์โซเชียลมีเดียได้ตลอดเวลา</li>
-      <li><strong>สิทธิ์ในการลบ:</strong> ลบบัญชีพร้อมข้อมูลทั้งหมดผ่านเมนูตั้งค่า → เขตอันตราย → ลบบัญชี</li>
+      <li>ในกรณีที่ผู้ใช้งานคลิกลิงก์โซเชียลมีเดีย ลิงก์เว็บไซต์ภายนอก หรือทำการติดต่อ ซื้อขาย แลกเปลี่ยนข้อมูล หรือทำธุรกรรมใดๆ ต่อบนแพลตฟอร์มของบุคคลที่สาม (เช่น Facebook, Instagram, LINE หรือเว็บไซต์อื่น) การกระทำดังกล่าวจะอยู่นอกเหนือการควบคุมและความรับผิดชอบของแพลตฟอร์มนี้โดยสิ้นเชิง</li>
+      <li>ผู้ให้บริการไม่มีความรับผิดชอบทางกฎหมายต่อความเสียหาย การสูญหาย การละเมิดข้อมูลส่วนบุคคล การถูกหลอกลวง หรือข้อพิพาทใดๆ ที่เกิดขึ้นบนหรือผ่านแพลตฟอร์มของบุคคลที่สามทุกกรณี ขอให้ผู้ใช้งานตรวจสอบความน่าเชื่อถือและนโยบายความเป็นส่วนตัวของบริการปลายทางด้วยตนเอง</li>
     </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">8. คุกกี้และการจัดเก็บข้อมูลในเบราว์เซอร์</h3>
-    <p>แพลตฟอร์มใช้ IndexedDB และ LocalStorage สำหรับจัดเก็บข้อมูลการตั้งค่าบนอุปกรณ์ของคุณ ซึ่งไม่ใช่คุกกี้ติดตามการโฆษณา และใช้เพียงเพื่อให้บริการทำงานได้อย่างถูกต้องเท่านั้น</p>
-    <p>คุณสามารถล้างข้อมูลเหล่านี้ได้โดยการล้างข้อมูลเบราว์เซอร์ของคุณ อย่างไรก็ตามอาจทำให้ต้องตั้งค่าใหม่</p>
+    <h3>5. ข้อห้ามด้านความมั่นคงปลอดภัยทางเทคนิคอย่างเด็ดขาด</h3>
+    <p>เพื่อปกป้องความปลอดภัยของข้อมูลผู้ใช้ทุกคนและความต่อเนื่องในการให้บริการ แพลตฟอร์มกำหนดข้อห้ามทางเทคนิคอย่างเด็ดขาดดังนี้:</p>
+    <ul>
+      <li><strong>ห้ามใช้งาน API โดยไม่ได้รับอนุญาต:</strong> ห้ามส่งคำสั่ง เชื่อมต่อ หรือเรียกใช้ API / WebSocket ของระบบผ่านโปรแกรมภายนอก บอท หรือสคริปต์อัตโนมัติโดยเด็ดขาด</li>
+      <li><strong>ห้ามโจมตีระบบและ DDoS:</strong> ห้ามกระทำการใดๆ ที่เป็นการรบกวน ขัดขวาง หรือส่งทราฟฟิกปริมาณมหาศาลเพื่อทำให้ระบบชะงัก ช้าลง หรือหยุดการให้บริการ</li>
+      <li><strong>ห้ามเจาะระบบและเข้าถึงข้อมูลโดยมิชอบ:</strong> ห้ามพยายามค้นหาช่องโหว่ ทำการทดสอบเจาะระบบโดยไม่ได้รับอนุญาต พยายามแฮกระบบ เข้าถึง หรือแก้ไขฐานข้อมูลและโค้ดของเซิร์ฟเวอร์</li>
+      <li><strong>ห้ามดูดหรือคัดลอกข้อมูล (Web Scraping):</strong> ห้ามใช้เครื่องมืออัตโนมัติ บอท หรือโปรแกรมสกัดข้อมูลเพื่อกวาดหรือคัดลอกเนื้อหา ข้อความ หรือข้อมูลโปรไฟล์ผู้ใช้งานจากระบบ</li>
+    </ul>
+    <p>หากตรวจพบการกระทำดังกล่าว ระบบจะบันทึกหลักฐานจราจรทางคอมพิวเตอร์ ทำการระงับการเข้าถึง ปิดกั้นไอพี และส่งเรื่องดำเนินคดีทางอาญาและแพ่งตามกฎหมายอย่างเด็ดขาด</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">9. ผู้ใช้งานอายุต่ำกว่า 18 ปี</h3>
-    <p>แพลตฟอร์มนี้เปิดรับผู้ใช้งานอายุ 13 ปีขึ้นไป สำหรับผู้ที่มีอายุต่ำกว่า 18 ปี แนะนำให้ผู้ปกครองรับทราบและดูแลการใช้งาน เราไม่ตั้งใจเก็บข้อมูลจากเด็กอายุต่ำกว่า 13 ปี หากพบว่ามีการเก็บข้อมูลดังกล่าวโดยไม่ได้ตั้งใจจะดำเนินการลบทันที</p>
+    <h3>6. วัตถุประสงค์ในการประมวลผลข้อมูล</h3>
+    <p>ข้อมูลทั้งหมดที่เก็บรวบรวมจะถูกนำมาใช้เพื่อวัตถุประสงค์ที่ชอบด้วยกฎหมาย ดังนี้:</p>
+    <ul>
+      <li>เพื่อแสดงผลโปรไฟล์และระบุตัวตนของผู้ใช้ในห้องสนทนาสาธารณะ</li>
+      <li>เพื่อให้บริการส่งข้อความและไฟล์แนบแบบเรียลไทม์ระหว่างสมาชิก</li>
+      <li>เพื่อตรวจสอบและจัดการกับรายงานเนื้อหาที่ไม่เหมาะสมตามกฎระเบียบชุมชน</li>
+      <li>เพื่อรักษาความปลอดภัย ตรวจสอบเสถียรภาพ และป้องกันการใช้งานระบบในทางที่ผิด</li>
+      <li>เพื่อปฏิบัติตามข้อกำหนดและหน้าที่ตามกฎหมายที่เกี่ยวข้อง</li>
+    </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">10. การเปลี่ยนแปลงนโยบาย</h3>
-    <p>เราอาจปรับปรุงนโยบายความเป็นส่วนตัวนี้เป็นครั้งคราว โดยจะระบุวันที่อัปเดตที่ด้านบน การใช้งานต่อเนื่องหลังจากการเปลี่ยนแปลงถือว่าคุณยอมรับนโยบายฉบับใหม่</p>
+    <h3>7. การเปิดเผยข้อมูลแก่บุคคลภายนอก</h3>
+    <p>แพลตฟอร์มไม่มีนโยบายการจำหน่าย ขาย ให้เช่า หรือเผยแพร่ข้อมูลส่วนบุคคลหรือข้อมูลการใช้งานของผู้ใช้แก่บุคคลภายนอกเพื่อผลประโยชน์ทางการค้าหรือการโฆษณา</p>
+    <p>เราอาจเปิดเผยข้อมูลเฉพาะในกรณีที่มีความจำเป็นตามที่กฎหมายกำหนด เช่น เมื่อได้รับหมายเรียก คำสั่งศาล หรือคำสั่งของพนักงานเจ้าหน้าที่ผู้มีอำนาจตามพระราชบัญญัติว่าด้วยการกระทำความผิดเกี่ยวกับคอมพิวเตอร์ หรือเพื่อปกป้องความปลอดภัยในชีวิตและร่างกายของบุคคลในกรณีฉุกเฉิน</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">11. ติดต่อเรื่องความเป็นส่วนตัว</h3>
-    <p>หากมีข้อกังวลหรือต้องการขอให้ลบข้อมูลของคุณ สามารถติดต่อได้ที่:</p>
+    <h3>8. ระยะเวลาการเก็บรักษาข้อมูล</h3>
+    <p>เกณฑ์ระยะเวลาการจัดเก็บข้อมูลในระบบมีดังนี้:</p>
+    <ul>
+      <li><strong>ข้อความในห้องชั่วคราว:</strong> จะถูกลบทำลายโดยอัตโนมัติพร้อมห้องสนทนาเมื่อหมดอายุการใช้งาน (เว้นแต่จะได้รับการโหวตให้เป็นห้องถาวร)</li>
+      <li><strong>ข้อความในห้องถาวร:</strong> จัดเก็บไว้ตลอดระยะเวลาที่ห้องสนทนานั้นเปิดให้บริการ</li>
+      <li><strong>ข้อมูลโปรไฟล์ผู้ใช้งาน:</strong> จัดเก็บไว้จนกว่าผู้ใช้งานจะดำเนินการขอลบบัญชีออกจากระบบ</li>
+      <li><strong>ข้อมูลจราจรทางคอมพิวเตอร์ (Traffic Logs):</strong> จัดเก็บไว้เป็นเวลา 90 วันตามที่กฎหมายกำหนด และจะถูกลบโดยอัตโนมัติเมื่อครบกำหนด</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>9. สิทธิของเจ้าของข้อมูลส่วนบุคคล</h3>
+    <p>ท่านมีสิทธิตามกฎหมายเกี่ยวกับการจัดการข้อมูลของตนเองในระบบ ดังนี้:</p>
+    <ul>
+      <li><strong>สิทธิในการเข้าถึงและตรวจสอบ:</strong> สามารถดูข้อมูลโปรไฟล์และสถานะของตนเองผ่านเมนูการตั้งค่า</li>
+      <li><strong>สิทธิในการแก้ไขข้อมูล:</strong> สามารถแก้ไขชื่อเล่น รูปโปรไฟล์ และลิงก์โซเชียลมีเดียได้ตลอดเวลา</li>
+      <li><strong>สิทธิในการลบข้อมูล (Right to Erasure):</strong> สามารถลบบัญชีและข้อมูลโปรไฟล์ทั้งหมดออกจากระบบได้ทันทีผ่านเมนู การตั้งค่า → เขตอันตราย → ลบบัญชี</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>10. การใช้งานโดยผู้เยาว์</h3>
+    <p>แพลตฟอร์มนี้เปิดให้บริการสำหรับบุคคลที่มีอายุตั้งแต่ 13 ปีขึ้นไป สำหรับผู้ใช้งานที่มีอายุต่ำกว่า 18 ปี แนะนำให้ปรึกษาและได้รับคำแนะนำจากผู้ปกครองในการใช้งาน หากพบว่ามีการจัดเก็บข้อมูลของเด็กที่มีอายุต่ำกว่า 13 ปีโดยไม่ได้ตั้งใจ ระบบจะดำเนินการลบข้อมูลดังกล่าวทันทีที่ได้รับการแจ้งเตือน</p>
+  </div>
+
+  <div class="section">
+    <h3>11. การเปลี่ยนแปลงนโยบายความเป็นส่วนตัว</h3>
+    <p>ผู้ให้บริการอาจพิจารณาปรับปรุงหรือแก้ไขนโยบายความเป็นส่วนตัวนี้เป็นครั้งคราว เพื่อให้สอดคล้องกับการเปลี่ยนแปลงของการให้บริการและกฎหมายที่เกี่ยวข้อง โดยจะระบุวันที่แก้ไขล่าสุดไว้ที่ส่วนหัวของหน้านี้ การที่ท่านยังคงใช้งานแพลตฟอร์มต่อไปถือว่าท่านยินยอมรับนโยบายฉบับแก้ไข</p>
+  </div>
+
+  <div class="section">
+    <h3>12. ช่องทางการติดต่อเรื่องความเป็นส่วนตัว</h3>
+    <p>หากท่านมีข้อสงสัย ข้อเสนอแนะ หรือต้องการสอบถามข้อมูลเพิ่มเติมเกี่ยวกับนโยบายความเป็นส่วนตัวและการคุ้มครองข้อมูล สามารถติดต่อได้ที่:</p>
     <ul>
       <li>Facebook: <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">Laan University</a></li>
     </ul>
-    <p>เราจะตอบกลับภายใน 7 วันทำการ</p>
   </div>
+
   <div class="page-footer">
     <p>© 2026 Pongsakorn Sriwichai. All rights reserved.</p>
     <p class="footer-links">
@@ -152,6 +211,7 @@
       <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer">ติดต่อเรา</a>
     </p>
   </div>
+
 </div>
 </body>
 </html>

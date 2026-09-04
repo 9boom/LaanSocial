@@ -10,36 +10,68 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f1ebdf;--panel:#ffffff;--border:#ced3db;--accent:#ff8000;--accent-soft:#fff4da;--text:#1a1a1a;--muted:#616161;--muted-2:#888888; }
-  *,*::before,*::after{box-sizing:border-box;}
-  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.8;}
-  .back-btn{display:inline-flex;align-items:center;gap:6px;position:fixed;top:20px;left:20px;z-index:50;background:var(--panel);border:1.5px solid var(--border);border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;color:var(--text);text-decoration:none;transition:background 0.15s,border-color 0.15s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
-  .back-btn:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
-  .page-wrap{max-width:720px;margin:0 auto;padding:80px 24px 64px;}
-  .page-logo{display:flex;align-items:center;gap:14px;margin-bottom:36px;}
-  .page-logo img{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 auto;}
-  .page-logo-text h1{margin:0;font-size:20px;font-weight:800;color:var(--text);}
-  .page-logo-text p{margin:2px 0 0;font-size:12px;font-weight:300;color:var(--muted);}
-  .page-title{font-size:28px;font-weight:800;color:var(--accent);margin:0 0 6px;line-height:1.3;}
-  .page-subtitle{font-size:14px;font-weight:300;color:var(--muted-2);margin:0 0 36px;}
-  hr{border:none;border-top:1.5px solid var(--border);margin:32px 0;}
-  .section{margin-bottom:40px;}
-  .section-heading{font-size:18px;font-weight:700;color:var(--text);margin:0 0 12px;padding-left:12px;border-left:4px solid var(--accent);line-height:1.4;}
-  .section p{font-size:15px;font-weight:400;color:var(--text);margin:0 0 10px;}
-  .section ul{margin:8px 0 12px 0;padding-left:20px;list-style:disc;}
-  .section ul li{font-size:15px;font-weight:400;color:var(--text);margin-bottom:6px;}
-  .info-box{background:var(--accent-soft);border:1.5px solid #ffd48a;border-radius:12px;padding:16px 20px;margin:16px 0;font-size:14px;font-weight:500;color:#5a3800;line-height:1.7;}
-  .page-footer{margin-top:56px;padding-top:24px;border-top:1.5px solid var(--border);text-align:center;}
-  .page-footer p{font-size:12px;font-weight:300;color:var(--muted-2);margin:0 0 6px;}
-  .page-footer .footer-links{font-size:13px;font-weight:400;color:var(--muted);}
-  .page-footer .footer-links a{color:var(--accent);text-decoration:none;}
-  .page-footer .footer-links a:hover{text-decoration:underline;}
-  @media(max-width:600px){.page-wrap{padding:80px 16px 56px;}.page-title{font-size:22px;}.back-btn{top:14px;left:14px;}}
+  :root {
+    --bg: #f1ebdf;
+    --panel: #ffffff;
+    --border: #ced3db;
+    --accent: #ff8000;
+    --accent-soft: #fff4da;
+    --text: #1a1a1a;
+    --muted: #616161;
+    --muted-2: #888888;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; min-height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: 'Sarabun', sans-serif;
+    font-size: 16px; line-height: 1.8;
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    position: fixed; top: 20px; left: 20px; z-index: 50;
+    background: var(--panel); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .back-btn:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .page-wrap { max-width: 720px; margin: 0 auto; padding: 80px 24px 64px; }
+  .page-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 36px; }
+  .page-logo img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+  .page-logo-text h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--text); }
+  .page-logo-text p { margin: 2px 0 0; font-size: 12px; font-weight: 300; color: var(--muted); }
+  .page-title { font-size: 28px; font-weight: 800; color: var(--accent); margin: 0 0 6px; line-height: 1.3; }
+  .page-subtitle { font-size: 14px; font-weight: 300; color: var(--muted-2); margin: 0 0 36px; }
+  hr { border: none; border-top: 1.5px solid var(--border); margin: 32px 0; }
+  .section { margin-bottom: 32px; }
+  .section h3 {
+    font-size: 17px; font-weight: 700; color: var(--text);
+    margin: 0 0 10px; line-height: 1.5;
+  }
+  .section p { font-size: 15px; font-weight: 400; color: var(--text); margin: 0 0 10px; }
+  .section ul, .section ol { margin: 6px 0 12px 0; padding-left: 22px; }
+  .section li { font-size: 15px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .page-footer { margin-top: 56px; padding-top: 24px; border-top: 1.5px solid var(--border); text-align: center; }
+  .page-footer p { font-size: 12px; font-weight: 300; color: var(--muted-2); margin: 0 0 6px; }
+  .page-footer .footer-links { font-size: 13px; font-weight: 400; color: var(--muted); }
+  .page-footer .footer-links a { color: var(--accent); text-decoration: none; }
+  .page-footer .footer-links a:hover { text-decoration: underline; }
+  @media (max-width: 600px) {
+    .page-wrap { padding: 80px 16px 56px; }
+    .page-title { font-size: 22px; }
+    .back-btn { top: 14px; left: 14px; }
+  }
 </style>
 </head>
 <body>
+
 <a class="back-btn" href="index.html">← กลับ</a>
+
 <div class="page-wrap">
+
   <div class="page-logo">
     <img src="assets/icons/logo.png" alt="โลโก้ลานมหาวิทยาลัย">
     <div class="page-logo-text">
@@ -47,82 +79,102 @@
       <p>ศูนย์กลางแชททุกมหาวิทยาลัยออนไลน์ รวมในที่เดียว</p>
     </div>
   </div>
+
   <h2 class="page-title">เงื่อนไขการใช้งาน</h2>
   <p class="page-subtitle">อัปเดตล่าสุด: กันยายน 2569</p>
   <hr>
+
   <div class="section">
-    <h3 class="section-heading">1. การยอมรับเงื่อนไข</h3>
-    <p>ยินดีต้อนรับสู่ <strong>ลาน มหาวิทยาลัย</strong> ("แพลตฟอร์ม") ซึ่งให้บริการและดูแลโดย Pongsakorn Sriwichai ("ผู้ให้บริการ") การเข้าถึง ลงทะเบียน หรือใช้งานแพลตฟอร์มนี้ไม่ว่าในรูปแบบใด ถือว่าคุณได้อ่าน เข้าใจ และยอมรับเงื่อนไขการใช้งานฉบับนี้อย่างครบถ้วน</p>
-    <p>หากคุณไม่ยอมรับเงื่อนไขเหล่านี้ กรุณาหยุดใช้งานแพลตฟอร์มทันที</p>
+    <h3>1. การยอมรับเงื่อนไขและข้อกำหนด</h3>
+    <p>ยินดีต้อนรับสู่ <strong>ลาน มหาวิทยาลัย</strong> ("แพลตฟอร์ม") พัฒนา ดูแล และให้บริการโดย Pongsakorn Sriwichai ("ผู้ให้บริการ") การเข้าถึง ลงทะเบียน เชื่อมต่อ หรือใช้งานส่วนใดส่วนหนึ่งของแพลตฟอร์มนี้ ถือว่าท่านได้อ่าน ทำความเข้าใจ และตกลงยินยอมผูกพันตามข้อกำหนดและเงื่อนไขการใช้งานฉบับนี้ รวมถึงนโยบายความเป็นส่วนตัวและกฎระเบียบชุมชนอย่างครบถ้วนโดยไม่มีข้อโต้แย้ง</p>
+    <p>หากท่านไม่เห็นด้วยหรือไม่ยอมรับข้อกำหนดเหล่านี้ ไม่ว่าทั้งหมดหรือบางส่วน กรุณายุติการเข้าถึงและหยุดใช้งานแพลตฟอร์มทันที</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">2. คุณสมบัติผู้ใช้งาน</h3>
-    <p>แพลตฟอร์มนี้ให้บริการแก่บุคคลที่มีคุณสมบัติดังต่อไปนี้:</p>
+    <h3>2. คุณสมบัติและความรับผิดชอบของผู้ใช้งาน</h3>
+    <p>ผู้ใช้งานต้องมีคุณสมบัติตามเกณฑ์ดังต่อไปนี้:</p>
     <ul>
-      <li>มีอายุตั้งแต่ 13 ปีขึ้นไป</li>
-      <li>เป็นนักศึกษา บุคลากร หรือบุคคลที่มีส่วนเกี่ยวข้องกับสถาบันการศึกษา</li>
-      <li>ไม่เคยถูกระงับหรือแบนออกจากแพลตฟอร์มนี้ก่อนหน้า</li>
-    </ul>
-    <div class="info-box">⚠️ หากผู้ใช้มีอายุต่ำกว่า 18 ปี แนะนำให้ผู้ปกครองหรือผู้ดูแลรับทราบและตรวจสอบการใช้งาน</div>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">3. บัญชีผู้ใช้และข้อมูลโปรไฟล์</h3>
-    <p>แพลตฟอร์มนี้ไม่กำหนดให้ผู้ใช้ลงทะเบียนด้วยชื่อจริงหรืออีเมล ผู้ใช้สามารถเลือกชื่อเล่นหรือนามแฝง รูปโปรไฟล์ และระบุมหาวิทยาลัยของตนได้อย่างอิสระ</p>
-    <ul>
-      <li>คุณรับผิดชอบต่อกิจกรรมทั้งหมดที่เกิดขึ้นภายใต้โปรไฟล์ของคุณ</li>
-      <li>ห้ามแอบอ้างเป็นบุคคลอื่นหรือสร้างโปรไฟล์เพื่อหลอกลวง</li>
-      <li>ห้ามใช้ชื่อเล่นที่หยาบคาย ดูถูกผู้อื่น หรือมีเนื้อหาไม่เหมาะสม</li>
-      <li>ข้อมูลโปรไฟล์บางส่วน เช่น ลิงก์โซเชียลมีเดีย จะปรากฏแก่ผู้ใช้คนอื่นในชุมชน</li>
+      <li>มีอายุตั้งแต่ 13 ปีบริบูรณ์ขึ้นไป (หากมีอายุต่ำกว่า 18 ปี ควรได้รับความยินยอมและคำแนะนำจากผู้ปกครองหรือผู้แทนโดยชอบธรรมในการใช้งาน)</li>
+      <li>เป็นนักศึกษา บุคลากรทางการศึกษา หรือผู้ที่มีความประสงค์จะเข้าร่วมแลกเปลี่ยนข้อมูลเชิงสร้างสรรค์ในสังคมมหาวิทยาลัย</li>
+      <li>ไม่เคยถูกระงับการใช้งาน เพิกถอนบัญชี หรือถูกขึ้นบัญชีดำ (Blacklist) จากแพลตฟอร์มนี้มาก่อน</li>
+      <li>ท่านต้องรับผิดชอบต่อการกระทำ กิจกรรม การส่งข้อความ และผลลัพธ์ทั้งหมดที่เกิดขึ้นภายใต้บัญชีหรือโปรไฟล์ของท่าน</li>
     </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">4. ลักษณะการให้บริการ</h3>
-    <p>ลาน มหาวิทยาลัย ให้บริการพื้นที่สนทนาออนไลน์สาธารณะสำหรับนักศึกษา ซึ่งประกอบด้วย:</p>
+    <h3>3. บัญชีผู้ใช้และลักษณะการให้บริการ</h3>
+    <p>แพลตฟอร์มถูกออกแบบขึ้นโดยเน้นการสื่อสารแบบนามแฝง (Pseudonymous Communication) เพื่อความคล่องตัวและเป็นส่วนตัว:</p>
     <ul>
-      <li><strong>ห้องถาวร:</strong> ห้องสนทนาประจำมหาวิทยาลัยที่ไม่มีวันหมดอายุ</li>
-      <li><strong>ห้องชั่วคราว:</strong> ห้องสนทนาที่จะถูกลบพร้อมข้อมูลทั้งหมดเมื่อหมดอายุ ยกเว้นได้รับการโหวตให้คงอยู่ถาวร</li>
-      <li>การแชทข้อความและไฟล์แนบในรูปแบบต่างๆ</li>
-    </ul>
-    <p>ผู้ให้บริการขอสงวนสิทธิ์ในการปรับเปลี่ยน ระงับ หรือยุติการให้บริการใดๆ ได้ตลอดเวลาโดยไม่ต้องแจ้งล่วงหน้า</p>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">5. เนื้อหาของผู้ใช้งาน</h3>
-    <p>คุณรับทราบว่าเนื้อหาทั้งหมดที่คุณโพสต์บนแพลตฟอร์มเป็นความรับผิดชอบของคุณแต่เพียงผู้เดียว ผู้ให้บริการไม่รับรองความถูกต้องของเนื้อหาที่ผู้ใช้สร้างขึ้น</p>
-    <ul>
-      <li>คุณต้องมีสิทธิ์ในการโพสต์เนื้อหานั้น และต้องไม่ละเมิดลิขสิทธิ์หรือสิทธิ์ของบุคคลที่สาม</li>
-      <li>ผู้ให้บริการมีสิทธิ์ลบเนื้อหาที่ไม่เหมาะสมหรือละเมิดกฎระเบียบชุมชนได้ทันที</li>
-      <li>เนื้อหาในห้องชั่วคราวจะถูกลบโดยอัตโนมัติเมื่อห้องหมดอายุ</li>
+      <li>ผู้ใช้สามารถเลือกชื่อเล่น สถาบันการศึกษา และรูปโปรไฟล์จากระบบได้โดยไม่จำเป็นต้องระบุชื่อจริงหรือหมายเลขบัตรประชาชน</li>
+      <li>การให้บริการประกอบด้วย <strong>ห้องสนทนาถาวร</strong> ประจำมหาวิทยาลัย และ <strong>ห้องสนทนาชั่วคราว (Temproom)</strong> ที่สร้างขึ้นตามหัวข้อเฉพาะกิจ ซึ่งจะหมดอายุตามระยะเวลาที่กำหนดเว้นแต่จะได้รับคะแนนโหวตให้อยู่ถาวร</li>
+      <li>ผู้ให้บริการขอสงวนสิทธิ์ในการปรับปรุง พัฒนา ระงับ หรือเปลี่ยนแปลงฟังก์ชันการให้บริการใดๆ ตามความเหมาะสมโดยไม่ต้องแจ้งให้ทราบล่วงหน้า</li>
     </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">6. ทรัพย์สินทางปัญญา</h3>
-    <p>ชื่อ โลโก้ การออกแบบ ซอฟต์แวร์ และองค์ประกอบทั้งหมดของแพลตฟอร์มเป็นทรัพย์สินทางปัญญาของ Pongsakorn Sriwichai ห้ามคัดลอก ดัดแปลง จำหน่าย หรือนำไปใช้เชิงพาณิชย์โดยไม่ได้รับอนุญาต</p>
-  </div>
-  <div class="section">
-    <h3 class="section-heading">7. การปฏิเสธความรับผิด</h3>
-    <p>แพลตฟอร์มนี้ให้บริการ "ตามสภาพที่เป็น" (As-Is) โดยไม่มีการรับประกันใดๆ ผู้ให้บริการไม่รับผิดชอบต่อความเสียหายที่เกิดจากการใช้งาน รวมถึง:</p>
+    <h3>4. การให้บริการในลักษณะทางผ่านและการปฏิเสธความรับผิดต่อแพลตฟอร์มภายนอก</h3>
+    <p><strong>ลาน มหาวิทยาลัย ให้บริการในฐานะพื้นที่กลางและทางผ่าน (Transit / Pass-through Service) สำหรับการสื่อสารเท่านั้น:</strong></p>
     <ul>
-      <li>การสูญหายของข้อมูลหรือการสนทนา</li>
-      <li>การกระทำของผู้ใช้งานคนอื่น</li>
-      <li>การหยุดให้บริการชั่วคราวหรือถาวร</li>
-      <li>ความไม่ถูกต้องของข้อมูลที่ผู้ใช้โพสต์</li>
+      <li>ผู้ใช้งานอาจมีการระบุลิงก์โปรไฟล์โซเชียลมีเดียส่วนบุคคล (เช่น Facebook หรือ Instagram) หรือแชร์ลิงก์เชื่อมต่อไปยังเว็บไซต์ แพลตฟอร์ม และบริการของบุคคลที่สาม</li>
+      <li>ผู้ให้บริการไม่มีส่วนเกี่ยวข้อง ไม่ได้เป็นตัวแทน ไม่ได้รับรองความถูกต้อง ปลอดภัย หรือความน่าเชื่อถือ และไม่มีอำนาจควบคุมดูแลเนื้อหาหรือกิจกรรมใดๆ บนแพลตฟอร์มของบุคคลที่สามเหล่านั้น</li>
+      <li><strong>ข้อจำกัดความรับผิดทางกฎหมาย:</strong> ผู้ให้บริการขอปฏิเสธความรับผิดชอบทางกฎหมายโดยสิ้นเชิงต่อความเสียหาย ความสูญเสีย ข้อพิพาท การฉ้อโกง การผิดสัญญา หรือความเสียหายต่อเนื่องใดๆ ทั้งทางตรงและทางอ้อม ที่เกิดขึ้นบนหรือผ่านการเชื่อมต่อไปยังแพลตฟอร์มของบุคคลที่สามจากการใช้บริการแพลตฟอร์มนี้เป็นทางผ่าน ผู้ใช้งานตกลงรับความเสี่ยงในการติดต่อและทำธุรกรรมภายนอกด้วยตนเองทั้งสิ้น</li>
     </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">8. การสิ้นสุดการใช้งาน</h3>
-    <p>คุณสามารถลบบัญชีและยุติการใช้งานได้ตลอดเวลาผ่านเมนูการตั้งค่า ผู้ให้บริการมีสิทธิ์ระงับหรือยกเลิกบัญชีได้ทันทีหากพบการละเมิดเงื่อนไขหรือกฎระเบียบชุมชน</p>
+    <h3>5. ข้อห้ามการใช้งานอย่างเด็ดขาดและมาตรการความมั่นคงปลอดภัย</h3>
+    <p>เพื่อรักษาความปลอดภัย เสถียรภาพ และความสมบูรณ์ของระบบ ห้ามมิให้ผู้ใช้งานหรือบุคคลใดกระทำการดังต่อไปนี้โดยเด็ดขาด:</p>
+    <ul>
+      <li><strong>การใช้งาน API โดยไม่ได้รับอนุญาต (Unauthorized API Access):</strong> ห้ามเรียกใช้ ส่งคำขอ (Requests) เชื่อมต่อ หรือส่งคำสั่งไปยัง Application Programming Interface (API) หรือ WebSocket ของแพลตฟอร์มโดยตรงผ่านสคริปต์ ซอฟต์แวร์อัตโนมัติ หรือวิธีการอื่นใดที่มิได้กระทำผ่านอินเทอร์เฟซของแอปพลิเคชันอย่างเป็นทางการ รวมถึงการพยายามสร้างหรือปลอมแปลงโทเค็นและกุญแจตรวจสอบสิทธิ์ (Access Key) โดยมิชอบ</li>
+      <li><strong>การโจมตีระบบและ DDoS (DDoS & DoS Attacks):</strong> ห้ามกระทำการใดๆ ที่เป็นการขัดขวาง หน่วง ทำลาย หรือทำให้เซิร์ฟเวอร์ เครือข่าย หรือบริการขัดข้อง ชะงักงัน หรือไม่สามารถให้บริการได้ตามปกติ รวมถึงการโจมตีแบบ Distributed Denial of Service (DDoS), Denial of Service (DoS), การฟลัดข้อมูล (Flooding) หรือการส่งข้อความสแปมปริมาณมหาศาล</li>
+      <li><strong>การพยายามเจาะระบบและเข้าถึงข้อมูลโดยมิชอบ (Breach & Hacking Attempts):</strong> ห้ามพยายามค้นหาช่องโหว่ ทำการทดสอบเจาะระบบ (Penetration Testing) โดยไม่ได้รับอนุญาต แฮกระบบ แทรกแซง ดัดแปลง ทำลายฐานข้อมูล หรือพยายามเข้าถึงบัญชี ข้อมูลส่วนบุคคล และโครงสร้างพื้นฐานของผู้ให้บริการและผู้ใช้อื่น</li>
+      <li><strong>การดูดข้อมูลและการทำเหมืองข้อมูล (Web Scraping):</strong> ห้ามใช้โปรแกรมอัตโนมัติ บอท (Bot), สไปเดอร์ (Spider), ครอว์เลอร์ (Crawler), สคริปต์สกัดข้อมูล หรือเทคโนโลยีใดๆ ในการดึง รวบรวม ทำซ้ำ หรือคัดลอกข้อความสนทนา รายชื่อสถาบัน ข้อมูลโปรไฟล์ หรือเนื้อหาใดๆ บนแพลตฟอร์ม</li>
+    </ul>
+    <p><strong>การบังคับใช้กฎหมาย:</strong> การกระทำการใดๆ ที่ฝ่าฝืนข้อห้ามข้างต้นถือเป็นการกระทำความผิดร้ายแรง ผู้ให้บริการจะดำเนินการระงับการเข้าถึง ปิดกั้นที่อยู่ไอพี และดำเนินคดีตาม <strong>พระราชบัญญัติว่าด้วยการกระทำความผิดเกี่ยวกับคอมพิวเตอร์ พ.ศ. 2550 (และที่แก้ไขเพิ่มเติม)</strong> รวมถึงกฎหมายแพ่งและอาญาอื่นที่เกี่ยวข้องจนถึงที่สุด</p>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">9. การเปลี่ยนแปลงเงื่อนไข</h3>
-    <p>ผู้ให้บริการขอสงวนสิทธิ์ในการแก้ไขเงื่อนไขฉบับนี้ได้ตลอดเวลา โดยจะระบุวันที่อัปเดตที่ด้านบน การใช้งานต่อเนื่องหลังการเปลี่ยนแปลงถือว่าคุณยอมรับเงื่อนไขฉบับใหม่</p>
+    <h3>6. การจัดเก็บและรักษาข้อมูลจราจรทางคอมพิวเตอร์เป็นเวลา 90 วัน</h3>
+    <p>เพื่อให้เป็นไปตามบทบัญญัติแห่ง <strong>พระราชบัญญัติว่าด้วยการกระทำความผิดเกี่ยวกับคอมพิวเตอร์ พ.ศ. 2550 (และที่แก้ไขเพิ่มเติม)</strong> ผู้ให้บริการมีหน้าที่ตามกฎหมายในการบันทึกและเก็บรักษาข้อมูลการจราจรทางคอมพิวเตอร์ (Computer Traffic Data / Logs) เป็นระยะเวลาไม่น้อยกว่า <strong>90 วัน</strong> นับแต่วันที่ข้อมูลนั้นเข้าสู่ระบบ</p>
+    <ul>
+      <li><strong>รายละเอียดข้อมูลที่บันทึก:</strong> วันและเวลาที่ทำรายการ (Timestamp), หมายเลขไอพี (IP Address), ข้อมูลซอฟต์แวร์เบราว์เซอร์และอุปกรณ์ (User Agent / User Device), รหัสประจำตัวผู้ใช้ (User ID), และประเภทกิจกรรมสำคัญ (เช่น การลงทะเบียน, การเข้าสู่ระบบ, เวลาที่ส่งข้อความสนทนา, การสร้างห้องย่อย และการขอลบบัญชี)</li>
+      <li><strong>เหตุผลและความจำเป็น:</strong> ข้อมูลดังกล่าวถูกจัดเก็บเพื่อใช้ในการรักษาความมั่นคงปลอดภัยของโครงสร้างระบบ การตรวจสอบกรณีเกิดภัยคุกคามทางไซเบอร์ การป้องกันการกระทำความผิด และเพื่อการส่งมอบข้อมูลให้แก่พนักงานเจ้าหน้าที่ตามกฎหมายเมื่อมีหมายเรียกหรือคำสั่งศาล</li>
+      <li><strong>ระบบลบข้อมูลอัตโนมัติ:</strong> ข้อมูลจราจรทางคอมพิวเตอร์ที่จัดเก็บไว้จะถูกประมวลผลลบทำลายโดยอัตโนมัติอย่างต่อเนื่องเมื่อพ้นกำหนดระยะเวลา 90 วัน</li>
+    </ul>
   </div>
+
   <div class="section">
-    <h3 class="section-heading">10. การติดต่อ</h3>
-    <p>หากมีข้อสงสัยเกี่ยวกับเงื่อนไขการใช้งานฉบับนี้ สามารถติดต่อได้ที่:</p>
+    <h3>7. เนื้อหาของผู้ใช้งานและทรัพย์สินทางปัญญา</h3>
+    <p>ผู้ใช้งานรับรองว่าเนื้อหา ข้อความ ภาพ และไฟล์ที่ตนเผยแพร่บนแพลตฟอร์มเป็นสิ่งที่ตนมีสิทธิถูกต้องตามกฎหมาย และไม่ละเมิดลิขสิทธิ์ เครื่องหมายการค้า หรือสิทธิในทรัพย์สินทางปัญญาของบุคคลภายนอก</p>
+    <p>ลิขสิทธิ์ ซอร์สโค้ด ตราสัญลักษณ์ โลโก้ งานออกแบบ อินเทอร์เฟซ และองค์ประกอบทั้งหมดของแพลตฟอร์ม ถือเป็นทรัพย์สินทางปัญญาของผู้ให้บริการแต่เพียงผู้เดียว ห้ามมิให้ผู้ใดทำซ้ำ ดัดแปลง เผยแพร่ หรือนำไปใช้ประโยชน์ในเชิงพาณิชย์โดยมิได้รับความยินยอมเป็นลายลักษณ์อักษร</p>
+  </div>
+
+  <div class="section">
+    <h3>8. การปฏิเสธการรับประกันและการจำกัดความรับผิดทั่วไป</h3>
+    <p>แพลตฟอร์มนี้ให้บริการ "ตามสภาพที่เป็นอยู่" (As-Is) และ "ตามที่มีให้ใช้งาน" (As-Available) โดยไม่มีการรับประกัน ไม่ว่าโดยชัดแจ้งหรือโดยปริยายในเรื่องความต่อเนื่อง การปราศจากข้อผิดพลาด หรือความเหมาะสมสำหรับวัตถุประสงค์เฉพาะด้าน</p>
+    <p>ผู้ให้บริการไม่ต้องรับผิดต่อความเสียหาย ความสูญเสียของข้อมูล ความล่าช้า หรือความขัดข้องของระบบเครือข่ายที่อยู่นอกเหนือการควบคุมตามสมควร</p>
+  </div>
+
+  <div class="section">
+    <h3>9. การสิ้นสุดการให้บริการและการระงับบัญชี</h3>
+    <p>ผู้ใช้งานสามารถขอยกเลิกบัญชีและยุติการใช้งานได้ตลอดเวลาผ่านเมนูการตั้งค่าของแอปพลิเคชัน</p>
+    <p>ผู้ให้บริการขอสงวนสิทธิ์ในการระงับ ปิดกั้น หรือยกเลิกบัญชีของผู้ใช้งานทันทีโดยมิต้องแจ้งล่วงหน้า หากพบว่ามีการละเมิดเงื่อนไขการใช้งาน กฎระเบียบชุมชน หรือมีพฤติกรรมที่เป็นภัยต่อระบบและสมาชิกส่วนรวม</p>
+  </div>
+
+  <div class="section">
+    <h3>10. การเปลี่ยนแปลงเงื่อนไขและกฎหมายที่ใช้บังคับ</h3>
+    <p>ผู้ให้บริการอาจแก้ไข ปรับปรุง หรือเพิ่มเติมข้อกำหนดในเงื่อนไขการใช้งานนี้ได้ตลอดเวลา โดยจะระบุวันที่อัปเดตไว้ด้านบน การที่ท่านยังคงใช้งานแพลตฟอร์มอย่างต่อเนื่องภายหลังการปรับปรุง ถือว่าท่านได้รับทราบและยอมรับเงื่อนไขฉบับแก้ไขดังกล่าวแล้ว</p>
+    <p>เงื่อนไขการใช้งานฉบับนี้อยู่ภายใต้การบังคับใช้และตีความตามกฎหมายแห่งราชอาณาจักรไทย</p>
+  </div>
+
+  <div class="section">
+    <h3>11. ช่องทางการติดต่อ</h3>
+    <p>หากมีข้อสงสัย ข้อเสนอแนะ หรือต้องการสอบถามเกี่ยวกับเงื่อนไขการใช้งาน สามารถติดต่อผู้ให้บริการได้ที่:</p>
     <ul>
       <li>Facebook: <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">Laan University</a></li>
     </ul>
   </div>
+
   <div class="page-footer">
     <p>© 2026 Pongsakorn Sriwichai. All rights reserved.</p>
     <p class="footer-links">
@@ -132,6 +184,7 @@
       <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer">ติดต่อเรา</a>
     </p>
   </div>
+
 </div>
 </body>
 </html>
