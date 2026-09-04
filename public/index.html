@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ลาน มหาวิทยาลัย</title>
+<meta name="theme-color" content="#ff8000" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="ลาน" />
+<link rel="apple-touch-icon" href="assets/icons/maskable_icon_x192.png">
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="assets/icons/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +39,7 @@
 
     <div class="startup-footer">
       <p class="startup-copy">© 2026 Pongsakorn Sriwichai. All rights reversed.</p>
-      <p class="startup-links">กฎระเบียบชุมชน &nbsp;|&nbsp; เงื่อนไขการใช้งาน &nbsp;|&nbsp; นโยบายความเป็นส่วนตัว &nbsp;|&nbsp; ติดต่อเรา</p>
+      <p class="startup-links"><a href="community-rules.html">กฎระเบียบชุมชน</a> &nbsp;|&nbsp; <a href="terms-of-service.html">เงื่อนไขการใช้งาน</a> &nbsp;|&nbsp; <a href="privacy-policy.html">นโยบายความเป็นส่วนตัว</a> &nbsp;|&nbsp; <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer">ติดต่อเรา</a></p>
     </div>
   </div>
 
@@ -63,14 +69,14 @@
 
     <div class="startup-terms" id="startupTermsField">
       <input type="checkbox" id="startupTerms">
-      <label for="startupTerms">คุณยอมรับ <a href="#">เงื่อนไขการใช้งาน</a> และ <a href="#">กฎระเบียบของชุมชน</a> ที่ต้องปฏิบัติตาม</label>
+      <label for="startupTerms">คุณยอมรับ <a href="terms-of-service.html" target="_blank" rel="noopener noreferrer">เงื่อนไขการใช้งาน</a> และ <a href="community-rules.html" target="_blank" rel="noopener noreferrer">กฎระเบียบของชุมชน</a> ที่ต้องปฏิบัติตาม</label>
     </div>
 
     <button type="button" class="startup-btn" id="startupConnectBtn">เชื่อมต่อ</button>
 
     <div class="startup-footer">
       <p class="startup-copy">© 2026 Pongsakorn Sriwichai. All rights reversed.</p>
-      <p class="startup-links">กฎระเบียบชุมชน &nbsp;|&nbsp; เงื่อนไขการใช้งาน &nbsp;|&nbsp; นโยบายความเป็นส่วนตัว &nbsp;|&nbsp; ติดต่อเรา</p>
+      <p class="startup-links"><a href="community-rules.html">กฎระเบียบชุมชน</a> &nbsp;|&nbsp; <a href="terms-of-service.html">เงื่อนไขการใช้งาน</a> &nbsp;|&nbsp; <a href="privacy-policy.html">นโยบายความเป็นส่วนตัว</a> &nbsp;|&nbsp; <a href="https://www.facebook.com/profile.php?id=61590730195634" target="_blank" rel="noopener noreferrer">ติดต่อเรา</a></p>
     </div>
   </div>
 
@@ -517,6 +523,7 @@
 <script src="js/profile-panel.js"></script>
 <script src="js/modals.js"></script>
 <script src="js/startup-onboarding.js"></script>
+<script src="js/pwa-register.js"></script>
 
 </body>
 </html>
