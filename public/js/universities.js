@@ -46,9 +46,12 @@ function formatSubroomName(name){
   return value.startsWith('#') ? value : `#${value}`;
 }
 
-function renderSubroomChannel(subroom){
+const isMobileScreen = () => window.innerWidth <= 900;
+
+function renderSubroomChannel(subroom, index = 0){
   const channel = document.createElement('div');
-  channel.className = 'channel';
+  channel.className = 'channel animate-in';
+  channel.style.animationDelay = `${Math.min(index * 35, 280)}ms`;
   channel.dataset.subroomId = subroom.subroom_id || '';
   channel.dataset.subroomType = subroom.subroom_type || '';
 
@@ -89,6 +92,7 @@ function renderSubroomChannel(subroom){
 function renderSubroomGroups(subroomsByType, preferredSubroomId){
   subroomCache.clear();
   const firstSubroom = [];
+  let channelIndex = 0;
 
   Object.keys(SUBROOM_GROUPS).forEach(type => {
     const group = SUBROOM_GROUPS[type];
@@ -108,14 +112,16 @@ function renderSubroomGroups(subroomsByType, preferredSubroomId){
         subroomCache.set(subroom.subroom_id, subroom);
       }
       if(!firstSubroom.length) firstSubroom.push(subroom);
-      fragment.appendChild(renderSubroomChannel(subroom));
+      fragment.appendChild(renderSubroomChannel(subroom, channelIndex++));
     });
     group.appendChild(fragment);
   });
 
   const targetSubroom = (preferredSubroomId && subroomCache.get(preferredSubroomId)) || firstSubroom[0];
   if(targetSubroom && window.PublicChat && typeof window.PublicChat.openSubroom === 'function'){
-    window.PublicChat.openSubroom(targetSubroom);
+    if(!isMobileScreen() || preferredSubroomId){
+      window.PublicChat.openSubroom(targetSubroom);
+    }
   }
 }
 
@@ -175,8 +181,11 @@ function selectUniversity(button){
   document.querySelectorAll('.uni-icon').forEach(el => {
     el.classList.toggle('active', el === button);
   });
-  loadSubroomsForUniversity(button.dataset.name);
+  if(typeof setMobileView === 'function'){
+    setMobileView('sidebar');
+  }
   document.body.classList.remove('nav-open');
+  loadSubroomsForUniversity(button.dataset.name);
 }
 
 function renderUniversityRail(universities){

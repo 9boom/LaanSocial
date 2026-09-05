@@ -250,6 +250,19 @@ img{display:block;max-width:100%;}
   background:var(--accent-soft);
   border:3px solid #fa0;
 }
+@keyframes channelItemFadeIn{
+  from{
+    opacity:0;
+    transform:translateY(6px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+.channel.animate-in{
+  animation:channelItemFadeIn .22s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
 .channel-top{
   display:flex;
   align-items:flex-start;

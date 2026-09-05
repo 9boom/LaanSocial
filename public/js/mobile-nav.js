@@ -13,6 +13,9 @@ function setMobileView(view){
   document.body.dataset.mobileView = view;
 }
 
+if(window.innerWidth <= 900 && !document.body.dataset.mobileView){
+  setMobileView('sidebar');
+}
 
 document.getElementById('openAddUniBtn').addEventListener('click', () => document.body.classList.remove('nav-open'));
 
