@@ -249,12 +249,14 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self'",
+      // 1. เพิ่ม Cloudflare Insights ใน script-src
+      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com", 
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
-      "connect-src 'self' wss: ws:",
+      // 2. เพิ่ม https://fonts.googleapis.com ใน connect-src (เพราะ Service Worker ใช้ Fetch API ดึงไฟล์)
+      "connect-src 'self' wss: ws: https://fonts.googleapis.com", 
       "frame-ancestors 'none'"
     ].join('; ')
   );
