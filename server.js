@@ -87,6 +87,17 @@ const LOG_RETENTION_DAYS = getEnvInt('LOG_RETENTION_DAYS', 90);
 const LOG_RETENTION_MS = LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 const LOG_QUEUE_BATCH_SIZE = getEnvInt('LOG_QUEUE_BATCH_SIZE', 50);
 const LOG_QUEUE_FLUSH_INTERVAL_MS = getEnvInt('LOG_QUEUE_FLUSH_INTERVAL_MS', 3000);
+function getEnvPrefix(key, defaultPrefix) {
+  const value = process.env[key];
+  const prefix = (!value || value.trim() === '') ? defaultPrefix : value.trim();
+  return prefix.endsWith('/') ? prefix : `${prefix}/`;
+}
+
+function toMountPath(prefix) {
+  const clean = prefix.replace(/^\/+|\/+$/g, '');
+  return clean ? `/${clean}` : '/';
+}
+
 const UNIVERSITY_LOGOS_DIR = getEnvPath('UNIVERSITY_LOGOS_DIR', path.join('public', 'assets', 'sim_db', 'universities_logos'));
 const USER_PROFILE_IMAGES_DIR = getEnvPath('USER_PROFILE_IMAGES_DIR', path.join('public', 'assets', 'sim_db', 'users_profile_image'));
 const CHAT_ATTACHMENT_DIR = getEnvPath('CHAT_ATTACHMENT_DIR', path.join('public', 'assets', 'sim_db', 'users_chat_attachment'));
@@ -99,8 +110,9 @@ const ATTACHMENT_MIME_TYPES = getEnvSet('ATTACHMENT_MIME_TYPES', new Set([
   'image/gif',
   'application/pdf'
 ]));
-const PROFILE_IMAGE_URL_PREFIX = getEnv('PROFILE_IMAGE_URL_PREFIX', 'assets/sim_db/users_profile_image/');
-const CHAT_ATTACHMENT_URL_PREFIX = getEnv('CHAT_ATTACHMENT_URL_PREFIX', 'assets/sim_db/users_chat_attachment/');
+const UNIVERSITY_LOGOS_URL_PREFIX = getEnvPrefix('UNIVERSITY_LOGOS_URL_PREFIX', 'assets/sim_db/universities_logos/');
+const PROFILE_IMAGE_URL_PREFIX = getEnvPrefix('PROFILE_IMAGE_URL_PREFIX', 'assets/sim_db/users_profile_image/');
+const CHAT_ATTACHMENT_URL_PREFIX = getEnvPrefix('CHAT_ATTACHMENT_URL_PREFIX', 'assets/sim_db/users_chat_attachment/');
 const MAX_MESSAGE_LENGTH = getEnvInt('MAX_MESSAGE_LENGTH', 200);
 const MAX_SUBROOM_CHAT_MESSAGES = getEnvInt('MAX_SUBROOM_CHAT_MESSAGES', 200);
 const MESSAGE_PAGE_SIZE = getEnvInt('MESSAGE_PAGE_SIZE', 10);
@@ -248,6 +260,10 @@ app.use((req, res, next) => {
   );
   next();
 });
+
+app.use(toMountPath(UNIVERSITY_LOGOS_URL_PREFIX), express.static(UNIVERSITY_LOGOS_DIR));
+app.use(toMountPath(PROFILE_IMAGE_URL_PREFIX), express.static(USER_PROFILE_IMAGES_DIR));
+app.use(toMountPath(CHAT_ATTACHMENT_URL_PREFIX), express.static(CHAT_ATTACHMENT_DIR));
 
 app.use(express.static(path.join(__dirname, 'public'), {
   extensions: ['html']
@@ -1651,7 +1667,7 @@ app.get('/api/universities', async (req, res) => {
           name,
           shortName,
           displayName: shortName ? `${name} [${shortName}]` : name,
-          image: `assets/sim_db/universities_logos/${encodeURIComponent(file.name)}`
+          image: `${UNIVERSITY_LOGOS_URL_PREFIX}${encodeURIComponent(file.name)}`
         };
       })
       .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'th'))
