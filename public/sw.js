@@ -1,4 +1,4 @@
-const CACHE_NAME = 'laan-cache-v1';
+const CACHE_NAME = 'laan-cache-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -83,6 +83,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  const isGoogleFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+  const isSameOrigin = url.origin === self.location.origin;
+
+  // Bypass third-party resources (e.g. Cloudflare Beacon, external scripts) to let browser handle natively
+  if (!isSameOrigin && !isGoogleFont) {
+    return;
+  }
+
   // 1. Navigation (HTML Pages) -> Network-First with Offline Cache Fallback
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -112,8 +120,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/assets/icons/') ||
     url.pathname.startsWith('/assets/symbols/') ||
     url.pathname === '/manifest.json' ||
-    url.hostname === 'fonts.googleapis.com' ||
-    url.hostname === 'fonts.gstatic.com';
+    isGoogleFont;
 
   if (isStaticAsset) {
     event.respondWith(
@@ -129,9 +136,11 @@ self.addEventListener('fetch', (event) => {
               }
               return networkResponse;
             })
-            .catch(() => {
-              // If network fetch fails in background, return cached response if available
-              return cachedResponse;
+            .catch((error) => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              throw error;
             });
 
           return cachedResponse || fetchPromise;
@@ -141,21 +150,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default fallback for any other GET requests: Cache-First, then Network
+  // Default fallback for any other same-origin GET requests: Cache-First, then Network
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-      );
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
+        return networkResponse;
+      });
     })
   );
 });

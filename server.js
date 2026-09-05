@@ -71,6 +71,7 @@ function getEnvArray(key, defaultArray) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const PORT = getEnvInt('PORT', 80);
 const MONGODB_URI = getEnv('MONGODB_URI', process.env.MONGODB_URI);
@@ -208,6 +209,11 @@ const sockets = new Set();
 const presenceBySubroom = new Map();
 
 function getClientIp(req) {
+  if (!req) return '127.0.0.1';
+  const cfConnectingIp = req.headers ? (req.headers['cf-connecting-ip'] || req.headers['CF-Connecting-IP']) : null;
+  if (typeof cfConnectingIp === 'string' && cfConnectingIp.trim()) {
+    return cfConnectingIp.trim();
+  }
   const forwarded = req.headers ? (req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']) : null;
   if (typeof forwarded === 'string' && forwarded.trim()) {
     return forwarded.split(',')[0].trim();
@@ -249,14 +255,12 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      // 1. เพิ่ม Cloudflare Insights ใน script-src
-      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com", 
+      "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
-      // 2. เพิ่ม https://fonts.googleapis.com ใน connect-src (เพราะ Service Worker ใช้ Fetch API ดึงไฟล์)
-      "connect-src 'self' wss: ws: https://fonts.googleapis.com", 
+      "connect-src 'self' wss: ws: https://fonts.googleapis.com https://fonts.gstatic.com https://static.cloudflareinsights.com https://cloudflareinsights.com",
       "frame-ancestors 'none'"
     ].join('; ')
   );
