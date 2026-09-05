@@ -9,7 +9,9 @@
   const MAX_ATTACHMENT_SIZE_MB = 5;
   const MAX_ATTACHMENT_SIZE = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024;
   const ATTACHMENT_TOO_LARGE_MESSAGE = `ไฟล์แนบต้องมีขนาดไม่เกิน ${MAX_ATTACHMENT_SIZE_MB} MB ต่อครั้ง`;
-  const FALLBACK_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+  function getFallbackAvatar() {
+    return (window.LaanAvatars && window.LaanAvatars.getDefaultAvatar()) || '';
+  }
   const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   const messagesEl = document.getElementById('publicMessages');
@@ -294,7 +296,7 @@
     const mine = message.user_owner_id && message.user_owner_id === state.currentUserId;
     const nick = message.user_nick || 'This account has been deleted';
     const tag = userTag(message);
-    const avatar = message.user_profile_url || FALLBACK_AVATAR;
+    const avatar = message.user_profile_url || getFallbackAvatar();
     const reportedChats = Array.isArray(state.currentUser?.reported_chat)
       ? state.currentUser.reported_chat
       : (Array.isArray(window.LaanCurrentUser?.reported_chat) ? window.LaanCurrentUser.reported_chat : []);
@@ -448,7 +450,7 @@
       const mine = user.user_id === state.currentUserId;
       const nick = user.user_nick || '';
       const tag = userTag(user);
-      const avatar = user.user_profile_url || FALLBACK_AVATAR;
+      const avatar = user.user_profile_url || getFallbackAvatar();
       const profileAttrs = `data-profile-nick="${escapeHtml(nick)}" data-profile-tag="${escapeHtml(tag)}" data-profile-avatar="${escapeHtml(avatar)}" data-profile-id="${escapeHtml(user.user_id || 'USR-00000')}" data-profile-date="${escapeHtml(user.created_at || '')}" ${socialMediaAttrs(user.social_media)}`;
 
       return `<div class="online-member${mine ? ' self' : ''} user-profile-trigger" ${profileAttrs}>

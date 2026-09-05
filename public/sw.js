@@ -74,12 +74,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-Only for dynamic API endpoints, authentication, and chat attachments
+  // Network-Only for dynamic API endpoints and authentication
   if (
     url.pathname.startsWith('/api/') ||
     url.pathname === '/login' ||
-    url.pathname === '/add-subroom' ||
-    url.pathname.startsWith('/assets/sim_db/users_chat_attachment/')
+    url.pathname === '/add-subroom'
   ) {
     return;
   }
@@ -106,11 +105,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Static Assets (CSS, JS, Fonts, Images, Manifest) -> Stale-While-Revalidate
+  // 2. Static Assets (CSS, JS, UI Icons, Symbols, Fonts, Manifest) -> Stale-While-Revalidate
   const isStaticAsset =
     url.pathname.startsWith('/css/') ||
     url.pathname.startsWith('/js/') ||
-    url.pathname.startsWith('/assets/') ||
+    url.pathname.startsWith('/assets/icons/') ||
+    url.pathname.startsWith('/assets/symbols/') ||
     url.pathname === '/manifest.json' ||
     url.hostname === 'fonts.googleapis.com' ||
     url.hostname === 'fonts.gstatic.com';

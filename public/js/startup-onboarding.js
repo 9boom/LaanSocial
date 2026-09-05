@@ -19,7 +19,6 @@
 
   if(!overlay || !track || !nameField || !nicknameInput || !nextBtn || !connectBtn) return;
 
-  const FALLBACK_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
   const STORAGE = window.IDBStorage;
   const ACCESS_KEY_PREFIX = 'access_hkey_';
   const MESSAGE_NAME_TAKEN = 'ชื่อผู้ใช้นี้มีคนใช้ไปแล้วหรือ อุปกรณ์คุณไม่ได้ล็อกอินด้วยชื่อนี้มาก่อน';
@@ -27,7 +26,7 @@
   const MESSAGE_STORAGE_UNAVAILABLE = 'เบราว์เซอร์นี้ไม่รองรับ IndexedDB จึงไม่สามารถเข้าสู่ระบบได้';
   const MESSAGE_NETWORK = 'ระบบเชื่อมต่อไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
 
-  let selectedAvatar = (typeof AVATAR_ASSETS !== 'undefined' && AVATAR_ASSETS.dog) || FALLBACK_AVATAR;
+  let selectedAvatar = (window.LaanAvatars && window.LaanAvatars.getDefaultAvatar()) || '';
   let reservedNick = '';
 
   const nameError = document.createElement('p');
@@ -189,10 +188,11 @@
   // Renders profile-image options from the API, falling back to the anonymous asset.
   function renderAvatarOptions(profileImages){
     avatarList.innerHTML = '';
-    const images = profileImages.length ? profileImages : [{
+    const fallbackSrc = (window.LaanAvatars && window.LaanAvatars.getDefaultAvatar()) || '';
+    const images = (Array.isArray(profileImages) && profileImages.length) ? profileImages : (fallbackSrc ? [{
       name: 'annonymous',
-      src: FALLBACK_AVATAR
-    }];
+      src: fallbackSrc
+    }] : []);
 
     images.forEach((profileImage, index) => {
       const option = document.createElement('button');
@@ -220,9 +220,9 @@
   // Loads profile image choices for the onboarding avatar picker.
   async function loadProfileImages(){
     try {
-      const response = await fetch('/api/profile-images');
-      if(!response.ok) throw new Error('Unable to load profile images');
-      const profileImages = await response.json();
+      const profileImages = window.LaanAvatars
+        ? await window.LaanAvatars.fetchImages()
+        : await (await fetch('/api/profile-images')).json();
       renderAvatarOptions(Array.isArray(profileImages) ? profileImages : []);
     } catch (error) {
       console.error(error);

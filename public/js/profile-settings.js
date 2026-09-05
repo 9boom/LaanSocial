@@ -43,7 +43,10 @@ const cancelDeleteAccountBtn = document.getElementById('cancelDeleteAccountBtn')
 const confirmDeleteAccountBtn = document.getElementById('confirmDeleteAccountBtn');
 const deleteAccountError = document.getElementById('deleteAccountError');
 
-const FALLBACK_PROFILE_AVATAR = 'assets/sim_db/users_profile_image/annonymous.png';
+function getFallbackProfileAvatar() {
+  return (window.LaanAvatars && window.LaanAvatars.getDefaultAvatar()) || '';
+}
+
 const SOCIAL_DOMAINS = {
   Facebook: 'facebook.com',
   Instagram: 'instagram.com'
@@ -224,7 +227,7 @@ function applyUpdatedUser(user){
 }
 
 function setSelectedSettingsAvatar(src, option){
-  settingsSelectedAvatar = src || FALLBACK_PROFILE_AVATAR;
+  settingsSelectedAvatar = src || getFallbackProfileAvatar();
   if(settingsAvatarPreview) settingsAvatarPreview.src = settingsSelectedAvatar;
   settingsAvatarList?.querySelectorAll('.settings-avatar-option').forEach(item => {
     item.classList.toggle('active', item === option || item.dataset.avatar === settingsSelectedAvatar);
@@ -234,11 +237,12 @@ function setSelectedSettingsAvatar(src, option){
 function renderSettingsAvatarOptions(profileImages){
   if(!settingsAvatarList) return;
   settingsAvatarList.innerHTML = '';
-  const images = profileImages.length ? profileImages : [{
+  const fallback = getFallbackProfileAvatar();
+  const images = (Array.isArray(profileImages) && profileImages.length) ? profileImages : (fallback ? [{
     name: 'annonymous',
-    src: FALLBACK_PROFILE_AVATAR
-  }];
-  const activeAvatar = currentUser().user_profile_url || settingsSelectedAvatar || FALLBACK_PROFILE_AVATAR;
+    src: fallback
+  }] : []);
+  const activeAvatar = currentUser().user_profile_url || settingsSelectedAvatar || fallback;
 
   images.forEach((profileImage) => {
     const option = document.createElement('button');
@@ -267,9 +271,9 @@ async function loadSettingsProfileImages(){
   if(profileImagesLoaded) return;
 
   try {
-    const response = await fetch('/api/profile-images');
-    if(!response.ok) throw new Error('Unable to load profile images');
-    const profileImages = await response.json();
+    const profileImages = window.LaanAvatars
+      ? await window.LaanAvatars.fetchImages()
+      : await (await fetch('/api/profile-images')).json();
     renderSettingsAvatarOptions(Array.isArray(profileImages) ? profileImages : []);
     profileImagesLoaded = true;
   } catch (error) {
@@ -280,7 +284,7 @@ async function loadSettingsProfileImages(){
 }
 
 function syncSettingsProfileFields(){
-  settingsSelectedAvatar = currentUser().user_profile_url || FALLBACK_PROFILE_AVATAR;
+  settingsSelectedAvatar = currentUser().user_profile_url || getFallbackProfileAvatar();
   if(settingsAvatarPreview) settingsAvatarPreview.src = settingsSelectedAvatar;
   setSelectedSettingsAvatar(settingsSelectedAvatar);
 

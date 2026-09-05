@@ -14,61 +14,68 @@
   }
 })();
 
-/* ---------- PRIVATE CHAT (mockup) ---------- */
-const AVATAR_ASSETS = {
-  dog:'assets/sim_db/users_profile_image/dog.png',
-  cat:'assets/sim_db/users_profile_image/cat.png',
-  fox:'assets/sim_db/users_profile_image/fox.png',
-  panda:'assets/sim_db/users_profile_image/panda.png',
-  rabbit:'assets/sim_db/users_profile_image/rabbit.png'
-};
+/* ---------- DEFAULT NEUTRAL AVATAR SVG DATA-URI ---------- */
+const DEFAULT_AVATAR_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e2e8f0'/%3E%3Cpath d='M50 48a16 16 0 1 0 0-32 16 16 0 0 0 0 32zm0 8c-18 0-34 11-38 28h76c-4-17-20-28-38-28z' fill='%2394a3b8'/%3E%3C/svg%3E";
+
+/* ---------- DYNAMIC AVATARS UTILITY ---------- */
+(function() {
+  let cachedImages = [];
+  let fetchPromise = null;
+
+  async function fetchProfileImages() {
+    if (cachedImages.length > 0) return cachedImages;
+    if (fetchPromise) return fetchPromise;
+
+    fetchPromise = (async () => {
+      try {
+        const response = await fetch('/api/profile-images');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          cachedImages = data;
+        }
+      } catch (err) {
+        console.warn('Unable to load profile images from API:', err);
+      } finally {
+        fetchPromise = null;
+      }
+      return cachedImages;
+    })();
+
+    return fetchPromise;
+  }
+
+  function getImages() {
+    return cachedImages;
+  }
+
+  function getDefaultAvatar() {
+    if (cachedImages.length > 0) {
+      const anonymous = cachedImages.find(img => img.id === 'annonymous' || img.name === 'annonymous');
+      if (anonymous && anonymous.src) return anonymous.src;
+      return cachedImages[0].src;
+    }
+    return DEFAULT_AVATAR_PLACEHOLDER;
+  }
+
+  function getFallbackAvatar() {
+    return getDefaultAvatar();
+  }
+
+  window.LaanAvatars = {
+    DEFAULT_PLACEHOLDER: DEFAULT_AVATAR_PLACEHOLDER,
+    fetchImages: fetchProfileImages,
+    getImages: getImages,
+    getDefaultAvatar: getDefaultAvatar,
+    getFallbackAvatar: getFallbackAvatar
+  };
+
+  // Preload profile images on script initialization
+  fetchProfileImages();
+})();
+
+/* ---------- PRIVATE CHAT (mockup state) ---------- */
 const MY_TAG   = '[จฬ]';
 const MY_NAME  = 'มะม่วงเบา';
-let MY_AVATAR = AVATAR_ASSETS.dog;
-const contacts = {
-  helloworld: {
-    tag:'[สจล]', name:'hello world !',
-    avatar:AVATAR_ASSETS.panda,
-    joinDate:'1 กรกฎาคม 2569', profileId:'1000',
-    online:true, unread:0, blocked:false, notifOn:false,
-    messages:[
-      {mine:false, time:'11:02', text:'สวัสดีครับ ผมขอสอบถามอะไรหน่อยได้ไหมครับ'},
-      {mine:true,  time:'11:14', text:'อะไรเหรอครับ'}
-    ]
-  },
-  mickey: {
-    tag:'[จฬ]', name:'ชอบมิกกี้เมาส์',
-    avatar:AVATAR_ASSETS.cat,
-    joinDate:'15 มิถุนายน 2569', profileId:'1001',
-    online:true, unread:4, blocked:false, notifOn:false,
-    messages:[]
-  },
-  tungtung: {
-    tag:'[มศว]', name:'ทุงทุง ซาฮัวรา',
-    avatar:AVATAR_ASSETS.fox,
-    joinDate:'2 กรกฎาคม 2569', profileId:'1002',
-    online:true, unread:0, blocked:false, notifOn:false,
-    messages:[]
-  },
-  sawadee: {
-    tag:'[จฬ]', name:'สวัสดีคนไทย',
-    avatar:AVATAR_ASSETS.rabbit,
-    joinDate:'20 มิถุนายน 2569', profileId:'1003',
-    online:false, unread:0, blocked:false, notifOn:false,
-    messages:[]
-  },
-  hametc: {
-    tag:'[จฬ]', name:'หาเพื่อนคุย',
-    avatar:AVATAR_ASSETS.rabbit,
-    joinDate:'22 มิถุนายน 2569', profileId:'1004',
-    online:false, unread:0, blocked:false, notifOn:false,
-    messages:[]
-  },
-  david: {
-    tag:'[จฬ]', name:'David คร้าบ',
-    avatar:AVATAR_ASSETS.panda,
-    joinDate:'28 มิถุนายน 2569', profileId:'1005',
-    online:false, unread:0, blocked:false, notifOn:false,
-    messages:[]
-  }
-};
+let MY_AVATAR = window.LaanAvatars.getDefaultAvatar();
+const contacts = {};

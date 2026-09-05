@@ -94,7 +94,7 @@
 
     const nick = userData.nick || userData.name || userData.user_nick || 'ไม่ระบุชื่อ';
     const tag = userData.tag || userData.user_tag || '';
-    const avatar = userData.avatar || userData.user_profile_url || 'assets/sim_db/users_profile_image/annonymous.png';
+    const avatar = userData.avatar || userData.user_profile_url || (window.LaanAvatars && window.LaanAvatars.getDefaultAvatar()) || '';
     const joinDate = formatJoinDate(userData.created_at || userData.joinDate);
     const profileId = userData.profileId || userData.user_id || 'USR-00000';
 
