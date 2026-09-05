@@ -2302,7 +2302,7 @@ app.get('/api/profile-images', async (req, res) => {
           id: baseName,
           fileName: file.name,
           name: displayName || baseName,
-          src: `assets/sim_db/users_profile_image/${encodeURIComponent(file.name)}`
+          src: `${PROFILE_IMAGE_URL_PREFIX}${encodeURIComponent(file.name)}`
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'th'));
